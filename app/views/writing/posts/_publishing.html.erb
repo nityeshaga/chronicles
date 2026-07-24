@@ -1,0 +1,30 @@
+<%# Publish / schedule / unpublish controls, shown inside the publish popover (delete lives
+    at the foot of the Settings slide-over, off the ship flow).
+    Shared by post and page editors — the paths are polymorphic, so the same partial drives
+    both. Pages publish exactly like posts (the publishing resource is nested under both). %>
+<div class="publish-popover__body">
+  <% if post.published? %>
+    <p class="publish-state">
+      <span class="status status--published">Live</span>
+      Published <%= post.published_at.strftime("%-d %b %Y, %-l:%M %p") %>.
+    </p>
+    <div class="publish-actions">
+      <%= link_to "View live", public_post_path(post), class: "w-btn w-btn--ghost w-btn--sm" %>
+      <%= button_to "Unpublish", [ :writing, post, :publishing ], method: :delete,
+            class: "w-btn w-btn--ghost w-btn--sm", form_class: "w-inline" %>
+    </div>
+  <% elsif post.scheduled? %>
+    <p class="publish-state">
+      <span class="status status--scheduled">Scheduled</span>
+      Goes live <%= post.published_at.strftime("%-d %b %Y, %-l:%M %p") %>.
+    </p>
+    <%= button_to "Cancel schedule", [ :writing, post, :publishing ], method: :delete,
+          class: "w-btn w-btn--ghost w-btn--sm", form_class: "w-inline" %>
+  <% else %>
+    <%= form_with url: [ :writing, post, :publishing ], method: :post, class: "schedule-form" do |form| %>
+      <%= label_tag :published_at do %>Publish time <span class="field__hint">— leave blank to go live now</span><% end %>
+      <%= datetime_field_tag :published_at %>
+      <%= form.submit "Publish", class: "w-btn w-btn--primary" %>
+    <% end %>
+  <% end %>
+</div>

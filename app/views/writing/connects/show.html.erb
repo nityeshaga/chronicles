@@ -1,0 +1,150 @@
+<% content_for :title, "Connect" %>
+<% base = request.base_url %>
+
+<div class="form-page">
+  <header class="dash-head">
+    <div class="dash-head__brand">
+      <span class="dash-eyebrow"><%= Setting.current.production_host %></span>
+      <h1>Connect</h1>
+    </div>
+    <div class="dash-head__actions">
+      <%= link_to writing_posts_path, class: "w-btn w-btn--ghost" do %>
+        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Writing
+      <% end %>
+    </div>
+  </header>
+
+  <p class="connect-lede">Give an AI assistant the keys to this blog — it can draft, publish, tag, and upload images through the <code>/mcp</code> server. Pick how you connect.</p>
+
+  <% if flash[:new_token].present? %>
+    <div class="connect-token" data-controller="clipboard">
+      <label>New token — copy it now, it won't be shown again</label>
+      <div class="connect-field__row">
+        <code data-clipboard-target="source"><%= flash[:new_token] %></code>
+        <button type="button" class="w-btn w-btn--primary w-btn--sm" data-action="clipboard#copy" data-clipboard-target="button">Copy</button>
+      </div>
+      <small class="field__hint">Only its digest is stored, so this is the only time you'll see it. Paste it wherever the setup below asks for a token.</small>
+    </div>
+  <% end %>
+
+  <%# ---- Claude Code ---- %>
+  <section class="connect-section">
+    <h2>Claude Code</h2>
+    <p class="connect-section__intro">Paste this prompt into Claude Code. It sets up the MCP server itself — you just hand it a token when it asks.</p>
+
+    <div class="connect-code" data-controller="clipboard">
+      <pre data-clipboard-target="source"><code>Set up the nityesh-com MCP server so you can help me manage my blog. First ask me for an API token — I mint one myself at <%= base %>/writing/connect (it needs my browser login). Once I paste it, run:
+claude mcp add --transport http nityesh-com <%= base %>/mcp --header "Authorization: Bearer THE_TOKEN_I_PASTE" --scope user
+Then tell me to restart you and run /mcp to confirm the nityesh-com server connected.</code></pre>
+      <button type="button" class="w-btn w-btn--ghost w-btn--sm connect-code__copy" data-action="clipboard#copy" data-clipboard-target="button">Copy</button>
+    </div>
+
+    <details class="connect-details">
+      <summary>Manual setup</summary>
+      <p class="connect-section__intro">Create a token in the API tokens section below, then run this yourself:</p>
+      <div class="connect-code" data-controller="clipboard">
+        <pre data-clipboard-target="source"><code>claude mcp add --transport http nityesh-com <%= base %>/mcp --header "Authorization: Bearer YOUR_API_TOKEN" --scope user</code></pre>
+        <button type="button" class="w-btn w-btn--ghost w-btn--sm connect-code__copy" data-action="clipboard#copy" data-clipboard-target="button">Copy</button>
+      </div>
+      <p class="field__hint">Restart Claude Code, then run <code>/mcp</code> to verify the connection.</p>
+    </details>
+  </section>
+
+  <%# ---- Claude.ai / Claude Desktop ---- %>
+  <section class="connect-section">
+    <h2>Claude.ai &amp; Claude Desktop</h2>
+    <p class="connect-section__intro">No token needed — you sign in with this blog's login when Claude connects. In Settings → Connectors → Add custom connector, enter:</p>
+
+    <div class="connect-field">
+      <label>Name</label>
+      <div class="connect-field__row" data-controller="clipboard">
+        <code data-clipboard-target="source"><%= Setting.current.production_host %></code>
+        <button type="button" class="w-btn w-btn--ghost w-btn--sm" data-action="clipboard#copy" data-clipboard-target="button">Copy</button>
+      </div>
+    </div>
+
+    <div class="connect-field">
+      <label>URL</label>
+      <div class="connect-field__row" data-controller="clipboard">
+        <code data-clipboard-target="source"><%= base %>/mcp</code>
+        <button type="button" class="w-btn w-btn--ghost w-btn--sm" data-action="clipboard#copy" data-clipboard-target="button">Copy</button>
+      </div>
+    </div>
+
+    <p class="field__hint">Click <strong>Add</strong>, then <strong>Connect</strong>, and sign in with your blog login to authorize it.</p>
+  </section>
+
+  <%# ---- API tokens ---- %>
+  <section class="connect-section">
+    <h2>API tokens</h2>
+    <p class="connect-section__intro">Bearer tokens for the manual Claude Code setup above, or for Luo Ji.</p>
+
+    <%= form_with model: [ :writing, @api_token ], class: "stacked-form connect-token-form" do |form| %>
+      <div class="field">
+        <%= form.label :name, "Name a new token" %>
+        <%= form.text_field :name, placeholder: "e.g. Claude Code" %>
+        <small class="field__hint">A label so you can tell your tokens apart when revoking one.</small>
+      </div>
+      <%= form.submit "Create token", class: "w-btn w-btn--primary" %>
+    <% end %>
+
+    <% if @api_tokens.any? %>
+      <ul class="dash-list">
+        <% @api_tokens.each do |token| %>
+          <li class="dash-row">
+            <span class="dash-row__link">
+              <span class="dash-row__title"><%= token.name %></span>
+              <span class="dash-row__slug">
+                <% if token.last_used_at %>
+                  last used <%= time_ago_in_words(token.last_used_at) %> ago
+                <% else %>
+                  never used
+                <% end %>
+              </span>
+            </span>
+            <span class="dash-row__side">
+              <span class="dash-row__date"><%= token.created_at.to_date.to_fs(:long) %></span>
+              <%= button_to "Revoke", writing_api_token_path(token), method: :delete,
+                    class: "w-btn w-btn--danger w-btn--sm",
+                    data: { turbo_confirm: "Revoke #{token.name}? Any agent using it loses access immediately." } %>
+            </span>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <div class="dash-blank"><p>No tokens yet. Create one above to connect Claude Code or Luo Ji.</p></div>
+    <% end %>
+  </section>
+
+  <%# ---- Connected apps (OAuth) ---- %>
+  <section class="connect-section">
+    <h2>Connected apps</h2>
+    <p class="connect-section__intro">Apps you've signed into over OAuth, like claude.ai.</p>
+
+    <% if @connected_apps.any? %>
+      <ul class="dash-list">
+        <% @connected_apps.each do |app| %>
+          <li class="dash-row">
+            <span class="dash-row__link">
+              <span class="dash-row__title"><%= app.name %></span>
+              <span class="dash-row__slug">
+                connected <%= app.created_at.to_date.to_fs(:long) %>
+                <% if (issued = @last_issued_at[app.id]) %>
+                  &middot; last token <%= time_ago_in_words(issued) %> ago
+                <% end %>
+              </span>
+            </span>
+            <span class="dash-row__side">
+              <%= button_to "Revoke", writing_connected_app_path(app), method: :delete,
+                    class: "w-btn w-btn--danger w-btn--sm",
+                    data: { turbo_confirm: "Disconnect #{app.name}? It loses access until you sign in again." } %>
+            </span>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <div class="dash-blank"><p>Nothing connected yet. claude.ai connections will appear here.</p></div>
+    <% end %>
+  </section>
+</div>

@@ -1,0 +1,13 @@
+<%# The existing-tag checkboxes. Lives inside the post form, so toggling one rides autosave
+    (attaching a known tag is cheap and reversible). Rendered standalone (no form builder) so
+    Writing::TagsController#create can stream a refreshed copy in when a new tag is minted.
+    The leading blank hidden field lets "all unchecked" submit as an empty tag_ids, clearing tags. %>
+<div id="post_tags" class="tag-checkboxes">
+  <%= hidden_field_tag "post[tag_ids][]", "", id: nil %>
+  <% Tag.order(:name).each do |tag| %>
+    <label class="tag-choice">
+      <%= check_box_tag "post[tag_ids][]", tag.id, post.tag_ids.include?(tag.id), id: "post_tag_ids_#{tag.id}" %>
+      <%= tag.name %>
+    </label>
+  <% end %>
+</div>

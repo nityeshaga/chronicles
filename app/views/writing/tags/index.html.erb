@@ -1,0 +1,34 @@
+<% content_for :title, "Tags" %>
+
+<div class="writing-dash">
+  <header class="dash-head">
+    <div class="dash-head__brand">
+      <span class="dash-eyebrow"><%= Setting.current.production_host %></span>
+      <h1>Tags</h1>
+    </div>
+    <div class="dash-head__actions">
+      <%= link_to writing_posts_path, class: "w-btn w-btn--ghost" do %>
+        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Writing
+      <% end %>
+    </div>
+  </header>
+
+  <% if @tags.empty? %>
+    <div class="dash-blank"><p>No tags yet. They appear here once a post is filed under one.</p></div>
+  <% else %>
+    <ul class="dash-list">
+      <% @tags.each do |tag| %>
+        <li class="dash-row">
+          <%= link_to edit_writing_tag_path(tag), class: "dash-row__link" do %>
+            <span class="dash-row__title"><%= tag.name %></span>
+            <span class="dash-row__slug"><code>/tag/<%= tag.slug %></code></span>
+          <% end %>
+          <span class="dash-row__side">
+            <span class="dash-row__date"><%= pluralize tag.posts.count, "post" %></span>
+          </span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</div>

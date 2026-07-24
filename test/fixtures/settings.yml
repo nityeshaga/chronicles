@@ -1,0 +1,14 @@
+# The single site-identity row (mirrors the CreateSettings backfill). Tests assert
+# rendered head/RSS/URL values against this row via Setting.current, never literals.
+default:
+  site_title: Chronicles of Nityesh
+  site_description: "Hot takes, secret recipes, leaked memos and epic fails - from a creator building a SaaS business"
+  site_logo: /content/images/2024/12/nityesh-com-logo-bg-removed.png
+  author_name: Nityesh Agarwal
+  author_image: /content/images/size/w160/2024/12/nityesh-headshot-2.jpeg
+  author_image_full: /content/images/2024/12/nityesh-headshot-2.jpeg
+  author_image_size: 465
+  author_path: author/nityesh/
+  twitter_handle: "@nityeshaga"
+  home_meta_title: Nityesh Agarwal - founder of Curated Connections
+  production_host: nityesh.com

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" class="has-dark-text">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=IBM+Plex+Mono:wght@400;500;600&family=Special+Elite&family=Jost:wght@500;600;700;800&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+
+    <%= render "shared/meta" %>
+
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="/favicon.png">
+
+    <%= yield :head %>
+
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="<%= content_for(:body_class) %> has-serif-title has-serif-body" data-controller="reveal">
+    <div class="gh-viewport">
+      <header class="masthead-print">
+        <div class="rule"></div>
+        <div class="mast-kicker rise in">Est. 2017 · Written, drawn &amp; compiled in Kolkata</div>
+        <h1 class="wordmark rise in"><a href="<%= root_path %>"><%= wordmark(Setting.current.site_title) %></a></h1>
+        <div class="mast-tagline rise in">a one-person publishing house</div>
+        <div class="mast-fleuron rise in">❦</div>
+        <div class="rule"></div>
+        <nav class="mast-nav">
+          <a href="/#apps">Apps</a>
+          <a href="/#library">Library</a>
+          <a href="/#subscribe">Subscribe</a>
+          <a href="/about/">About</a>
+        </nav>
+      </header>
+
+      <%= yield %>
+
+      <footer class="site-footer">
+        <div class="wrap">
+          <div class="mono">❦ <%= Setting.current.author_name %> · built with Luo, my AI agent, on a spare MacBook Air</div>
+          <div class="links mono">
+            <a href="https://myspool.xyz">Spool</a>
+            <a href="https://teachmesomething.xyz">Teach Me Something</a>
+            <a href="https://curatedconnections.io">Curated Connections</a>
+            <a href="https://github.com/nityeshaga">GitHub</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

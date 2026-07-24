@@ -1,0 +1,174 @@
+require "test_helper"
+
+class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
+  test "index requires authentication" do
+    get writing_posts_url
+    assert_redirected_to new_session_url
+  end
+
+  test "index lists drafts and published when signed in" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+    assert_response :success
+  end
+
+  test "creates a post when signed in" do
+    sign_in_as users(:nityesh)
+    assert_difference -> { Post.articles.count }, 1 do
+      post writing_posts_url, params: { post: { title: "Brand New", body: "<p>hi</p>" } }
+    end
+    assert_redirected_to edit_writing_post_url(Post.last)
+  end
+
+  # --- New-post autosave: the first real keystroke mints the draft server-side via a
+  #     silent fetch (X-Autosave) so nothing is lost, then answers 201 with the edit URL
+  #     in Location for the JS to adopt in place. Blank forms never mint a draft. ---
+  test "autosave create mints exactly one draft and returns its edit URL" do
+    sign_in_as users(:nityesh)
+    assert_difference -> { Post.articles.count }, 1 do
+      post writing_posts_url, headers: { "X-Autosave" => "true" },
+        params: { post: { title: "Fresh Draft", body: "<p>opening line</p>" } }
+    end
+    assert_response :created
+    # Location is the created resource — the exact URL the JS will PATCH, adopted verbatim.
+    assert_equal writing_post_url(Post.last), response.location
+    assert_equal "Fresh Draft", Post.last.title
+  end
+
+  test "autosave create refuses to mint a blank draft" do
+    sign_in_as users(:nityesh)
+    assert_no_difference -> { Post.count } do
+      post writing_posts_url, headers: { "X-Autosave" => "true" }, params: { post: { title: "", body: "" } }
+    end
+    assert_response :unprocessable_entity
+    assert_empty response.body
+  end
+
+  test "autosave create titles a body-first draft so it can persist" do
+    sign_in_as users(:nityesh)
+    assert_difference -> { Post.articles.count }, 1 do
+      post writing_posts_url, headers: { "X-Autosave" => "true" },
+        params: { post: { title: "", body: "<p>wrote the body before the title</p>" } }
+    end
+    assert_response :created
+    assert_equal "Untitled", Post.last.title
+  end
+
+  test "two untitled drafts in a row both persist with distinct slugs" do
+    sign_in_as users(:nityesh)
+    assert_difference -> { Post.articles.count }, 2 do
+      2.times do |i|
+        post writing_posts_url, headers: { "X-Autosave" => "true" },
+          params: { post: { title: "", body: "<p>body-first draft #{i}</p>" } }
+        assert_response :created
+      end
+    end
+    first, second = Post.articles.order(:id).last(2)
+    assert_equal "untitled", first.slug
+    assert_equal "untitled-2", second.slug
+  end
+
+  # --- Autosave contract: the debounced fetch (an X-Autosave header) is silent both
+  #     ways — 204 on success, a bodyless 422 on failure — so nothing repaints. ---
+  test "autosave persists changes and returns no content" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+    patch writing_post_url(draft), headers: { "X-Autosave" => "true" },
+      params: { post: { title: "Autosaved Title", body: "<p>edited</p>" } }
+    assert_response :no_content
+    assert_equal "Autosaved Title", draft.reload.title
+  end
+
+  # A blank title on a DRAFT is the body-first flow (the model re-fills the placeholder);
+  # only a published post genuinely demands a title, so that's where 422 still lives.
+  test "autosave answers a bodyless 422 on a validation failure so it never repaints" do
+    sign_in_as users(:nityesh)
+    published = posts(:published)
+    patch writing_post_url(published), headers: { "X-Autosave" => "true" }, params: { post: { title: "" } }
+    assert_response :unprocessable_entity
+    assert_empty response.body
+  end
+
+  test "autosaving a body-first draft with a still-empty title keeps the placeholder and saves" do
+    sign_in_as users(:nityesh)
+    post writing_posts_url, headers: { "X-Autosave" => "true" },
+      params: { post: { title: "", body: "<p>first line</p>" } }
+    assert_response :created
+
+    draft = Post.last
+    patch writing_post_url(draft), headers: { "X-Autosave" => "true" },
+      params: { post: { title: "", body: "<p>first line, and a second</p>" } }
+    assert_response :no_content
+    assert_equal "Untitled", draft.reload.title
+    assert_includes draft.body.to_s, "and a second"
+  end
+
+  # --- Explicit save (no header, a normal Turbo submit): a slug change redirects once,
+  #     and a validation failure re-renders the form with its errors. ---
+  test "committing a changed slug redirects so the form URL stays live" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+    patch writing_post_url(draft), params: { post: { slug: "renamed-draft" } }
+    assert_redirected_to edit_writing_post_url(draft.reload)
+    assert_equal "renamed-draft", draft.slug
+  end
+
+  test "an explicit save re-renders the form on a validation failure" do
+    sign_in_as users(:nityesh)
+    published = posts(:published)
+    patch writing_post_url(published), params: { post: { title: "" } }
+    assert_response :unprocessable_entity
+    assert_select "ul.errors"
+  end
+
+  # --- Feature image: an upload is adopted into the feature_image URL column so every
+  #     existing renderer consumes it unchanged. ---
+  test "uploading a feature image adopts its blob path into the feature_image column" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+    patch writing_post_url(draft), params: { post: {
+      uploaded_feature_image: fixture_file_upload("feature.png", "image/png") } }
+    assert draft.reload.uploaded_feature_image.attached?
+    assert_match %r{/rails/active_storage/blobs/.+/feature\.png}, draft.feature_image
+  end
+
+  # --- Publishing resource: create = publish, destroy = unpublish/cancel. ---
+  test "publishing a draft flips its status" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+    post writing_post_publishing_url(draft)
+    assert draft.reload.published?
+    assert_redirected_to edit_writing_post_url(draft)
+  end
+
+  test "publishing with a future time schedules the post" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+    post writing_post_publishing_url(draft), params: { published_at: 2.days.from_now.iso8601 }
+    assert draft.reload.draft?
+    assert draft.scheduled?
+  end
+
+  test "unpublishing sends a post back to draft" do
+    sign_in_as users(:nityesh)
+    published = posts(:published)
+    delete writing_post_publishing_url(published)
+    assert published.reload.draft?
+  end
+
+  test "destroy removes the post" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+    assert_difference -> { Post.count }, -1 do
+      delete writing_post_url(draft)
+    end
+    assert_redirected_to writing_root_url
+  end
+
+  test "preview renders the public post template behind auth" do
+    sign_in_as users(:nityesh)
+    get writing_post_url(posts(:draft))
+    assert_response :success
+    assert_select "article.gh-article"
+  end
+end

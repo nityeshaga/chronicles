@@ -1,0 +1,31 @@
+<% content_for :title, "Subscribers" %>
+
+<div class="writing-dash">
+  <header class="dash-head">
+    <div class="dash-head__brand">
+      <span class="dash-eyebrow"><%= Setting.current.production_host %> · <%= pluralize @subscribers.size, "subscriber" %></span>
+      <h1>Subscribers</h1>
+    </div>
+    <div class="dash-head__actions">
+      <%= link_to writing_posts_path, class: "w-btn w-btn--ghost" do %>
+        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Writing
+      <% end %>
+    </div>
+  </header>
+
+  <% if @subscribers.empty? %>
+    <div class="dash-blank"><p>No subscribers yet. They appear here once someone signs up from the homepage.</p></div>
+  <% else %>
+    <ul class="dash-list">
+      <% @subscribers.each do |subscriber| %>
+        <li class="dash-row">
+          <span class="dash-row__title"><%= subscriber.email %></span>
+          <span class="dash-row__side">
+            <span class="dash-row__date"><%= subscriber.created_at.strftime("%b %-d, %Y") %></span>
+          </span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</div>

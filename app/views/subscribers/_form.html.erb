@@ -1,0 +1,13 @@
+<%# locals: (subscriber: nil) %>
+<%# Self-replacing region — the Turbo Stream swaps this whole div. %>
+<div id="subscribe_form">
+  <%= form_with url: subscribers_path, class: "sub-form" do |form| %>
+    <%= form.email_field :email, value: subscriber&.email, placeholder: "your@email.com",
+          "aria-label": "Email address", required: true %>
+    <button type="submit">Deliver to me</button>
+  <% end %>
+  <% if subscriber&.errors&.any? %>
+    <p class="sub-fine sub-error">That address didn't look right. Try again?</p>
+  <% end %>
+  <div class="sub-fine">Optimised for truth, not engagement · unsubscribe anytime</div>
+</div>

@@ -1,0 +1,7 @@
+reader:
+  email: reader@example.com
+  created_at: <%= 2.days.ago %>
+
+early:
+  email: early@example.com
+  created_at: <%= 5.days.ago %>

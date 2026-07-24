@@ -1,0 +1,16 @@
+<%#
+  RSS 2.0 feed, field-for-field with Ghost's /rss/ (reference/rss.xml). Rendered as
+  ERB — not Builder — so we control whitespace exactly: no padding leaks inside CDATA
+  titles/content, and the output stays minified like Ghost's. <%== is unescaped output
+  (bodies are already HTML and live inside CDATA).
+-%>
+<%- cdata = ->(text) { "<![CDATA[#{text.to_s.gsub("]]>", "]]]]><![CDATA[>")}]]>".html_safe } -%>
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0" xmlns:media="http://search.yahoo.com/mrss/"><channel><title><%== cdata.(Setting.current.site_title) %></title><description><%== cdata.(Setting.current.site_description) %></description><link><%= root_url %></link><image><url><%= site_url("favicon.png") %></url><title><%= Setting.current.site_title %></title><link><%= root_url %></link></image><generator><%= Setting.current.production_host %> (Rails)</generator><lastBuildDate><%= rss_time(@posts.first&.updated_at || Time.current) %></lastBuildDate><atom:link href="<%= site_url("rss/") %>" rel="self" type="application/rss+xml"/><ttl>60</ttl>
+<%# Ghost paginates the feed at 15 items; match it so readers see the same window. -%>
+<%- @posts.first(15).each do |post| -%>
+<%- # Ghost prepends the feature image (plain string, so the body HTML isn't escaped by SafeBuffer#+). -%>
+<%- feature = post.feature_image.present? ? %(<img src="#{site_url(post.feature_image)}" alt="#{ERB::Util.html_escape(post.title)}">) : "" -%>
+<item><title><%== cdata.(post.title) %></title><description><%== cdata.(post.summary) %></description><link><%= public_post_url(post) %></link><guid isPermaLink="<%= post.ghost_id.blank? %>"><%= post.ghost_id.presence || public_post_url(post) %></guid><%- post.tags.each do |tag| -%><category><%== cdata.(tag.name) %></category><%- end -%><dc:creator><%== cdata.(Setting.current.author_name) %></dc:creator><pubDate><%= rss_time(post.published_at) %></pubDate><%- if post.feature_image.present? -%><media:content url="<%= site_url(post.feature_image) %>" medium="image"/><%- end -%><content:encoded><%== cdata.(feature + post.body.body&.to_html.to_s) %></content:encoded></item>
+<%- end -%>
+</channel></rss>

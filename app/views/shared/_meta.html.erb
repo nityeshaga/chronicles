@@ -1,0 +1,109 @@
+<%#
+  Per-page SEO/OG/JSON-LD parity with Ghost. Four shapes, driven entirely by the
+  record the controller set: a post, a page (STI Page), a tag archive, or the site root.
+  Ground truth is reference/ — head sections compared field by field.
+%>
+<% post = @post if defined?(@post)
+   tag  = @tag if defined?(@tag)
+   setting = Setting.current
+
+   if post
+     title              = post.meta_title.presence || post.title
+     explicit_desc      = post.explicit_description        # may be nil -> omit <meta name=description>
+     social_desc        = post.summary                     # never blank
+     canonical          = site_url("#{post.slug}/")
+     image_url          = post.feature_image.present? ? site_url(post.feature_image) : nil
+     og_type            = post.og_type
+     og_title           = title
+   elsif tag
+     title              = "#{tag.name} - #{setting.site_title}"
+     explicit_desc      = tag.description.presence
+     social_desc        = tag.description.presence || setting.site_description
+     canonical          = site_url("tag/#{tag.slug}/")
+     image_url          = nil
+     og_type            = "website"
+     og_title           = title
+   else
+     title              = setting.home_meta_title
+     explicit_desc      = setting.site_description
+     social_desc        = setting.site_description
+     canonical          = site_url("")
+     image_url          = nil
+     og_type            = "website"
+     og_title           = setting.site_title
+   end
+   title = content_for(:meta_title) if content_for?(:meta_title)
+%>
+<title><%= title %></title>
+<% if explicit_desc.present? %><meta name="description" content="<%= explicit_desc %>">
+<% end %><link rel="canonical" href="<%= canonical %>">
+<meta name="referrer" content="no-referrer-when-downgrade">
+
+<meta property="og:site_name" content="<%= setting.site_title %>">
+<meta property="og:type" content="<%= og_type %>">
+<meta property="og:title" content="<%= og_title %>">
+<meta property="og:description" content="<%= social_desc %>">
+<meta property="og:url" content="<%= canonical %>">
+<% if image_url %><meta property="og:image" content="<%= image_url %>"><% end %>
+<% if post&.article_meta? %>
+  <meta property="article:published_time" content="<%= ghost_time(post.published_at) %>">
+  <meta property="article:modified_time" content="<%= ghost_time(post.updated_at) %>">
+  <% post.tags.each do |t| %><meta property="article:tag" content="<%= t.name %>">
+  <% end %>
+<% end %>
+
+<meta name="twitter:card" content="<%= image_url ? "summary_large_image" : "summary" %>">
+<meta name="twitter:title" content="<%= og_title %>">
+<meta name="twitter:description" content="<%= social_desc %>">
+<meta name="twitter:url" content="<%= canonical %>">
+<% if image_url %><meta name="twitter:image" content="<%= image_url %>"><% end %>
+<% if post %>
+  <meta name="twitter:label1" content="Written by">
+  <meta name="twitter:data1" content="<%= setting.author_name %>">
+  <% if (primary_tag = post.tags.first) %>
+    <meta name="twitter:label2" content="Filed under">
+    <meta name="twitter:data2" content="<%= primary_tag.name %>">
+  <% end %>
+<% end %>
+<meta name="twitter:site" content="<%= setting.twitter_handle %>">
+
+<script type="application/ld+json">
+<%= raw(
+  if post
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "publisher": schema_publisher,
+      "author": schema_author,
+      "headline": title,
+      "url": canonical,
+      "datePublished": ghost_time(post.published_at),
+      "dateModified": ghost_time(post.updated_at),
+      "image": (image_url ? { "@type": "ImageObject", "url": image_url } : nil),
+      "keywords": (post.tags.any? ? post.tags.map(&:name).join(", ") : nil),
+      "description": social_desc,
+      "mainEntityOfPage": { "@type": "WebPage", "@id": site_url("") }
+    }
+  elsif tag
+    {
+      "@context": "https://schema.org",
+      "@type": "Series",
+      "publisher": schema_publisher,
+      "url": canonical,
+      "name": tag.name,
+      "mainEntityOfPage": { "@type": "WebPage", "@id": site_url("") },
+      "description": social_desc
+    }
+  else
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "publisher": schema_publisher,
+      "url": canonical,
+      "mainEntityOfPage": { "@type": "WebPage", "@id": site_url("") },
+      "description": social_desc
+    }
+  end.compact.to_json
+) %>
+</script>
+<link rel="alternate" type="application/rss+xml" title="<%= setting.site_title %>" href="<%= site_url("rss/") %>">

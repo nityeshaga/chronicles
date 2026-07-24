@@ -1,0 +1,49 @@
+<% cache [ post, Setting.current ] do %>
+<main class="gh-main">
+  <article class="gh-article post <%= "no-image" unless post.feature_image.present? %>" id="<%= dom_id post %>">
+    <header class="gh-article-header gh-canvas">
+      <% primary_tag = post.tags.first %>
+      <% if primary_tag %>
+        <%= link_to primary_tag.name, public_tag_path(primary_tag.slug), class: "gh-article-tag" %>
+      <% end %>
+
+      <% if post.show_title? %>
+        <h1 class="gh-article-title is-title"><%= post.title %></h1>
+      <% end %>
+      <% if post.excerpt.present? %>
+        <p class="gh-article-excerpt is-body"><%= post.excerpt %></p>
+      <% end %>
+
+      <div class="gh-article-meta">
+        <div class="gh-article-author-image">
+          <%= image_tag Setting.current.author_image, class: "author-profile-image", alt: Setting.current.author_name %>
+        </div>
+        <div class="gh-article-meta-wrapper">
+          <h4 class="gh-article-author-name"><%= Setting.current.author_name %></h4>
+          <div class="gh-article-meta-content">
+            <% if post.published_at %>
+              <time class="gh-article-meta-date" datetime="<%= post.published_at.strftime("%Y-%m-%d") %>"><%= post.published_at.strftime("%-d %b %Y") %></time>
+            <% end %>
+            <span class="gh-article-meta-length"><span class="bull">&mdash;</span> <%= reading_time(post) %> min read</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <% if post.feature_image.present? %>
+      <figure class="gh-article-image gh-canvas">
+        <%= image_tag post.feature_image, alt: post.title %>
+        <% if post.feature_image_caption.present? %>
+          <figcaption><%= post.feature_image_caption %></figcaption>
+        <% end %>
+      </figure>
+    <% end %>
+
+    <% controllers = [ "cards" ]
+       controllers << "tweets" if post.body.to_s.include?("twitter-tweet") %>
+    <section class="gh-content-wrapper gh-canvas" data-controller="<%= controllers.join(" ") %>">
+      <%= post.body %>
+    </section>
+  </article>
+</main>
+<% end %>
