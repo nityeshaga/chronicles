@@ -147,7 +147,7 @@ jobs:
           bundler-cache: true
 
       - name: Start SSH agent with deploy key
-        uses: webfactory/ssh-agent@v0.9.1
+        uses: webfactory/ssh-agent@v0.10.0
         with:
           ssh-private-key: ${{ secrets.KAMAL_DEPLOY_SSH_KEY }}
 
