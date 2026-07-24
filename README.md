@@ -1,17 +1,54 @@
-# nityesh.com
+# chronicles
 
-Nityesh's personal blog — a vanilla Rails 8 app that replaced a Ghost blog. The migration was **parity-gated**: every URL Ghost served (posts, tags, sitemaps, RSS) renders the same here, so old links, SEO, and Search Console submissions kept working. That history explains most of this codebase's quirks; they're documented below so nobody "fixes" them by accident.
+The live source of [nityesh.com](https://nityesh.com) — a one-person publishing house, in one Rails app.
 
-**Stack:** Rails 8.1 · Hotwire (Turbo + Stimulus) · [Lexxy](https://github.com/basecamp/lexxy) rich-text editor on Action Text · importmap + propshaft (no build step, no Tailwind — deliberate) · SQLite + Solid Queue/Cache/Cable · Kamal to a DigitalOcean droplet.
+> This is the live source of nityesh.com. I break it constantly and chronicle the breakage. There is no stable version — fork it and it's yours. If it breaks, ask your agent to fix it for you.
 
-## Writing (the part Nityesh actually uses)
+That paragraph is the entire support policy. It is also most of the pitch.
 
-- Everything lives under **`/writing`** (sign-in required). Dashboard tabs: Drafts / Scheduled / Published / Pages.
-- The editor autosaves drafts every 2s, silently. The slug field commits on blur only. New tags are minted with their own explicit button — not by autosave.
-- **Publish** (top right) publishes now, or schedules if you pick a future time. Scheduling enqueues a Solid Queue job; unpublishing or re-publishing cancels the old schedule safely.
-- Pages (like About) and tag names/slugs/descriptions are edited under `/writing` too. **Changing a tag slug breaks its public URL** — the UI warns you.
-- The subtitle line under the title is the post's `excerpt`: it renders as the standfirst on the post, on the home feed, and in social cards.
-- One author, one login. Forgot the password? `bin/rails runner 'User.first.update!(password: "newpass")'` on the server (or locally, `bin/rails db:seed` prints a fresh one for a new DB).
+## What this is
+
+I ran my blog on Ghost for years. In 2026 I ported the whole publication to this app — the migration was parity-gated, meaning a script compared the two sites URL by URL until they matched. Same reader experience, same SEO, same publishing workflow: clean URLs, tags, RSS, sitemaps, social cards, scheduled publishing, a proper rich-text editor. My Search Console never noticed the switch. So when I say it has feature parity with the Ghost core, the evidence is that you're reading a site that runs on it, and Google still likes me.
+
+Why bother, when Ghost exists and is good? Because Ghost — like every publishing platform — is built to be **configured**. This is built to be **rewritten**. There is no settings maze, no theme marketplace, no plugin API. There is a vanilla Rails codebase small enough to hold in your head, and all of it is yours to change.
+
+That's the real product, and it works at two levels:
+
+1. **Your agent writes with you.** The app ships an MCP server at `/mcp` with 11 tools — your agent lists, drafts, edits (surgical body patches, not wholesale rewrites), tags, schedules, publishes, unpublishes, uploads images, embeds YouTube and X posts. claude.ai connects by pasting a URL; Claude Code connects with a token minted at `/writing/connect`.
+2. **Your agent rewrites the platform.** Want comments? A second author? A different homepage? A podcast feed? Those aren't missing features — they're conversations you haven't had with your agent yet. You own the complete source, in the simplest full-stack framework ever made for one person. On most platforms "infinite customizability" is something a marketing team wrote. Here it's just the license.
+
+A from-scratch agent build is a promise. This is proof: a real site you can visit, the complete source of that exact site, and the production landmines already mapped (see [Conventions and landmines](#conventions-and-landmines-read-before-changing-anything) — several of those bugs have been paid for so you don't have to pay them again).
+
+## What's in the box
+
+- **The writing room** at `/writing` (sign-in required): drafts, scheduled, published, pages. A rich-text editor ([Lexxy](https://github.com/basecamp/lexxy), from Basecamp) that autosaves every 2 seconds. Publish now, or pick a future time and a background job does it for you.
+- **The reader experience**: designed homepage, tag pages, RSS at `/rss`, a Ghost-shaped sitemap index, full SEO/OG/Twitter/JSON-LD head tags, and 301s that keep old links alive forever.
+- **A Ghost importer** (`lib/ghost/`): posts, drafts, pages, tags, images, embeds — mobiledoc in, Action Text out. One-time and additive; re-importing wants a fresh database.
+- **MCP + OAuth for agents**, as above. Dynamic client registration included, so an agent can onboard itself from a pasted URL.
+- **Site identity in one database row** (`Setting`): title, author, logo, domain, social handles. Rebrand the whole site without touching Ruby.
+- **Email capture**: a subscribe form that stores addresses (list at `/writing/subscribers`). Full honesty: it *collects* subscribers; it does not yet *send* them anything. RSS delivers today; your subscribers wait patiently in a table. Sending is a chapter I haven't written — your agent may write yours sooner.
+- **Kamal deploy** to one cheap VPS. Push to `main`, tests pass, site ships. SQLite for everything (database, jobs, cache, cable), no build step, no node_modules. Runs comfortably on a $6 droplet.
+
+What's deliberately *not* in the box: comments, analytics, payments, memberships, multi-author. Not because they're hard — because I haven't needed them yet. This isn't a feature matrix; it's a codebase. It ships with one author because I am one person.
+
+## Is this for you?
+
+**Fork this if:** you run a coding agent as a matter of course; your writing and side projects are scattered across platforms you rent; you want a site your agent can operate *and* reshape; or you're leaving Ghost and want your archive, URLs, and SEO to arrive intact.
+
+**Don't fork this if:**
+
+- You don't use a coding agent. This is a codebase, not a template. Ghost and WordPress are right there, and they're good.
+- You want a maintained product with support, versions, and a roadmap. The support policy is the second sentence of this README.
+- You won't run a server. It needs a real box with a disk (~$6/month). If you want free static hosting, Astro and Hugo are lovely.
+- You expect to `git pull` my improvements. There is nothing to pull. `main` is my live site and I will break it whenever I feel like it. Fork it, make it yours, never look back — that's the whole model.
+
+## Fork it
+
+1. Fork the repo.
+2. Hand it to your coding agent: *"Read the README. Make this mine."*
+3. Answer its questions — your name, your domain, whether you have a Ghost export — then point your DNS at your box.
+
+There is no installer. Your agent is the installer. Everything it needs is below.
 
 ## Running locally
 
@@ -34,13 +71,12 @@ bin/rubocop              # bare, no args — the config excludes views on purpos
 
 ## Deploying
 
-Pushing/merging to `main` auto-deploys: the `deploy` job in `.github/workflows/ci.yml` runs `bin/kamal deploy` after tests pass. Manual: `bin/kamal deploy` from a machine with the deploy key.
+Pushing/merging to `main` auto-deploys: the `deploy` job in `.github/workflows/ci.yml` runs `bin/kamal deploy` after tests pass. Manual: `bin/kamal deploy` from a machine with the deploy key. Your fork needs its own repo secrets — the full list of deploy env vars is in the comment block at the top of `config/deploy.yml`.
 
-The origin server IP is kept out of git (the site is Cloudflare-fronted). `config/deploy.yml` is ERB-evaluated and reads it from `KAMAL_SERVER_IP` — export it before a manual `bin/kamal deploy`; CI injects it from the `KAMAL_SERVER_IP` repo secret. See the comment block at the top of `config/deploy.yml` for the full list of deploy env vars.
-
-- Target: a single droplet behind Cloudflare; kamal-proxy owns 80/443 and routes by Host header.
-- Live URL: `https://nityesh.com` — the sslip.io fallback host (built from `KAMAL_SERVER_IP`) exists only for Let's Encrypt cert provisioning; cutting over = edit `proxy.hosts` in `config/deploy.yml` + point DNS.
-- Migrated Ghost images are served from a volume at `/content/images/...` — they are **not** in the repo or in Active Storage.
+- Target: a single VPS behind Cloudflare; kamal-proxy owns 80/443 and routes by Host header.
+- The origin server IP stays out of git: `config/deploy.yml` is ERB-evaluated and reads `KAMAL_SERVER_IP` from the environment (CI injects it from a repo secret).
+- An sslip.io fallback host (built from `KAMAL_SERVER_IP`) exists only for Let's Encrypt cert provisioning; going live = edit `proxy.hosts` in `config/deploy.yml` + point DNS.
+- One named volume persists the SQLite databases and uploads. Migrated Ghost images are served from a second volume at `/content/images/...` — they are **not** in the repo or in Active Storage.
 - Health check: `/up` (excluded from the force_ssl redirect; don't remove that exclusion).
 - `script/parity_check.rb` compares a set of reference URLs between two hosts — useful after risky changes: `PARITY_BASE=http://localhost:3000 ruby script/parity_check.rb`.
 
@@ -50,8 +86,10 @@ The origin server IP is kept out of git (the site is Cloudflare-fronted). `confi
 |---|---|
 | `app/models/post.rb` | The heart: slugs, publish/schedule/unpublish, `Page < Post` (STI) |
 | `app/models/page.rb` | Pages override only the seams (`og_type`, `body_class`, …) |
+| `app/models/setting.rb` | The one row that makes the site yours |
 | `lib/ghost/` | One-time Ghost import (mobiledoc → Action Text HTML). Keep: it documents the stored-content shape |
 | `app/controllers/writing/` | The authoring UI (posts, pages, tags, publishings, embeds) |
+| `app/tools/` + `config/initializers/mcp.rb` | The 11 MCP tools and the server doctrine |
 | `app/views/shared/_meta.html.erb` | All SEO/OG/Twitter head tags, shaped for Ghost parity |
 | `app/javascript/controllers/` | Stimulus: autosave, autogrow, slug, embed, editor, dashboard… |
 | `app/assets/stylesheets/application.css` | The whole design, hand-written. Public typography + editor canvas share selector lists |
@@ -61,9 +99,10 @@ The origin server IP is kept out of git (the site is Cloudflare-fronted). `confi
 **Doctrine.** Vanilla Rails, the 37signals way: server-rendered ERB, Hotwire, hand-written CSS, no JS framework, no build step, underdo. If a change needs a package.json, it's probably the wrong change.
 
 **Ghost parity is load-bearing.**
+
 - Public URLs end in a trailing slash (Ghost's shape). Never hand-type `trailing_slash: true` — use the `public_post_path`/`public_tag_path` helpers. Admin paths stay bare; `ApplicationController` redirects public requests to the slashed form.
-- Migrated post bodies in the production DB contain Ghost's `kg-*` card markup (`kg-image-card`, `kg-gallery-card`, …) — the importer wrote it there on purpose. The `kg-*` CSS rules must stay or old posts' images/galleries/embeds break. The `gh-*` class *names* are legacy and may be renamed someday, but the styles they carry ARE the site's design.
-- Sitemap URLs, RSS shape, and the `/author/nityesh` redirect all match what Ghost served. Don't tidy them.
+- Imported post bodies contain Ghost's `kg-*` card markup (`kg-image-card`, `kg-gallery-card`, …) — the importer wrote it there on purpose. The `kg-*` CSS rules must stay or imported posts' images/galleries/embeds break. The `gh-*` class *names* are legacy and may be renamed someday, but the styles they carry ARE the site's design.
+- Sitemap URLs, RSS shape, and the `/author/:slug` redirect all match what Ghost served. Don't tidy them.
 
 **STI.** `Page < Post`, discriminated by `type`. Use the `Post.articles` scope for posts-only queries — never hand-type `where(type: "Post")`. `posts#show` and `Writing::PostsController#set_post` are unfiltered **on purpose** (pages are served/edited through them; the comments at those sites say so).
 
@@ -81,4 +120,8 @@ The origin server IP is kept out of git (the site is Cloudflare-fronted). `confi
 
 ## For agents
 
-Everything above applies to you, plus: run `bin/rails test && bin/rubocop` before declaring anything done; keep diffs surgical; PRs need a review-pack body (what/why/verification) and are **never self-merged** — a human merges. The founder measures the writing experience against Ghost's editor and the codebase against 37signals' taste. When in doubt, underdo.
+Everything above applies to you, plus: run `bin/rails test && bin/rubocop` before declaring anything done; keep diffs surgical; PRs need a review-pack body (what/why/verification) and are **never self-merged** — a human merges. If you're setting this up for a new owner: interview them, fill the `Setting` row, run the Ghost import if they have an export, deploy with Kamal. Measure the writing experience against Ghost's editor and the codebase against 37signals' taste. When in doubt, underdo.
+
+## License
+
+MIT. The copyright line says my name, but the whole point is that the next commit says yours.
