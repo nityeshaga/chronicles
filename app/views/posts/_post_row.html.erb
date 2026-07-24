@@ -1,0 +1,18 @@
+<% cache post do %>
+<article class="post-list-item" id="<%= dom_id post %>" data-tags="<%= post.tags.map(&:slug).join(" ") %>">
+  <div class="post-content">
+    <h2 class="post-title"><%= link_to post.title, public_post_path(post) %></h2>
+    <% if post.excerpt.present? %>
+      <p class="post-excerpt"><%= post.excerpt %></p>
+    <% end %>
+    <% if post.published_at %>
+      <time class="post-date" datetime="<%= post.published_at.strftime("%Y-%m-%d") %>"><%= post.published_at.strftime("%-d %B, %Y") %></time>
+    <% end %>
+  </div>
+  <% if post.feature_image.present? %>
+    <div class="post-image">
+      <%= image_tag post.feature_image, alt: post.title, loading: "lazy" %>
+    </div>
+  <% end %>
+</article>
+<% end %>

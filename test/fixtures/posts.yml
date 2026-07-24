@@ -1,0 +1,32 @@
+published:
+  type: Post
+  title: A Published Post
+  slug: a-published-post
+  status: published
+  published_at: <%= 2.days.ago.to_fs(:db) %>
+  excerpt: A short excerpt.
+  meta_description: A custom meta description.
+  feature_image: /content/images/2022/09/dhh-race-1.jpeg
+  feature_image_caption: A caption.
+  ghost_id: 67a456995c20a829d2b31d61
+
+draft:
+  type: Post
+  title: A Draft Post
+  slug: a-draft-post
+  status: draft
+
+scheduled:
+  type: Post
+  title: A Scheduled Post
+  slug: a-scheduled-post
+  status: draft
+  published_at: <%= 3.days.from_now.to_fs(:db) %>
+  excerpt: Waiting for the clock.
+
+about:
+  type: Page
+  title: About
+  slug: about
+  status: published
+  published_at: <%= 1.year.ago.to_fs(:db) %>

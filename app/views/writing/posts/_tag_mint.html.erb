@@ -1,0 +1,9 @@
+<%# The "add a new tag" controls. They live inside the post form (in the settings panel) but
+    the HTML `form` attribute binds them to the sibling #new-tag-form, so submitting mints a
+    tag without touching the post's autosave payload. Wrapped in a stable id the create
+    turbo_stream can swap to clear the field once the tag lands. %>
+<div id="new-tag-mint" class="tag-mint">
+  <%= text_field_tag :tag_name, nil, form: "new-tag-form", id: "new_tag_name",
+        class: "tag-mint__input", placeholder: "Add a new tag…", "aria-label": "New tag name" %>
+  <%= button_tag "Add", type: "submit", form: "new-tag-form", class: "w-btn w-btn--ghost w-btn--sm" %>
+</div>

@@ -1,0 +1,4 @@
+nityesh:
+  name: Nityesh Agarwal
+  email_address: nityesh@example.com
+  password_digest: <%= User.new(password: "secret123").password_digest %>

@@ -1,0 +1,68 @@
+<% content_for :title, "Writing" %>
+<% total = @scheduled.size + @drafts.size + @published.size + @pages.size %>
+
+<div class="writing-dash" data-controller="dashboard">
+  <header class="dash-head">
+    <div class="dash-head__brand">
+      <span class="dash-eyebrow"><%= Setting.current.production_host %></span>
+      <h1>Writing</h1>
+    </div>
+    <div class="dash-head__actions">
+      <%= link_to "Tags", writing_tags_path, class: "w-btn w-btn--ghost" %>
+      <%= link_to "Subscribers", writing_subscribers_path, class: "w-btn w-btn--ghost" %>
+      <%= link_to "Connect", writing_connect_path, class: "w-btn w-btn--ghost" %>
+      <%= button_to "Sign out", session_path, method: :delete, class: "w-btn w-btn--ghost", form_class: "w-inline" %>
+      <%= link_to new_writing_post_path, class: "w-btn w-btn--primary" do %>
+        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        New post
+      <% end %>
+    </div>
+  </header>
+
+  <nav class="dash-tabs" aria-label="Filter posts">
+    <button type="button" class="dash-tab is-active" role="tab" aria-selected="true"
+            data-status="all" data-dashboard-target="tab" data-action="dashboard#filter">
+      All <span class="dash-tab__count"><%= total %></span>
+    </button>
+    <button type="button" class="dash-tab" role="tab" aria-selected="false"
+            data-status="draft" data-dashboard-target="tab" data-action="dashboard#filter">
+      Drafts <span class="dash-tab__count"><%= @drafts.size %></span>
+    </button>
+    <button type="button" class="dash-tab" role="tab" aria-selected="false"
+            data-status="scheduled" data-dashboard-target="tab" data-action="dashboard#filter">
+      Scheduled <span class="dash-tab__count"><%= @scheduled.size %></span>
+    </button>
+    <button type="button" class="dash-tab" role="tab" aria-selected="false"
+            data-status="published" data-dashboard-target="tab" data-action="dashboard#filter">
+      Published <span class="dash-tab__count"><%= @published.size %></span>
+    </button>
+    <button type="button" class="dash-tab" role="tab" aria-selected="false"
+            data-status="page" data-dashboard-target="tab" data-action="dashboard#filter">
+      Pages <span class="dash-tab__count"><%= @pages.size %></span>
+    </button>
+    <%= link_to "New page", new_writing_page_path, class: "dash-tabs__spacer" %>
+  </nav>
+
+  <% if total.zero? %>
+    <div class="dash-blank">
+      <p>Nothing written yet.</p>
+      <%= link_to "Start your first post", new_writing_post_path, class: "w-btn w-btn--primary" %>
+    </div>
+  <% else %>
+    <ul class="dash-list">
+      <% @scheduled.each do |post| %>
+        <%= render "row", record: post, bucket: "scheduled", edit_path: edit_writing_post_path(post) %>
+      <% end %>
+      <% @drafts.each do |post| %>
+        <%= render "row", record: post, bucket: "draft", edit_path: edit_writing_post_path(post) %>
+      <% end %>
+      <% @published.each do |post| %>
+        <%= render "row", record: post, bucket: "published", edit_path: edit_writing_post_path(post) %>
+      <% end %>
+      <% @pages.each do |page| %>
+        <%= render "row", record: page, bucket: "page", edit_path: edit_writing_page_path(page) %>
+      <% end %>
+    </ul>
+    <p class="dash-empty" data-dashboard-target="empty" hidden>Nothing in this view.</p>
+  <% end %>
+</div>

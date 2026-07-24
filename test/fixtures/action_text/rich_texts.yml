@@ -1,0 +1,4 @@
+published_body:
+  record: published (Post)
+  name: body
+  body: <p>The body of a <i>published</i> post.</p>

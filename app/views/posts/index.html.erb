@@ -1,0 +1,174 @@
+<% content_for :body_class, "home-template" %>
+
+<%# ============ INTRO (frontispiece) ============ %>
+<section class="hero">
+  <div class="watermark">❦</div>
+  <div class="wrap hero-grid">
+    <figure class="portrait rise" style="--d:1">
+      <%= image_tag "/content/images/2024/12/nityesh-headshot-1.jpeg", alt: Setting.current.author_name, class: "photo" %>
+      <figcaption>The proprietor, at his desk.</figcaption>
+    </figure>
+    <div class="hero-copy rise" style="--d:2">
+      <p class="lead">Hi, I'm Nityesh. I build software with a lot of help from AI. This website is my experiment in the next shape of personal publishing: a publishing house with one employee and no deadlines.</p>
+      <p>Once, a person with something to say could only print <b>essays</b>. I still write those. But the presses got stranger: now I also draw <b>comics</b> about ideas that deserve pictures, and — this is the new part — I publish <b>full working software</b>. Real tools, free to use, maintained the way a book stays in print — all of it built by me and my AI agent, Luo, on a spare MacBook Air.</p>
+      <p>Everything here is <span class="truth">optimised for truth, not engagement</span>.</p>
+      <a class="thesis-btn" href="/about/">Read the full thesis</a>
+    </div>
+  </div>
+</section>
+
+<%# ============ POSTCARDS ============ %>
+<section id="apps">
+  <div class="wrap">
+    <div class="sec-label rise">The apps</div>
+    <h2 class="rise">Three places I built.</h2>
+    <p class="sec-lede rise">Each one is a real, working product — live right now, free to use. Click a card to visit.</p>
+
+    <div class="postcards">
+
+      <%# SPOOL %>
+      <a class="postcard rise" href="https://myspool.xyz">
+        <div class="pc-front front-spool">
+          <div class="film"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="tag">Screen recorder · Standby</div>
+          <h3>You're looking at the <span class="red">record button.</span></h3>
+          <div class="row">
+            <span class="rec-button"><i></i></span>
+            <div class="spool-stats">
+              <div><b>0</b> servers touch your video</div>
+              <div><b>0s</b> wait after you stop</div>
+              <div><b>1</b> click to start</div>
+            </div>
+          </div>
+          <span class="stamp"><span class="stamp-inner" style="background:#f8ede4"><span style="width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e8674a,#c33a20)"></span><span class="mono" style="color:#96491f">Spool · 0¢</span></span></span>
+          <span class="postmark">myspool<br>.xyz ·<br>shipped</span>
+        </div>
+        <div class="pc-back">
+          <div class="pc-msg">A town with no dashboards. The share link is in your clipboard before you finish talking. &nbsp;— N</div>
+          <div class="pc-addr">
+            <div class="to">To:</div>
+            <div class="addr-line">You,</div>
+            <div class="addr-line">mid-"quick video?" request</div>
+            <span class="visit">Visit spool →</span>
+          </div>
+        </div>
+      </a>
+
+      <%# TEACH ME SOMETHING %>
+      <a class="postcard rise" href="https://teachmesomething.xyz">
+        <div class="pc-front front-tms">
+          <div class="board">
+            <h3>Everyone has a subject that makes them feel stupid.</h3>
+            <div class="sub">Turn Claude or ChatGPT into your personal tutor.</div>
+            <div class="tray"></div><div class="chalk"></div><div class="chalk pink"></div>
+          </div>
+          <span class="stamp"><span class="stamp-inner" style="background:#2c453a"><span style="width:24px;height:16px;background:#22362d;border:2px solid #8a5a33"></span><span class="mono" style="color:#d7d3bd">TMS · 0¢</span></span></span>
+          <span class="postmark" style="border-color:rgba(240,235,215,.5);color:rgba(240,235,215,.6)">teachme<br>something<br>.xyz</span>
+        </div>
+        <div class="pc-back">
+          <div class="pc-msg">The chalkboard here writes back. Bring the subject that's been beating you since school. &nbsp;— N</div>
+          <div class="pc-addr">
+            <div class="to">To:</div>
+            <div class="addr-line">You,</div>
+            <div class="addr-line">& that one topic</div>
+            <span class="visit">Visit TMS →</span>
+          </div>
+        </div>
+      </a>
+
+      <%# CURATED CONNECTIONS %>
+      <a class="postcard rise" href="https://curatedconnections.io">
+        <div class="pc-front front-cc">
+          <div class="pill">Loved by top community creators ★★★★★</div>
+          <h3>Self-driving community software for <span class="tc">busy creators</span></h3>
+          <span class="cta">Start now for free</span>
+          <div class="chips">
+            <span>Automated matchmaking</span>
+            <span>Accountability challenges</span>
+            <span>One flat price</span>
+          </div>
+          <span class="stamp"><span class="stamp-inner" style="background:#faf3e3"><span style="width:22px;height:22px;border-radius:6px;background:linear-gradient(160deg,#c96636,#b04f22)"></span><span class="mono" style="color:#96491f">CC · 0¢</span></span></span>
+          <span class="postmark">curated<br>connections<br>.io</span>
+        </div>
+        <div class="pc-back">
+          <div class="pc-msg">The family business, run with my brother Piyush. It matches your members while you sleep. &nbsp;— N</div>
+          <div class="pc-addr">
+            <div class="to">To:</div>
+            <div class="addr-line">You,</div>
+            <div class="addr-line">busy creator</div>
+            <span class="visit">Visit CC →</span>
+          </div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<%# ============ LIBRARY ============ %>
+<section id="library">
+  <div class="wrap">
+    <div class="sec-label rise">The library</div>
+    <h2 class="rise">Every era of my life, bound and shelved.</h2>
+    <p class="sec-lede rise">The essays aren't going anywhere — they're shelved by who I was when I wrote them, left to right. The last book is still being written. Pull one down.</p>
+
+    <div class="shelf-scene rise">
+      <div class="shelf-books">
+        <% @eras.each do |era| %>
+          <% style = era_style(era) %>
+          <a class="book <%= style[:book] %>" href="<%= public_tag_path(era) %>">
+            <% if style[:ribbon] %><span class="ribbon"></span><% end %>
+            <span class="bands"></span>
+            <span class="spine-title"><%= era.name %></span>
+            <span class="count"><%= era.published_article_count %></span>
+          </a>
+        <% end %>
+        <div class="plant"><span class="leaf"></span><span class="leaf"></span><span class="leaf"></span><span class="pot"></span></div>
+      </div>
+      <div class="shelf-board"></div>
+    </div>
+  </div>
+</section>
+
+<%# ============ OPEN SOURCE ============ %>
+<section id="source">
+  <div class="wrap">
+    <div class="sec-label rise">Source included</div>
+    <h2 class="rise">The workshop is open.</h2>
+    <p class="sec-lede rise">A publishing house with a print room you can walk into. The machinery behind all of this is on GitHub.</p>
+    <div class="repos">
+      <a class="repo rise" href="https://github.com/nityeshaga/claude-home-base">
+        <div class="path"><span class="dim">nityeshaga /</span> claude-home-base</div>
+        <p>An always-on AI cofounder that runs on your own Mac — the bot, setup, and plugins behind the third member of our team. Fork it, configure it, let it come alive.</p>
+        <div class="meta">Python · Claude Code · fork it yourself</div>
+      </a>
+      <a class="repo rise" href="https://github.com/everyinc/hands-on-deck">
+        <div class="path"><span class="dim">everyinc /</span> hands-on-deck</div>
+        <p>Agent-native PowerPoint: one CLI that lets an AI inspect, edit, build, and check .pptx files through atomic JSON patches. Packaged as an Agent Skill.</p>
+        <div class="meta">Python · Agent Skill · from my day job at Every</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<%# ============ SUBSCRIBE ============ %>
+<section id="subscribe">
+  <div class="wrap">
+    <div class="letter rise">
+      <span class="stamp"><span class="stamp-inner" style="background:#fbf2df"><span style="font-family:var(--serif);font-style:italic;font-size:20px;color:#b05c34">N</span><span class="mono" style="color:#96491f">First class</span></span></span>
+      <h2>Get the next shipment.</h2>
+      <p>Not a newsletter. When I finish something, I send it to you: <b>a polished app you can use that day</b>, a fun comic, and the articles on how it all got made.</p>
+      <p style="margin-top:14px"><b>No cadence. I ship when I ship.</b> Lately, I ship often.</p>
+      <% if flash[:notice].present? %>
+        <%# HTML fallback for a JS-less signup — Turbo handles the happy path in-place. %>
+        <div id="subscribe_form">
+          <p class="sub-confirm"><%= flash[:notice] %></p>
+          <div class="sub-fine">One shipment at a time · unsubscribe anytime</div>
+        </div>
+      <% else %>
+        <% if flash[:alert].present? %><p class="sub-fine sub-error"><%= flash[:alert] %></p><% end %>
+        <%= render "subscribers/form" %>
+      <% end %>
+    </div>
+  </div>
+</section>

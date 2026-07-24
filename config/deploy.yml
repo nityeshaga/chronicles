@@ -1,0 +1,106 @@
+# nityesh.com — Kamal 2 deploy config.
+#
+# The app runs on a single droplet behind Cloudflare; kamal-proxy owns host ports
+# 80/443, routes by Host header, and terminates TLS with a Let's Encrypt cert for
+# the hosts below (proxy.ssl: true). Because the proxy handles HTTPS, production.rb
+# runs with assume_ssl + force_ssl on (HSTS, Secure cookies) and excludes /up from
+# the redirect.
+#
+# ── Environment variables (this file is ERB-evaluated by Kamal before YAML parse) ──
+# Kamal reads process ENV only — it does NOT auto-load .kamal/secrets or .env for
+# these. Set them in the deploying shell (local) or the CI step's env: block.
+#
+#   KAMAL_SERVER_IP        (REQUIRED, no default) Origin droplet IP. Kept out of git
+#                          because Cloudflare fronts the origin — publishing it would
+#                          defeat that. Also builds the sslip.io fallback host and the
+#                          remote-build SSH target below. Unset ⇒ `kamal` fails closed
+#                          with `KeyError: key not found: "KAMAL_SERVER_IP"`.
+#   KAMAL_REGISTRY_SERVER  (default: registry.digitalocean.com) Container registry host.
+#   KAMAL_IMAGE            (default: sideprojects/nityesh-com) Registry image path;
+#                          resolves to <KAMAL_REGISTRY_SERVER>/<KAMAL_IMAGE>.
+#
+# Local:  export KAMAL_SERVER_IP=<ip> before `bin/kamal deploy`.
+# CI:     wired from ${{ secrets.KAMAL_SERVER_IP }} in .github/workflows/ci.yml.
+
+# Name of your application. Used to uniquely configure containers.
+service: nityesh-com
+
+# Container image. With registry.server below this resolves to
+# <KAMAL_REGISTRY_SERVER>/<KAMAL_IMAGE>.
+image: <%= ENV.fetch("KAMAL_IMAGE", "sideprojects/nityesh-com") %>
+
+# Deploy to the droplet, where kamal-proxy fronts every app on the box.
+servers:
+  web:
+    - <%= ENV.fetch("KAMAL_SERVER_IP") %>
+
+# kamal-proxy owns host 80/443 and routes
+# by Host header.
+#   - app_port 80 = Thruster inside the container (Dockerfile EXPOSE 80).
+#   - ssl: true + hosts = kamal-proxy provisions a Let's Encrypt cert for those
+#     hostnames and terminates TLS, redirecting HTTP → HTTPS itself.
+proxy:
+  ssl: true
+  hosts:
+    - nityesh.com
+    - www.nityesh.com
+    - nityesh-com.<%= ENV.fetch("KAMAL_SERVER_IP") %>.sslip.io
+  app_port: 80
+  healthcheck:
+    path: /up
+    interval: 3
+    timeout: 3
+
+# DigitalOcean Container Registry. Auth: a DO API token (or registry-scoped token)
+# is used as BOTH the docker username and password. `doctl registry login` handles
+# your local docker; Kamal also logs in on the droplet using the values below.
+registry:
+  server: <%= ENV.fetch("KAMAL_REGISTRY_SERVER", "registry.digitalocean.com") %>
+  username:
+    - KAMAL_REGISTRY_PASSWORD
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+# Inject ENV variables into containers (secrets come from .kamal/secrets).
+env:
+  secret:
+    - RAILS_MASTER_KEY
+  clear:
+    # Single tiny box: run the Solid Queue supervisor inside Puma (no separate job host).
+    SOLID_QUEUE_IN_PUMA: true
+    # 1GB droplet shared with Ghost+MySQL — keep the app to one web process.
+    WEB_CONCURRENCY: 1
+
+# Handy aliases: "bin/kamal <alias>".
+aliases:
+  console: app exec --interactive --reuse "bin/rails console"
+  shell: app exec --interactive --reuse "bash"
+  logs: app logs -f
+  dbc: app exec --interactive --reuse "bin/rails dbconsole --include-password"
+
+# Persistent storage. ALL production SQLite databases (primary, cache, queue, cable)
+# AND local Active Storage blobs live under /rails/storage (see config/database.yml
+# and config/storage.yml), so this ONE named volume persists everything stateful.
+#
+# NOTE: do NOT mount a volume over /rails/db — that directory holds migrations/schema
+# baked into the image; a volume there would hide them and break `db:prepare` on boot.
+volumes:
+  - "nityesh_com_storage:/rails/storage"
+  # Legacy Ghost image tree (102MB, git-ignored): lives in a volume, not the image.
+  # Populated once by rsync from the project data/ dir; survives every redeploy.
+  - "nityesh_com_content:/rails/public/content"
+
+# Bridge fingerprinted assets between versions to avoid 404s on in-flight requests.
+asset_path: /rails/public/assets
+
+# Image builder. The droplet is amd64; this Mac is arm64. Building locally emulates
+# amd64 via QEMU (slow but works). If the box thrashes or builds are painfully slow,
+# uncomment `remote:` to build on a beefier amd64 host, or resize the droplet briefly.
+builder:
+  arch: amd64
+  remote: ssh://root@<%= ENV.fetch("KAMAL_SERVER_IP") %>
+  local: false
+
+# The droplet's default login is root.
+ssh:
+  user: root

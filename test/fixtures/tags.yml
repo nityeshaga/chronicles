@@ -1,0 +1,29 @@
+# Era tags carry a year-prefixed description ("YYYY–YYYY. …") — that's what the homepage
+# library shelf keys on (see Tag.eras). Plain topical tags have no such prefix.
+# Names/slugs here are load-bearing for other suites (RSS categories, SEO article:tag,
+# the create-post tool), so only the description makes a tag an era.
+
+# Era with a published article (published -> chronicles via taggings.yml) → renders a book.
+chronicles:
+  name: chronicles
+  slug: chronicles
+  description: "2021–2023. Building communities and the honest lessons behind them."
+
+# Era with no published articles → a real era (Tag.eras finds it) but no book on the shelf.
+past_life:
+  name: past life
+  slug: past-life
+  description: "2017–2019. Articles from when I was chasing a Deep Learning career."
+
+# Plain, non-era topical tags (no year prefix) — never appear on the shelf.
+ai:
+  name: ai
+  slug: ai
+
+leaked:
+  name: leaked
+  slug: leaked
+
+live:
+  name: live
+  slug: live

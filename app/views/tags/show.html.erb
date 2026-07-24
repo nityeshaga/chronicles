@@ -1,0 +1,22 @@
+<% content_for :body_class, "tag-template tag-#{@tag.slug}" %>
+
+<main class="gh-main gh-outer">
+  <section class="tag-archive gh-inner">
+    <header class="tag-archive__head">
+      <% if @tag.era? %>
+        <div class="tag-archive__eyebrow">The library · <%= @tag.era_years %></div>
+      <% else %>
+        <div class="tag-archive__eyebrow">Filed under</div>
+      <% end %>
+      <h1 class="tag-archive__title"><%= @tag.name %></h1>
+      <% blurb = @tag.era? ? @tag.era_blurb : @tag.description %>
+      <% if blurb.present? %>
+        <p class="tag-archive__lede"><%= blurb %></p>
+      <% end %>
+    </header>
+
+    <div class="gh-feed">
+      <%= render partial: "posts/post_row", collection: @posts, as: :post, cached: true %>
+    </div>
+  </section>
+</main>

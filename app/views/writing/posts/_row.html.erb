@@ -1,0 +1,26 @@
+<%# One row of the writing dashboard. `bucket` drives the filter tabs — posts fall into
+    draft/scheduled/published, pages sit in their own bucket — while the status pill and
+    date read the record's real state, so a published page still reads as published. %>
+<li class="dash-row" data-status="<%= bucket %>" data-dashboard-target="row">
+  <%= link_to edit_path, class: "dash-row__link" do %>
+    <span class="dash-row__title"><%= record.title.presence || "Untitled" %></span>
+    <% if record.tags.any? %>
+      <span class="dash-row__tags">
+        <% record.tags.each do |tag| %><span class="chip"><%= tag.name %></span><% end %>
+      </span>
+    <% end %>
+  <% end %>
+
+  <span class="dash-row__side">
+    <% if record.scheduled? %>
+      <span class="status status--scheduled">Scheduled</span>
+      <time class="dash-row__date"><%= record.published_at.strftime("%-d %b %Y") %></time>
+    <% elsif record.published? %>
+      <span class="status status--published">Published</span>
+      <time class="dash-row__date"><%= record.published_at&.strftime("%-d %b %Y") %></time>
+    <% else %>
+      <span class="status status--draft">Draft</span>
+      <time class="dash-row__date">Edited <%= record.updated_at.strftime("%-d %b") %></time>
+    <% end %>
+  </span>
+</li>

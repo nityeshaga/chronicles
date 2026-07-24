@@ -1,0 +1,175 @@
+<%# The whole authoring surface: a distraction-free canvas (headline title + Lexxy body)
+    with everything else — slug, tags, feature image, SEO — tucked into a "Post settings"
+    slide-over, and publishing into its own popover. One partial paints new + edit, posts +
+    pages. On a saved record the form wears the autosave controller (silent debounced fetch;
+    slug + feature-image file commit only on blur); minting a tag is a deliberate act in its
+    own <form>, a sibling below, so it never rides autosave. The editor controller owns the
+    two overlays and their shared backdrop. %>
+<%# Lexxy's editor CSS only belongs where the editor lives, so pull it in per-page rather
+    than site-wide (public pages render stored bodies with gh-content). %>
+<% content_for :head do %><%= stylesheet_link_tag "lexxy" %><% end %>
+<% saving = post.persisted?
+   taggable = !post.is_a?(Page)
+   preview_label = post.is_a?(Page) ? "View page" : "View post" %>
+
+<div class="editor-shell" data-controller="editor" data-editor-open-class="is-open"
+     data-action="keydown@window->editor#closeOnEscape">
+  <div class="editor-shell__scrim" data-editor-target="backdrop" data-action="click->editor#close"></div>
+
+  <%# Autosave rides the form in both states. On a saved record it PATCHes silently; on a
+      new record it POSTs once to mint the draft the moment there's real content, then
+      swaps to the persisted PATCH URL in place — so an author never loses an untitled tab. %>
+  <%= form_with model: [ :writing, post ], class: "editor-shell__form", data: {
+        controller: "slug autosave", autosave_persisted_value: saving,
+        action: "input->autosave#change lexxy:change->autosave#change turbo:submit-end->autosave#committed" } do |form| %>
+    <header class="editor-bar">
+      <div class="editor-bar__side">
+        <%= link_to writing_posts_path, class: "editor-bar__back", title: "Back to all writing" do %>
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Writing</span>
+        <% end %>
+        <span class="autosave-status" data-autosave-target="status" aria-live="polite"></span>
+      </div>
+
+      <div class="editor-bar__side editor-bar__side--end">
+        <button type="button" class="w-btn w-btn--ghost" data-action="editor#toggleSettings" aria-haspopup="dialog">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><circle cx="8" cy="8" r="2.4" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 1.4v1.7M8 12.9v1.7M2.4 8H.7M15.3 8h-1.7M3.9 3.9l1.2 1.2M10.9 10.9l1.2 1.2M12.1 3.9l-1.2 1.2M5.1 10.9l-1.2 1.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Settings
+        </button>
+        <% if saving %>
+          <%= link_to preview_label, [ :writing, post ], class: "w-btn w-btn--ghost" %>
+          <button type="button" class="w-btn w-btn--primary editor-bar__publish" data-action="editor#togglePublish" aria-haspopup="dialog">
+            <% if post.published? %>Published<% elsif post.scheduled? %>Scheduled<% else %>Publish<% end %>
+            <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        <% else %>
+          <%= form.submit "Save draft", class: "w-btn w-btn--primary" %>
+        <% end %>
+      </div>
+    </header>
+
+    <% if post.errors.any? %>
+      <ul class="errors">
+        <% post.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    <% end %>
+
+    <div class="editor-canvas" data-controller="embed" data-embed-url-value="<%= writing_embeds_path %>">
+      <%= form.label :title, class: "sr-only" %>
+      <%= form.text_area :title, rows: 1, class: "editor-canvas__title", placeholder: "Title",
+            autofocus: !saving, data: { controller: "autogrow", slug_target: "source",
+            action: "input->slug#suggest input->autogrow#grow" } %>
+
+      <%# The excerpt is the standfirst: edited inline as a subtitle here (Ghost-style), the
+          same attribute the public <h1> subtitle and social cards read. %>
+      <%= form.label :excerpt, class: "sr-only" %>
+      <%= form.text_area :excerpt, rows: 1, class: "editor-canvas__subtitle", placeholder: "Add a subtitle…",
+            data: { controller: "autogrow", action: "input->autogrow#grow" } %>
+
+      <div class="editor-canvas__body">
+        <%= form.rich_text_area :body %>
+      </div>
+
+      <div class="embed-bar">
+        <%= url_field_tag :embed_url, nil, placeholder: "Paste a tweet or YouTube URL to embed…",
+              data: { embed_target: "url" } %>
+        <button type="button" class="w-btn w-btn--ghost w-btn--sm" data-action="embed#insert">Embed</button>
+      </div>
+    </div>
+
+    <aside class="settings-panel" data-editor-target="settings" role="dialog" aria-label="Post settings">
+      <header class="settings-panel__head">
+        <h2>Post settings</h2>
+        <button type="button" class="panel-close" data-action="editor#close" aria-label="Close settings">
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </header>
+
+      <div class="settings-panel__body">
+        <div class="field">
+          <%= form.label :slug, "URL slug" %>
+          <%= form.text_field :slug, data: { slug_target: "slug", autosave_target: "slug",
+                action: "input->slug#edited change->autosave#commit" } %>
+        </div>
+
+        <% if taggable %>
+          <div class="field">
+            <span class="field__label">Tags</span>
+            <%= render "writing/posts/tags", post: post %>
+            <% if saving %>
+              <%= render "writing/posts/tag_mint", post: post %>
+            <% end %>
+          </div>
+        <% end %>
+
+        <hr class="settings-panel__rule">
+
+        <div class="field">
+          <%= form.label :feature_image, "Feature image URL" %>
+          <%= form.text_field :feature_image, placeholder: "https://…" %>
+        </div>
+        <div class="field feature-image-upload">
+          <%= form.label :uploaded_feature_image, "…or upload a file" %>
+          <%= form.file_field :uploaded_feature_image, accept: "image/*",
+                data: { autosave_target: "file", action: "change->autosave#commit" } %>
+          <% if post.feature_image_url.present? %>
+            <%= image_tag post.feature_image_url, class: "feature-image-preview", alt: "Current feature image" %>
+          <% end %>
+        </div>
+        <div class="field">
+          <%= form.label :feature_image_caption, "Image caption" %>
+          <%= form.text_field :feature_image_caption %>
+        </div>
+
+        <hr class="settings-panel__rule">
+
+        <div class="field">
+          <span class="field__label">Excerpt / subtitle</span>
+          <small class="field__hint">Appears as the subtitle under your title, and on the home feed and social cards. Edit it right below the title.</small>
+        </div>
+        <div class="field">
+          <%= form.label :meta_title, "Meta title" %>
+          <%= form.text_field :meta_title %>
+        </div>
+        <div class="field">
+          <%= form.label :meta_description, "Meta description" %>
+          <%= form.text_area :meta_description, rows: 2 %>
+        </div>
+
+        <% if saving %>
+          <%# Delete lives at the foot of settings (Ghost's convention), off the ship flow. %>
+          <hr class="settings-panel__rule">
+          <div class="settings-panel__danger">
+            <%= button_to "Delete #{post.model_name.human.downcase}", [ :writing, post ], method: :delete,
+                  class: "w-btn w-btn--danger w-btn--sm", form_class: "w-inline",
+                  data: { turbo_confirm: "Delete this #{post.model_name.human.downcase} for good?" } %>
+          </div>
+        <% end %>
+      </div>
+    </aside>
+  <% end %>
+
+  <% if saving %>
+    <div class="publish-popover" data-editor-target="publish" role="dialog" aria-label="Publishing">
+      <header class="publish-popover__head">
+        <h2>Publishing</h2>
+        <button type="button" class="panel-close" data-action="editor#close" aria-label="Close">
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </header>
+      <%= render "writing/posts/publishing", post: post %>
+    </div>
+  <% end %>
+
+  <% if taggable && saving %>
+    <%# The tag-mint <form>: a deliberate sibling of the autosaving form (minting is an act,
+        not a byproduct). Its visible controls live in the settings panel, bound here by the
+        HTML `form` attribute so they never join the post's payload. POSTs to
+        Writing::TagsController#create, which streams the refreshed checkbox list back. %>
+    <%= form_with url: writing_tags_path, id: "new-tag-form" do %>
+      <%= hidden_field_tag :post_id, post.slug %>
+    <% end %>
+  <% end %>
+</div>

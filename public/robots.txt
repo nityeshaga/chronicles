@@ -1,0 +1,4 @@
+User-agent: *
+Sitemap: https://nityesh.com/sitemap.xml
+Disallow: /writing/
+Disallow: /session

@@ -1,0 +1,68 @@
+{
+  "db": [
+    {
+      "data": {
+        "tags": [
+          { "id": "tag1", "name": "Chronicles", "slug": "chronicles" },
+          { "id": "tag2", "name": "AI & I", "slug": "ai" }
+        ],
+        "posts": [
+          {
+            "id": "p1",
+            "type": "post",
+            "status": "published",
+            "title": "A Published Post",
+            "slug": "a-published-post",
+            "custom_excerpt": "The excerpt.",
+            "feature_image": "__GHOST_URL__/content/images/size/w600/2024/01/hero.png",
+            "mobiledoc": "{\"version\":\"0.3.1\",\"cards\":[]}",
+            "html": "<p>See <a href=\"https://nityesh.com/about/\">about</a>.</p><figure class=\"kg-card kg-image-card\"><img src=\"__GHOST_URL__/content/images/size/w1000/2024/01/pic.png\"></figure>",
+            "created_at": "2024-01-02T03:04:05.000Z",
+            "updated_at": "2024-01-03T03:04:05.000Z",
+            "published_at": "2024-01-02T09:00:00.000Z"
+          },
+          {
+            "id": "p2",
+            "type": "post",
+            "status": "draft",
+            "title": "A Draft Post",
+            "slug": "a-draft-post",
+            "custom_excerpt": null,
+            "feature_image": null,
+            "mobiledoc": "{\"version\":\"0.3.1\",\"atoms\":[],\"cards\":[[\"image\",{\"src\":\"__GHOST_URL__/content/images/2024/02/draft.png\",\"width\":800,\"height\":600}],[\"hr\",{}],[\"code\",{\"code\":\"puts 1\",\"language\":\"ruby\"}]],\"markups\":[[\"strong\"]],\"sections\":[[1,\"p\",[[0,[0],1,\"Bold\"],[0,[],0,\" text\"]]],[10,0],[10,1],[10,2]]}",
+            "html": "",
+            "created_at": "2024-02-02T03:04:05.000Z",
+            "updated_at": "2024-02-03T03:04:05.000Z",
+            "published_at": null
+          },
+          {
+            "id": "pg1",
+            "type": "page",
+            "status": "published",
+            "title": "About",
+            "slug": "about",
+            "custom_excerpt": null,
+            "feature_image": null,
+            "mobiledoc": "{\"version\":\"0.3.1\",\"cards\":[]}",
+            "html": "<p>About page.</p>",
+            "created_at": "2023-05-05T00:00:00.000Z",
+            "updated_at": "2023-05-06T00:00:00.000Z",
+            "published_at": "2023-05-05T00:00:00.000Z"
+          }
+        ],
+        "posts_meta": [
+          {
+            "post_id": "p1",
+            "meta_title": "SEO Title",
+            "meta_description": "SEO description.",
+            "feature_image_caption": "The hero caption"
+          }
+        ],
+        "posts_tags": [
+          { "post_id": "p1", "tag_id": "tag1", "sort_order": 0 },
+          { "post_id": "p1", "tag_id": "tag2", "sort_order": 1 }
+        ]
+      }
+    }
+  ]
+}

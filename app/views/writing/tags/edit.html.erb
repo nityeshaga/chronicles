@@ -1,0 +1,42 @@
+<% content_for :title, "Editing tag: #{@tag.name}" %>
+
+<div class="form-page">
+  <header class="form-page__head">
+    <%= link_to writing_tags_path, class: "editor-bar__back" do %>
+      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Tags</span>
+    <% end %>
+    <h1>Edit tag</h1>
+    <%= link_to "View archive", tag_path(@tag), class: "w-btn w-btn--ghost w-btn--sm" %>
+  </header>
+
+  <%= form_with model: [ :writing, @tag ], class: "stacked-form",
+        data: { controller: "slug-guard", action: "submit->slug-guard#guard" } do |form| %>
+    <% if @tag.errors.any? %>
+      <ul class="errors">
+        <% @tag.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    <% end %>
+
+    <div class="field">
+      <%= form.label :name %>
+      <%= form.text_field :name %>
+    </div>
+
+    <div class="field">
+      <%= form.label :slug %>
+      <%= form.text_field :slug, data: { slug_guard_target: "slug" } %>
+      <small class="field__hint">The tag's public URL: <code>/tag/<%= @tag.slug %>/</code>. Changing it breaks inbound links.</small>
+    </div>
+
+    <div class="field">
+      <%= form.label :description %>
+      <%= form.text_area :description, rows: 3 %>
+      <small class="field__hint">Shown on the tag's archive page and in its social/meta description.</small>
+    </div>
+
+    <%= form.submit "Save tag", class: "w-btn w-btn--primary" %>
+  <% end %>
+</div>

@@ -1,0 +1,8 @@
+<%# Swap the checkbox list for one that includes (and checks) the freshly minted tag, and
+    reset the mint form's input so it's ready for the next one. %>
+<%= turbo_stream.replace "post_tags" do %>
+  <%= render "writing/posts/tags", post: @post %>
+<% end %>
+<%= turbo_stream.replace "new-tag-mint" do %>
+  <%= render "writing/posts/tag_mint", post: @post %>
+<% end %>
