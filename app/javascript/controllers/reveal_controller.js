@@ -24,9 +24,9 @@ export default class extends Controller {
       this.observer.observe(el)
     })
 
-    // Above-the-fold chrome (masthead + hero) is on screen at load — reveal it now.
+    // The hero is on screen at load — reveal it now rather than on intersection.
     requestAnimationFrame(() => {
-      this.element.querySelectorAll(".masthead-print .rise, .hero .rise").forEach((el) => {
+      this.element.querySelectorAll(".hero .rise").forEach((el) => {
         el.classList.add("in")
       })
     })

@@ -17,89 +17,77 @@
   </div>
 </section>
 
-<%# ============ POSTCARDS ============ %>
+<%# ============ LATEST WRITING ============ %>
+<section id="press">
+  <div class="wrap">
+    <div class="sec-label rise">The writing</div>
+    <h2 class="rise">Fresh off the press.</h2>
+    <div class="press-list rise">
+      <% @posts.first(3).each do |post| %>
+        <article class="press-item">
+          <% if post.published_at %>
+            <time class="press-date mono" datetime="<%= post.published_at.strftime("%Y-%m-%d") %>"><%= post.published_at.strftime("%b %-d, %Y") %></time>
+          <% end %>
+          <div class="press-body">
+            <h3 class="press-title"><%= link_to post.title, public_post_path(post) %></h3>
+            <% if post.excerpt.present? %>
+              <p class="press-excerpt"><%= post.excerpt %></p>
+            <% end %>
+          </div>
+        </article>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<%# ============ THE MACHINES ============ %>
 <section id="apps">
   <div class="wrap">
     <div class="sec-label rise">The apps</div>
     <h2 class="rise">Three places I built.</h2>
-    <p class="sec-lede rise">Each one is a real, working product — live right now, free to use. Click a card to visit.</p>
+    <p class="sec-lede rise">Each one is a real, working product — live right now, free to use. Nothing here is a screenshot of past glory.</p>
 
-    <div class="postcards">
+    <div class="machines">
 
       <%# SPOOL %>
-      <a class="postcard rise" href="https://myspool.xyz">
-        <div class="pc-front front-spool">
-          <div class="film"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-          <div class="tag">Screen recorder · Standby</div>
-          <h3>You're looking at the <span class="red">record button.</span></h3>
-          <div class="row">
-            <span class="rec-button"><i></i></span>
-            <div class="spool-stats">
-              <div><b>0</b> servers touch your video</div>
-              <div><b>0s</b> wait after you stop</div>
-              <div><b>1</b> click to start</div>
-            </div>
-          </div>
-          <span class="stamp"><span class="stamp-inner" style="background:#f8ede4"><span style="width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e8674a,#c33a20)"></span><span class="mono" style="color:#96491f">Spool · 0¢</span></span></span>
-          <span class="postmark">myspool<br>.xyz ·<br>shipped</span>
+      <article class="machine rise">
+        <div class="scene sc-spool" aria-hidden="true">
+          <div class="chrome"><i></i><i></i><i></i><span class="url">any tab, honestly</span></div>
+          <div class="rec"><i></i> Recording this tab</div>
+          <div class="bar"></div>
+          <div class="tick">take 1 · <b>00:14</b> · no login, no watermark</div>
         </div>
-        <div class="pc-back">
-          <div class="pc-msg">A town with no dashboards. The share link is in your clipboard before you finish talking. &nbsp;— N</div>
-          <div class="pc-addr">
-            <div class="to">To:</div>
-            <div class="addr-line">You,</div>
-            <div class="addr-line">mid-"quick video?" request</div>
-            <span class="visit">Visit spool →</span>
-          </div>
-        </div>
-      </a>
+        <h3 class="machine-title"><a href="https://myspool.xyz">Spool</a></h3>
+        <p class="machine-blurb">A Chrome extension for screen recording that stays out of your way: click, talk, share a link. The whole pitch fits in that sentence.</p>
+        <div class="acts"><a class="use" href="https://myspool.xyz">Add to Chrome&nbsp;↗</a></div>
+      </article>
 
       <%# TEACH ME SOMETHING %>
-      <a class="postcard rise" href="https://teachmesomething.xyz">
-        <div class="pc-front front-tms">
-          <div class="board">
-            <h3>Everyone has a subject that makes them feel stupid.</h3>
-            <div class="sub">Turn Claude or ChatGPT into your personal tutor.</div>
-            <div class="tray"></div><div class="chalk"></div><div class="chalk pink"></div>
-          </div>
-          <span class="stamp"><span class="stamp-inner" style="background:#2c453a"><span style="width:24px;height:16px;background:#22362d;border:2px solid #8a5a33"></span><span class="mono" style="color:#d7d3bd">TMS · 0¢</span></span></span>
-          <span class="postmark" style="border-color:rgba(240,235,215,.5);color:rgba(240,235,215,.6)">teachme<br>something<br>.xyz</span>
+      <article class="machine rise">
+        <div class="scene sc-tms" aria-hidden="true">
+          <div class="chrome"><i></i><i></i><i></i><span class="url">teachmesomething.xyz/why-is-the-sky-blue</span></div>
+          <div class="row r1"></div><div class="row r2"></div><div class="row r3"></div><div class="row r4"></div>
+          <div class="panel">✦</div>
+          <div class="cap">drawing you a comic about Rayleigh scattering…</div>
         </div>
-        <div class="pc-back">
-          <div class="pc-msg">The chalkboard here writes back. Bring the subject that's been beating you since school. &nbsp;— N</div>
-          <div class="pc-addr">
-            <div class="to">To:</div>
-            <div class="addr-line">You,</div>
-            <div class="addr-line">& that one topic</div>
-            <span class="visit">Visit TMS →</span>
-          </div>
-        </div>
-      </a>
+        <h3 class="machine-title"><a href="https://teachmesomething.xyz">Teach Me Something</a></h3>
+        <p class="machine-blurb">An AI tutor that teaches any topic you name — and draws its own diagrams and comics while it explains, because a sketch beats a paragraph.</p>
+        <div class="acts"><a class="use" href="https://teachmesomething.xyz">Open it&nbsp;↗</a></div>
+      </article>
 
       <%# CURATED CONNECTIONS %>
-      <a class="postcard rise" href="https://curatedconnections.io">
-        <div class="pc-front front-cc">
-          <div class="pill">Loved by top community creators ★★★★★</div>
-          <h3>Self-driving community software for <span class="tc">busy creators</span></h3>
-          <span class="cta">Start now for free</span>
-          <div class="chips">
-            <span>Automated matchmaking</span>
-            <span>Accountability challenges</span>
-            <span>One flat price</span>
-          </div>
-          <span class="stamp"><span class="stamp-inner" style="background:#faf3e3"><span style="width:22px;height:22px;border-radius:6px;background:linear-gradient(160deg,#c96636,#b04f22)"></span><span class="mono" style="color:#96491f">CC · 0¢</span></span></span>
-          <span class="postmark">curated<br>connections<br>.io</span>
+      <article class="machine rise">
+        <div class="scene sc-cc" aria-hidden="true">
+          <div class="chrome"><i></i><i></i><i></i><span class="url">curatedconnections.io</span></div>
+          <div class="m ma">RS</div>
+          <div class="m mb">AK</div>
+          <div class="link"></div>
+          <div class="word">matched · both said yes</div>
         </div>
-        <div class="pc-back">
-          <div class="pc-msg">The family business, run with my brother Piyush. It matches your members while you sleep. &nbsp;— N</div>
-          <div class="pc-addr">
-            <div class="to">To:</div>
-            <div class="addr-line">You,</div>
-            <div class="addr-line">busy creator</div>
-            <span class="visit">Visit CC →</span>
-          </div>
-        </div>
-      </a>
+        <h3 class="machine-title"><a href="https://curatedconnections.io">Curated Connections</a></h3>
+        <p class="machine-blurb">Member matching for online communities. One flat price, unlimited members, no per-seat math — the app that started the whole experiment.</p>
+        <div class="acts"><a class="use" href="https://curatedconnections.io">Open it&nbsp;↗</a></div>
+      </article>
 
     </div>
   </div>

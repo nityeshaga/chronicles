@@ -9,11 +9,27 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
     assert_select "section#subscribe"
   end
 
-  test "index shows the postcard apps" do
+  test "index shows the three app machines" do
     get root_url
-    assert_select "a.postcard[href=?]", "https://myspool.xyz"
-    assert_select "a.postcard[href=?]", "https://teachmesomething.xyz"
-    assert_select "a.postcard[href=?]", "https://curatedconnections.io"
+    assert_select ".machine .acts a.use[href=?]", "https://myspool.xyz"
+    assert_select ".machine .acts a.use[href=?]", "https://teachmesomething.xyz"
+    assert_select ".machine .acts a.use[href=?]", "https://curatedconnections.io"
+  end
+
+  test "index leads with the latest published articles" do
+    get root_url
+    assert_select "#press .press-title a[href=?]", "/#{posts(:published).slug}/", text: posts(:published).title
+    # Drafts stay off the press strip.
+    assert_select "#press .press-title a", text: posts(:draft).title, count: 0
+  end
+
+  # The masthead nav advertises destinations, not scroll positions: an in-page
+  # anchor dressed as a site section is a lie the reader only catches after clicking.
+  test "the masthead nav offers real destinations only" do
+    get root_url
+    assert_select ".mast-nav a[href=?]", "/about/"
+    assert_select ".mast-nav a[href=?]", "/#apps", count: 0
+    assert_select ".mast-nav a[href=?]", "/#library", count: 0
   end
 
   test "index shelves eras that have published articles, linking to their tag pages" do
