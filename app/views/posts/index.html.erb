@@ -2,7 +2,15 @@
 
 <%# ============ INTRO (frontispiece) ============ %>
 <section class="hero">
-  <div class="watermark">❦</div>
+  <div class="doodle doodle-hero" aria-hidden="true">
+    <svg viewBox="0 0 100 60" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 34 c-2 -9 7 -15 15 -13 c8 2 11 9 9 16 c-2 7 -11 11 -17 7 c-5 -3 -7 -6 -7 -10 z"/>
+      <path d="M57 33 c-1 -9 8 -14 16 -12 c8 2 10 9 8 15 c-2 7 -10 11 -16 8 c-6 -3 -8 -7 -8 -11 z"/>
+      <path d="M39 32 c3 -4 11 -4 16 -1"/>
+      <path d="M13 31 l-9 -6"/>
+      <path d="M82 30 l9 -7"/>
+    </svg>
+  </div>
   <div class="wrap hero-grid">
     <figure class="portrait rise" style="--d:1">
       <%= image_tag "/content/images/2024/12/nityesh-headshot-1.jpeg", alt: Setting.current.author_name, class: "photo" %>
@@ -17,89 +25,136 @@
   </div>
 </section>
 
-<%# ============ POSTCARDS ============ %>
+<%# ============ LATEST WRITING ============ %>
+<section id="press">
+  <div class="doodle doodle-press" aria-hidden="true">
+    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M68 8 l17 15 -33 38 c-3 3 -8 4 -10 1 c-2 -3 -1 -7 2 -10 z"/>
+      <path d="M60 39 c2 2 4 3 7 3"/>
+      <path d="M50 66 c-2 4 -5 7 -9 8"/>
+      <path d="M6 90 c8 -7 13 3 21 -2 c7 -4 12 -1 19 -4 c5 -2 9 -1 12 0"/>
+    </svg>
+  </div>
+  <div class="wrap">
+    <div class="sec-label rise">The writing</div>
+    <h2 class="rise">Fresh off the press.</h2>
+    <div class="press-list rise">
+      <% @posts.first(3).each_with_index do |post, i| %>
+        <article class="press-item">
+          <div class="doodle-mini press-mini press-mini-<%= i %>" aria-hidden="true">
+            <% if i == 0 %>
+              <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 36 h42 l-4 28 c-1 6 -9 8 -17 8 c-8 0 -16 -2 -17 -8 z"/>
+                <path d="M64 42 c8 -2 12 2 10 8 c-2 5 -7 6 -12 5"/>
+                <path d="M34 26 c0 -4 4 -4 4 -9"/>
+                <path d="M48 26 c0 -4 4 -4 4 -9"/>
+              </svg>
+            <% elsif i == 1 %>
+              <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M38 74 l-1 -42 c0 -13 21 -13 21 1 l0 33 c0 8 -13 8 -13 0 l0 -28"/>
+              </svg>
+            <% else %>
+              <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M50 24 l0 18"/><path d="M50 58 l1 18"/>
+                <path d="M24 50 l18 0"/><path d="M58 50 l18 1"/>
+                <path d="M32 32 l13 13"/><path d="M55 55 l13 13"/>
+                <path d="M68 32 l-13 13"/><path d="M45 55 l-14 14"/>
+              </svg>
+            <% end %>
+          </div>
+          <% if post.published_at %>
+            <time class="press-date mono" datetime="<%= post.published_at.strftime("%Y-%m-%d") %>"><%= post.published_at.strftime("%b %-d, %Y") %></time>
+          <% end %>
+          <div class="press-body">
+            <h3 class="press-title"><%= link_to post.title, public_post_path(post) %></h3>
+            <% if post.excerpt.present? %>
+              <p class="press-excerpt"><%= post.excerpt %></p>
+            <% end %>
+          </div>
+        </article>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<%# ============ THE MACHINES ============ %>
 <section id="apps">
+  <div class="doodle doodle-apps" aria-hidden="true">
+    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M17 10 c-1 7 2 11 8 13 l46 48 c3 3 8 3 11 0 c3 -3 3 -8 0 -11 L34 13 c-2 -6 -7 -9 -13 -8 l7 8 -3 6 -6 2 z"/>
+      <path d="M83 14 l-14 13 -6 -1 -38 40"/>
+      <path d="M85 16 c3 3 2 6 -1 9 l-13 10"/>
+      <path d="M23 68 c-3 5 -8 6 -11 11 c-2 4 1 8 5 7 c5 -1 6 -7 11 -10"/>
+    </svg>
+  </div>
   <div class="wrap">
     <div class="sec-label rise">The apps</div>
     <h2 class="rise">Three places I built.</h2>
-    <p class="sec-lede rise">Each one is a real, working product — live right now, free to use. Click a card to visit.</p>
+    <p class="sec-lede rise">Each one is a real, working product — live right now, free to use. Nothing here is a screenshot of past glory.</p>
 
-    <div class="postcards">
+    <div class="machines">
 
       <%# SPOOL %>
-      <a class="postcard rise" href="https://myspool.xyz">
-        <div class="pc-front front-spool">
-          <div class="film"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-          <div class="tag">Screen recorder · Standby</div>
-          <h3>You're looking at the <span class="red">record button.</span></h3>
-          <div class="row">
-            <span class="rec-button"><i></i></span>
-            <div class="spool-stats">
-              <div><b>0</b> servers touch your video</div>
-              <div><b>0s</b> wait after you stop</div>
-              <div><b>1</b> click to start</div>
-            </div>
-          </div>
-          <span class="stamp"><span class="stamp-inner" style="background:#f8ede4"><span style="width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e8674a,#c33a20)"></span><span class="mono" style="color:#96491f">Spool · 0¢</span></span></span>
-          <span class="postmark">myspool<br>.xyz ·<br>shipped</span>
+      <article class="machine rise">
+        <div class="scene sc-spool" aria-hidden="true">
+          <div class="chrome"><i></i><i></i><i></i><span class="url">any tab, honestly</span></div>
+          <div class="rec"><i></i> Recording this tab</div>
+          <div class="bar"></div>
+          <div class="tick">take 1 · <b>00:14</b> · no login, no watermark</div>
         </div>
-        <div class="pc-back">
-          <div class="pc-msg">A town with no dashboards. The share link is in your clipboard before you finish talking. &nbsp;— N</div>
-          <div class="pc-addr">
-            <div class="to">To:</div>
-            <div class="addr-line">You,</div>
-            <div class="addr-line">mid-"quick video?" request</div>
-            <span class="visit">Visit spool →</span>
-          </div>
+        <div class="doodle-mini machine-mini" aria-hidden="true">
+          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M28 18 h44 l-7 9 h-30 z"/>
+            <path d="M35 27 l0 40"/><path d="M65 27 l0 40"/>
+            <path d="M28 76 h44 l-7 -9 h-30 z"/>
+            <path d="M35 36 h30"/><path d="M35 45 h30"/><path d="M35 54 h30"/>
+            <path d="M65 62 c12 4 16 12 12 24"/>
+          </svg>
         </div>
-      </a>
+        <h3 class="machine-title"><a href="https://myspool.xyz">Spool</a></h3>
+        <p class="machine-blurb">A Chrome extension for screen recording that stays out of your way: click, talk, share a link. The whole pitch fits in that sentence.</p>
+        <div class="acts"><a class="use" href="https://myspool.xyz">Add to Chrome&nbsp;↗</a></div>
+      </article>
 
       <%# TEACH ME SOMETHING %>
-      <a class="postcard rise" href="https://teachmesomething.xyz">
-        <div class="pc-front front-tms">
-          <div class="board">
-            <h3>Everyone has a subject that makes them feel stupid.</h3>
-            <div class="sub">Turn Claude or ChatGPT into your personal tutor.</div>
-            <div class="tray"></div><div class="chalk"></div><div class="chalk pink"></div>
-          </div>
-          <span class="stamp"><span class="stamp-inner" style="background:#2c453a"><span style="width:24px;height:16px;background:#22362d;border:2px solid #8a5a33"></span><span class="mono" style="color:#d7d3bd">TMS · 0¢</span></span></span>
-          <span class="postmark" style="border-color:rgba(240,235,215,.5);color:rgba(240,235,215,.6)">teachme<br>something<br>.xyz</span>
+      <article class="machine rise">
+        <div class="scene sc-tms" aria-hidden="true">
+          <div class="chrome"><i></i><i></i><i></i><span class="url">teachmesomething.xyz/why-is-the-sky-blue</span></div>
+          <div class="row r1"></div><div class="row r2"></div><div class="row r3"></div><div class="row r4"></div>
+          <div class="panel">✦</div>
+          <div class="cap">drawing you a comic about Rayleigh scattering…</div>
         </div>
-        <div class="pc-back">
-          <div class="pc-msg">The chalkboard here writes back. Bring the subject that's been beating you since school. &nbsp;— N</div>
-          <div class="pc-addr">
-            <div class="to">To:</div>
-            <div class="addr-line">You,</div>
-            <div class="addr-line">& that one topic</div>
-            <span class="visit">Visit TMS →</span>
-          </div>
+        <div class="doodle-mini machine-mini" aria-hidden="true">
+          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M50 14 c15 0 23 11 23 21 c0 9 -6 13 -9 20 l-28 0 c-3 -7 -9 -11 -9 -20 c0 -10 8 -21 23 -21 z"/>
+            <path d="M42 62 l16 0"/><path d="M43 70 l14 0"/><path d="M46 78 l8 0"/>
+            <path d="M43 40 c2 4 5 4 7 0 c2 4 5 4 7 0"/>
+          </svg>
         </div>
-      </a>
+        <h3 class="machine-title"><a href="https://teachmesomething.xyz">Teach Me Something</a></h3>
+        <p class="machine-blurb">An AI tutor that teaches any topic you name — and draws its own diagrams and comics while it explains, because a sketch beats a paragraph.</p>
+        <div class="acts"><a class="use" href="https://teachmesomething.xyz">Open it&nbsp;↗</a></div>
+      </article>
 
       <%# CURATED CONNECTIONS %>
-      <a class="postcard rise" href="https://curatedconnections.io">
-        <div class="pc-front front-cc">
-          <div class="pill">Loved by top community creators ★★★★★</div>
-          <h3>Self-driving community software for <span class="tc">busy creators</span></h3>
-          <span class="cta">Start now for free</span>
-          <div class="chips">
-            <span>Automated matchmaking</span>
-            <span>Accountability challenges</span>
-            <span>One flat price</span>
-          </div>
-          <span class="stamp"><span class="stamp-inner" style="background:#faf3e3"><span style="width:22px;height:22px;border-radius:6px;background:linear-gradient(160deg,#c96636,#b04f22)"></span><span class="mono" style="color:#96491f">CC · 0¢</span></span></span>
-          <span class="postmark">curated<br>connections<br>.io</span>
+      <article class="machine rise">
+        <div class="scene sc-cc" aria-hidden="true">
+          <div class="chrome"><i></i><i></i><i></i><span class="url">curatedconnections.io</span></div>
+          <div class="m ma">RS</div>
+          <div class="m mb">AK</div>
+          <div class="link"></div>
+          <div class="word">matched · both said yes</div>
         </div>
-        <div class="pc-back">
-          <div class="pc-msg">The family business, run with my brother Piyush. It matches your members while you sleep. &nbsp;— N</div>
-          <div class="pc-addr">
-            <div class="to">To:</div>
-            <div class="addr-line">You,</div>
-            <div class="addr-line">busy creator</div>
-            <span class="visit">Visit CC →</span>
-          </div>
+        <div class="doodle-mini machine-mini" aria-hidden="true">
+          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M38 34 c9 0 17 7 17 16 c0 9 -8 16 -17 16 c-9 0 -16 -7 -16 -16 c0 -9 7 -16 16 -16 z"/>
+            <path d="M62 34 c9 0 16 7 16 16 c0 9 -7 16 -16 16 c-9 0 -17 -7 -17 -16 c0 -9 8 -16 17 -16 z"/>
+          </svg>
         </div>
-      </a>
+        <h3 class="machine-title"><a href="https://curatedconnections.io">Curated Connections</a></h3>
+        <p class="machine-blurb">Member matching for online communities. One flat price, unlimited members, no per-seat math — the app that started the whole experiment.</p>
+        <div class="acts"><a class="use" href="https://curatedconnections.io">Open it&nbsp;↗</a></div>
+      </article>
 
     </div>
   </div>
@@ -107,6 +162,17 @@
 
 <%# ============ LIBRARY ============ %>
 <section id="library">
+  <div class="doodle doodle-library" aria-hidden="true">
+    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M50 32 c-8 -6 -19 -8 -29 -6 l-2 39 c10 -2 21 0 30 6"/>
+      <path d="M50 32 c8 -6 19 -8 29 -6 l2 39 c-10 -2 -21 0 -30 6"/>
+      <path d="M50 32 l-1 39"/>
+      <path d="M27 37 c6 -1 13 0 19 2"/>
+      <path d="M27 45 c6 -1 13 0 19 2"/>
+      <path d="M55 39 c6 -2 12 -3 18 -2"/>
+      <path d="M64 28 l1 -15 6 5 5 -7 1 14"/>
+    </svg>
+  </div>
   <div class="wrap">
     <div class="sec-label rise">The library</div>
     <h2 class="rise">Every era of my life, bound and shelved.</h2>
@@ -132,17 +198,43 @@
 
 <%# ============ OPEN SOURCE ============ %>
 <section id="source">
+  <div class="doodle doodle-source" aria-hidden="true">
+    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M50 10 c4 0 7 3 7 7 c0 4 -3 7 -7 7 c-4 0 -7 -3 -7 -7 c0 -4 3 -7 7 -7 z"/>
+      <path d="M50 25 l0 16"/>
+      <path d="M50 41 c1 11 -16 10 -17 21 l0 7"/>
+      <path d="M50 41 c-1 11 17 10 17 21 l1 7"/>
+      <path d="M33 76 c4 0 7 3 7 7 c0 4 -3 7 -7 7 c-4 0 -7 -3 -7 -7 c0 -4 3 -7 7 -7 z"/>
+      <path d="M68 76 c4 0 7 3 7 7 c0 4 -4 7 -8 7 c-4 0 -6 -3 -6 -7 c0 -4 3 -7 7 -7 z"/>
+    </svg>
+  </div>
   <div class="wrap">
     <div class="sec-label rise">Source included</div>
     <h2 class="rise">The workshop is open.</h2>
     <p class="sec-lede rise">A publishing house with a print room you can walk into. The machinery behind all of this is on GitHub.</p>
     <div class="repos">
       <a class="repo rise" href="https://github.com/nityeshaga/claude-home-base">
+        <div class="doodle-mini repo-mini" aria-hidden="true">
+          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M26 54 l24 -20 24 20"/>
+            <path d="M32 52 l0 24 l36 0 l0 -24"/>
+            <path d="M50 76 l0 -12 l8 0 0 12"/>
+            <path d="M58 30 l0 -12"/>
+            <path d="M52 16 c4 -4 9 -4 13 0"/>
+          </svg>
+        </div>
         <div class="path"><span class="dim">nityeshaga /</span> claude-home-base</div>
         <p>An always-on AI cofounder that runs on your own Mac — the bot, setup, and plugins behind the third member of our team. Fork it, configure it, let it come alive.</p>
         <div class="meta">Python · Claude Code · fork it yourself</div>
       </a>
       <a class="repo rise" href="https://github.com/everyinc/hands-on-deck">
+        <div class="doodle-mini repo-mini" aria-hidden="true">
+          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M24 28 h52 v36 h-52 z"/>
+            <path d="M32 40 h24"/><path d="M32 48 h16"/>
+            <path d="M62 52 l1 20 6 -6 5 9 5 -3 -5 -9 8 -1 z"/>
+          </svg>
+        </div>
         <div class="path"><span class="dim">everyinc /</span> hands-on-deck</div>
         <p>Agent-native PowerPoint: one CLI that lets an AI inspect, edit, build, and check .pptx files through atomic JSON patches. Packaged as an Agent Skill.</p>
         <div class="meta">Python · Agent Skill · from my day job at Every</div>
@@ -153,6 +245,14 @@
 
 <%# ============ SUBSCRIBE ============ %>
 <section id="subscribe">
+  <div class="doodle doodle-subscribe" aria-hidden="true">
+    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 52 l74 -30 -34 52 -8 -20 z"/>
+      <path d="M46 54 l42 -32"/>
+      <path d="M46 54 l-2 16 8 -12"/>
+      <path d="M8 92 c16 5 30 0 36 -14" stroke-dasharray="1 8"/>
+    </svg>
+  </div>
   <div class="wrap">
     <div class="letter rise">
       <span class="stamp"><span class="stamp-inner" style="background:#fbf2df"><span style="font-family:var(--serif);font-style:italic;font-size:20px;color:#b05c34">N</span><span class="mono" style="color:#96491f">First class</span></span></span>

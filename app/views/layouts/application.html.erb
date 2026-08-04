@@ -24,24 +24,20 @@
   <body class="<%= content_for(:body_class) %> has-serif-title has-serif-body" data-controller="reveal">
     <div class="gh-viewport">
       <header class="masthead-print">
-        <div class="rule"></div>
-        <div class="mast-kicker rise in">Est. 2017 · Written, drawn &amp; compiled in Kolkata</div>
-        <h1 class="wordmark rise in"><a href="<%= root_path %>"><%= wordmark(Setting.current.site_title) %></a></h1>
-        <div class="mast-tagline rise in">a one-person publishing house</div>
-        <div class="mast-fleuron rise in">❦</div>
-        <div class="rule"></div>
-        <nav class="mast-nav">
-          <a href="/#apps">Apps</a>
-          <a href="/#library">Library</a>
-          <a href="/#subscribe">Subscribe</a>
-          <a href="/about/">About</a>
-        </nav>
+        <div class="wrap mast-band">
+          <h1 class="wordmark"><a href="<%= root_path %>"><%= wordmark(Setting.current.site_title) %></a></h1>
+          <nav class="mast-nav">
+            <a href="/about/">About</a>
+            <a class="mast-subscribe" href="/#subscribe">Get the next shipment</a>
+          </nav>
+        </div>
       </header>
 
       <%= yield %>
 
       <footer class="site-footer">
         <div class="wrap">
+          <div class="foot-kicker mono">Est. 2017 · Written, drawn &amp; compiled in Kolkata</div>
           <div class="mono">❦ <%= Setting.current.author_name %> · built with Luo, my AI agent, on a spare MacBook Air</div>
           <div class="links mono">
             <a href="https://myspool.xyz">Spool</a>
