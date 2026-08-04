@@ -39,8 +39,29 @@
     <div class="sec-label rise">The writing</div>
     <h2 class="rise">Fresh off the press.</h2>
     <div class="press-list rise">
-      <% @posts.first(3).each do |post| %>
+      <% @posts.first(3).each_with_index do |post, i| %>
         <article class="press-item">
+          <div class="doodle-mini press-mini press-mini-<%= i %>" aria-hidden="true">
+            <% if i == 0 %>
+              <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 36 h42 l-4 28 c-1 6 -9 8 -17 8 c-8 0 -16 -2 -17 -8 z"/>
+                <path d="M64 42 c8 -2 12 2 10 8 c-2 5 -7 6 -12 5"/>
+                <path d="M34 26 c0 -4 4 -4 4 -9"/>
+                <path d="M48 26 c0 -4 4 -4 4 -9"/>
+              </svg>
+            <% elsif i == 1 %>
+              <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M38 74 l-1 -42 c0 -13 21 -13 21 1 l0 33 c0 8 -13 8 -13 0 l0 -28"/>
+              </svg>
+            <% else %>
+              <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M50 24 l0 18"/><path d="M50 58 l1 18"/>
+                <path d="M24 50 l18 0"/><path d="M58 50 l18 1"/>
+                <path d="M32 32 l13 13"/><path d="M55 55 l13 13"/>
+                <path d="M68 32 l-13 13"/><path d="M45 55 l-14 14"/>
+              </svg>
+            <% end %>
+          </div>
           <% if post.published_at %>
             <time class="press-date mono" datetime="<%= post.published_at.strftime("%Y-%m-%d") %>"><%= post.published_at.strftime("%b %-d, %Y") %></time>
           <% end %>
@@ -81,6 +102,15 @@
           <div class="bar"></div>
           <div class="tick">take 1 · <b>00:14</b> · no login, no watermark</div>
         </div>
+        <div class="doodle-mini machine-mini" aria-hidden="true">
+          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M28 18 h44 l-7 9 h-30 z"/>
+            <path d="M35 27 l0 40"/><path d="M65 27 l0 40"/>
+            <path d="M28 76 h44 l-7 -9 h-30 z"/>
+            <path d="M35 36 h30"/><path d="M35 45 h30"/><path d="M35 54 h30"/>
+            <path d="M65 62 c12 4 16 12 12 24"/>
+          </svg>
+        </div>
         <h3 class="machine-title"><a href="https://myspool.xyz">Spool</a></h3>
         <p class="machine-blurb">A Chrome extension for screen recording that stays out of your way: click, talk, share a link. The whole pitch fits in that sentence.</p>
         <div class="acts"><a class="use" href="https://myspool.xyz">Add to Chrome&nbsp;↗</a></div>
@@ -93,6 +123,13 @@
           <div class="row r1"></div><div class="row r2"></div><div class="row r3"></div><div class="row r4"></div>
           <div class="panel">✦</div>
           <div class="cap">drawing you a comic about Rayleigh scattering…</div>
+        </div>
+        <div class="doodle-mini machine-mini" aria-hidden="true">
+          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M50 14 c15 0 23 11 23 21 c0 9 -6 13 -9 20 l-28 0 c-3 -7 -9 -11 -9 -20 c0 -10 8 -21 23 -21 z"/>
+            <path d="M42 62 l16 0"/><path d="M43 70 l14 0"/><path d="M46 78 l8 0"/>
+            <path d="M43 40 c2 4 5 4 7 0 c2 4 5 4 7 0"/>
+          </svg>
         </div>
         <h3 class="machine-title"><a href="https://teachmesomething.xyz">Teach Me Something</a></h3>
         <p class="machine-blurb">An AI tutor that teaches any topic you name — and draws its own diagrams and comics while it explains, because a sketch beats a paragraph.</p>
@@ -107,6 +144,12 @@
           <div class="m mb">AK</div>
           <div class="link"></div>
           <div class="word">matched · both said yes</div>
+        </div>
+        <div class="doodle-mini machine-mini" aria-hidden="true">
+          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M38 34 c9 0 17 7 17 16 c0 9 -8 16 -17 16 c-9 0 -16 -7 -16 -16 c0 -9 7 -16 16 -16 z"/>
+            <path d="M62 34 c9 0 16 7 16 16 c0 9 -7 16 -16 16 c-9 0 -17 -7 -17 -16 c0 -9 8 -16 17 -16 z"/>
+          </svg>
         </div>
         <h3 class="machine-title"><a href="https://curatedconnections.io">Curated Connections</a></h3>
         <p class="machine-blurb">Member matching for online communities. One flat price, unlimited members, no per-seat math — the app that started the whole experiment.</p>
@@ -171,11 +214,27 @@
     <p class="sec-lede rise">A publishing house with a print room you can walk into. The machinery behind all of this is on GitHub.</p>
     <div class="repos">
       <a class="repo rise" href="https://github.com/nityeshaga/claude-home-base">
+        <div class="doodle-mini repo-mini" aria-hidden="true">
+          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M26 54 l24 -20 24 20"/>
+            <path d="M32 52 l0 24 l36 0 l0 -24"/>
+            <path d="M50 76 l0 -12 l8 0 0 12"/>
+            <path d="M58 30 l0 -12"/>
+            <path d="M52 16 c4 -4 9 -4 13 0"/>
+          </svg>
+        </div>
         <div class="path"><span class="dim">nityeshaga /</span> claude-home-base</div>
         <p>An always-on AI cofounder that runs on your own Mac — the bot, setup, and plugins behind the third member of our team. Fork it, configure it, let it come alive.</p>
         <div class="meta">Python · Claude Code · fork it yourself</div>
       </a>
       <a class="repo rise" href="https://github.com/everyinc/hands-on-deck">
+        <div class="doodle-mini repo-mini" aria-hidden="true">
+          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M24 28 h52 v36 h-52 z"/>
+            <path d="M32 40 h24"/><path d="M32 48 h16"/>
+            <path d="M62 52 l1 20 6 -6 5 9 5 -3 -5 -9 8 -1 z"/>
+          </svg>
+        </div>
         <div class="path"><span class="dim">everyinc /</span> hands-on-deck</div>
         <p>Agent-native PowerPoint: one CLI that lets an AI inspect, edit, build, and check .pptx files through atomic JSON patches. Packaged as an Agent Skill.</p>
         <div class="meta">Python · Agent Skill · from my day job at Every</div>

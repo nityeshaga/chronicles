@@ -523,6 +523,24 @@ a:hover { opacity: .8; }
 .doodle-subscribe { width: 104px; left: 48px; top: 44px; transform: rotate(-12deg); }
 @media (max-width: 1200px) { .doodle { display: none; } }
 
+/* Item-level marginalia: every product, article, and repo gets its own small mark.
+   The press marks key off list position, not the post — posts rotate through, the
+   margins stay drawn. Card marks live inside their cards, so they survive mobile. */
+.doodle-mini { position: absolute; color: var(--ink-soft); opacity: .28; pointer-events: none; user-select: none; }
+.doodle-mini svg { width: 100%; height: 100%; display: block; }
+.press-item { position: relative; }
+.press-mini { width: 54px; right: -150px; top: 50%; transform: translateY(-50%) rotate(-7deg); }
+.press-mini-1 { transform: translateY(-50%) rotate(9deg); }
+.press-mini-2 { transform: translateY(-50%) rotate(-4deg); }
+@media (max-width: 1200px) { .press-mini { display: none; } }
+.machine { position: relative; }
+.machine-mini { width: 46px; right: 18px; bottom: 16px; transform: rotate(-8deg); }
+.machine:nth-child(2) .machine-mini { transform: rotate(6deg); }
+.machine:nth-child(3) .machine-mini { transform: rotate(-5deg); }
+.repo { position: relative; }
+.repo-mini { width: 44px; right: 18px; bottom: 14px; transform: rotate(7deg); }
+.repo + .repo .repo-mini { transform: rotate(-6deg); }
+
 /* ---- Bookshelf (the library) ---- */
 .home-template #library .shelf-scene { margin-top: 70px; }
 .shelf-books { display: flex; align-items: flex-end; justify-content: center; gap: 7px; padding: 0 60px; min-height: 250px; }
