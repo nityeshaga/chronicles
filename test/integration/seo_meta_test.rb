@@ -128,6 +128,27 @@ class SeoMetaTest < ActionDispatch::IntegrationTest
     assert_includes locs, "http://www.example.com/about/"
   end
 
+  # An HTML page is a Page by STI, so it lists itself in the pages sitemap for free —
+  # which is how a hand-authored landing page inherits the site's search presence.
+  test "sitemap-pages lists a published HTML page with a trailing-slash loc" do
+    get sitemap_pages_url
+    doc = Nokogiri::XML(response.body)
+    doc.remove_namespaces!
+    assert_includes doc.xpath("//url/loc").map(&:text),
+      "http://www.example.com/#{posts(:html_page).slug}/"
+  end
+
+  test "an HTML page stays out of the posts sitemap and the feed" do
+    get sitemap_posts_url
+    doc = Nokogiri::XML(response.body)
+    doc.remove_namespaces!
+    assert_not_includes doc.xpath("//url/loc").map(&:text),
+      "http://www.example.com/#{posts(:html_page).slug}/"
+
+    get "/rss/"
+    assert_no_match posts(:html_page).title, response.body
+  end
+
   test "sitemap-authors carries the author archive url" do
     get sitemap_authors_url
     doc = Nokogiri::XML(response.body)
