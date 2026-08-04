@@ -389,10 +389,6 @@ a:hover { opacity: .8; }
 
 /* ---- Intro (frontispiece) ---- */
 .hero { padding: 84px 0 76px; position: relative; overflow: hidden; }
-.hero .watermark {
-  position: absolute; right: -40px; top: 40px; font-family: var(--serif); font-size: 520px; line-height: 1;
-  color: var(--terracotta); opacity: .06; pointer-events: none; user-select: none;
-}
 .hero-grid { display: grid; grid-template-columns: 360px 1fr; gap: 84px; align-items: start; position: relative; z-index: 1; max-width: 1040px; margin: 0 auto; }
 .portrait { position: relative; text-align: center; }
 .portrait .photo {
@@ -515,6 +511,18 @@ a:hover { opacity: .8; }
 .stamp-inner .mono { font-size: 7px; letter-spacing: .08em; text-transform: uppercase; }
 
 
+/* ---- Margin doodles (one per exhibit — pencil notes in the notebook's margin) ---- */
+.home-template section { position: relative; }
+.doodle { position: absolute; color: var(--ink-soft); opacity: .3; pointer-events: none; user-select: none; }
+.doodle svg { width: 100%; height: 100%; display: block; }
+.doodle-hero { width: 130px; right: 70px; top: 64px; transform: rotate(-9deg); }
+.doodle-press { width: 100px; right: 110px; top: 150px; transform: rotate(6deg); }
+.doodle-apps { width: 104px; right: 84px; top: 56px; transform: rotate(-7deg); }
+.doodle-library { width: 108px; right: 90px; top: 78px; transform: rotate(5deg); }
+.doodle-source { width: 96px; right: 96px; top: 66px; transform: rotate(8deg); }
+.doodle-subscribe { width: 104px; left: 48px; top: 44px; transform: rotate(-12deg); }
+@media (max-width: 1200px) { .doodle { display: none; } }
+
 /* ---- Bookshelf (the library) ---- */
 .home-template #library .shelf-scene { margin-top: 70px; }
 .shelf-books { display: flex; align-items: flex-end; justify-content: center; gap: 7px; padding: 0 60px; min-height: 250px; }
@@ -597,7 +605,6 @@ a:hover { opacity: .8; }
 /* ---- Homepage responsive ---- */
 @media (max-width: 960px) {
   .hero-grid { grid-template-columns: 1fr; gap: 48px; }
-  .hero .watermark { display: none; }
   /* Landscape doesn't fit a phone/tablet — stack front over back again (today's portrait card). */
   .machines { grid-template-columns: 1fr; max-width: 480px; margin-left: auto; margin-right: auto; }
   .repos { grid-template-columns: 1fr; }
