@@ -28,6 +28,24 @@ MCP_SERVER_INSTRUCTIONS = -> do
 
   Changing the slug of a published post 404s its old URL — there are no redirects. Use
   list_posts / list_tags to resolve the right slug before editing.
+
+  HTML pages are the third kind: one complete hand-authored document (<html>…</html>, its
+  own head, styles, scripts) served verbatim at a root slug with no blog chrome — for a
+  landing page or a one-off whose design IS the content. Anything that reads as writing is
+  a post. Author them with create_html_page / update_html_page (which takes html_patches
+  the same way update_post takes body_patches); update_post refuses them and there is no
+  `kind: html_page`. get_post, list_posts, publish_post, unpublish_post and delete_post
+  treat them like any other record — get_post's body window is the document itself.
+
+  The contract is a self-contained document: absolute URLs for every asset (upload_image
+  returns them), no relative paths, no tags. Both tools screen it on the way in — a
+  fragment or a head with no <title> is rejected outright; a missing
+  <meta name="description"> and relative references come back as warnings, not blocks; and
+  <link rel="canonical" href="https://#{Setting.current.production_host}/<slug>/"> is
+  injected before </head> unless the document already carries a canonical (one aimed at
+  another site is left alone and reported, and a rename keeps a self-referential one
+  correct). Documents saved through the writing UI are never screened or injected — this
+  MCP path is the only one that touches the bytes.
   INSTRUCTIONS
 end
 
@@ -55,6 +73,10 @@ Rails.application.config.after_initialize do
     server.register_tool(UnpublishPostTool)
     server.register_tool(DeletePostTool)
     server.register_tool(UpdateTagTool)
+
+    # Whole-document HTML pages: their own tools because they bypass Action Text entirely.
+    server.register_tool(CreateHtmlPageTool)
+    server.register_tool(UpdateHtmlPageTool)
 
     # Image + embed tools (stage 4)
     server.register_tool(UploadImageTool)

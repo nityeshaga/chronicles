@@ -53,6 +53,12 @@ Rails.application.routes.draw do
     resources :pages, except: %i[ index ] do
       resource :publishing, only: %i[ create destroy ]
     end
+    # HTML pages are edited through their own controller — a monospace textarea over the
+    # stored document, never the Lexxy form — but they publish through the same nested
+    # resource as everything else. Listed on the writing index, so no index of their own.
+    resources :html_pages, except: %i[ index ] do
+      resource :publishing, only: %i[ create destroy ]
+    end
     resources :tags, only: %i[ index edit update create ]
     resources :embeds, only: %i[ create ]
     resources :uploads, only: %i[ create ]

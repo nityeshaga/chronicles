@@ -81,4 +81,18 @@ class GetPostToolTest < ActiveSupport::TestCase
     result = GetPostTool.new.call(id_or_slug: "about")
     assert_equal "page", result[:kind]
   end
+
+  test "an html page's body window is its stored document" do
+    page = posts(:html_page)
+    result = GetPostTool.new.call(id_or_slug: "hands-on-deck")
+
+    assert_equal "html_page", result[:kind]
+    assert_equal page.raw_html, result[:body]
+    assert_equal page.raw_html.length, result[:body_total_length]
+    assert_not result[:body_truncated]
+
+    windowed = GetPostTool.new.call(id_or_slug: "hands-on-deck", body_offset: 10, body_limit: 25)
+    assert_equal page.raw_html[10, 25], windowed[:body]
+    assert windowed[:body_truncated]
+  end
 end

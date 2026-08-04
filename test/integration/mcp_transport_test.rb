@@ -25,7 +25,7 @@ class McpTransportTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     names = JSON.parse(response.body).dig("result", "tools").map { |t| t["name"] }
-    expected = %w[ list_posts get_post list_tags create_post update_post publish_post unpublish_post delete_post update_tag upload_image create_embed ]
+    expected = %w[ list_posts get_post list_tags create_post update_post publish_post unpublish_post delete_post update_tag upload_image create_embed create_html_page update_html_page ]
     assert_equal expected.sort, names.sort
   end
 

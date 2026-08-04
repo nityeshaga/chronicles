@@ -37,4 +37,15 @@ class DeletePostToolTest < ActiveSupport::TestCase
   test "returns a recovery error when not found" do
     assert_equal ToolErrors::POST_NOT_FOUND, DeletePostTool.new.call(id_or_slug: "nope", confirm: true)
   end
+
+  test "deletes an html page, labelling it by its own kind" do
+    page = posts(:html_page)
+
+    preview = DeletePostTool.new.call(id_or_slug: page.slug, confirm: false)
+    assert_equal "html_page", preview[:would_delete][:kind]
+    assert Post.exists?(page.id)
+
+    assert DeletePostTool.new.call(id_or_slug: page.slug, confirm: true)[:success]
+    assert_not Post.exists?(page.id)
+  end
 end

@@ -59,6 +59,14 @@ class Writing::PagesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to writing_root_url
   end
 
+  # The Lexxy form writes an Action Text body; loading an HTML page into it would
+  # overwrite the stored document on the first save. It must not resolve at all.
+  test "an HTML page slug cannot be opened through the pages editor" do
+    sign_in_as users(:nityesh)
+    get edit_writing_page_url(posts(:html_page))
+    assert_response :not_found
+  end
+
   test "preview renders the public post template behind auth" do
     sign_in_as users(:nityesh)
     get writing_page_url(posts(:about))

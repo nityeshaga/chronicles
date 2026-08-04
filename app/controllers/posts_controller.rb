@@ -15,5 +15,13 @@ class PostsController < ApplicationController
     # Unfiltered on purpose: pages (About, etc) are served through here too.
     @post = Post.published.find_by!(slug: params[:slug])
     fresh_when @post
+    return if performed? # fresh_when already answered a 304; rendering again would raise
+
+    # An HTML page IS its response: no layout, so no masthead, footer, app CSS/JS or
+    # templated meta — the stored document already carries all of that, and any byte
+    # we add is a byte that wasn't in the design. html_safe is the point, not a hole:
+    # raw_html is writable only by an authenticated writer, the same trust boundary
+    # the Action Text body already sits behind. fresh_when above still ETags it.
+    render html: @post.raw_html.html_safe, layout: false if @post.is_a?(HtmlPage)
   end
 end

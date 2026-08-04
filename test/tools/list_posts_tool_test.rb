@@ -59,6 +59,17 @@ class ListPostsToolTest < ActiveSupport::TestCase
     assert articles[:posts].all? { |p| p[:kind] == "article" }
   end
 
+  test "html pages are their own kind, not lumped in with pages" do
+    html_pages = ListPostsTool.new.call(kind: "html_page")
+    assert_equal [ "hands-on-deck" ], html_pages[:posts].map { |p| p[:slug] }
+    assert_equal "html_page", html_pages[:posts].first[:kind]
+
+    assert_not_includes ListPostsTool.new.call(kind: "page")[:posts].map { |p| p[:slug] }, "hands-on-deck"
+
+    unfiltered = ListPostsTool.new.call.dig(:posts)
+    assert_equal "html_page", unfiltered.find { |p| p[:slug] == "hands-on-deck" }[:kind]
+  end
+
   test "filters by tag slug" do
     result = ListPostsTool.new.call(tag: "chronicles")
 

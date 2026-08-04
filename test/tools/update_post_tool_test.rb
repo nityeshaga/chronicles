@@ -125,6 +125,25 @@ class UpdatePostToolTest < ActiveSupport::TestCase
     assert_includes result[:warning], "404"
   end
 
+  test "refuses an html page and names the tool that handles it" do
+    before = posts(:html_page).raw_html
+    result = UpdatePostTool.new.call(id_or_slug: "hands-on-deck", body: "<p>Nope</p>", title: "Hijacked")
+
+    assert_equal ToolErrors::IS_AN_HTML_PAGE, result
+    assert_includes result[:error], "update_html_page"
+    assert_equal "Hands on Deck", posts(:html_page).reload.title
+    assert_equal before, posts(:html_page).raw_html
+    assert_not posts(:html_page).body.present?
+  end
+
+  test "rejects html_page as a kind and points at its own tools" do
+    result = UpdatePostTool.new.call(id_or_slug: "a-draft-post", kind: "html_page")
+
+    assert_equal ToolErrors::HTML_PAGE_KIND, result
+    assert_includes result[:error], "create_html_page"
+    assert_equal "Post", posts(:draft).reload.type
+  end
+
   test "changing a draft's slug carries no warning" do
     result = UpdatePostTool.new.call(id_or_slug: "a-draft-post", slug: "renamed-draft")
 

@@ -767,8 +767,11 @@ a:hover { opacity: .8; }
 .dash-tab.is-active { color: var(--w-ink); border-bottom-color: var(--w-accent); }
 .dash-tab__count { font-size: 1.15rem; font-weight: 600; color: var(--w-faint); background: rgba(0, 0, 0, .05); border-radius: 20px; padding: .15rem .6rem; min-width: 2.1rem; text-align: center; }
 .dash-tab.is-active .dash-tab__count { color: var(--w-accent); background: rgba(180, 83, 9, .12); }
-.dash-tabs__spacer { margin-left: auto; font-size: 1.35rem; font-weight: 500; color: var(--w-muted); padding: .9rem .6rem; }
-.dash-tabs__spacer:hover { color: var(--w-accent); opacity: 1; }
+/* The "New …" links ride the tail of the tab row. Grouped, so the flex free space opens
+   once — before the pair — rather than between them, and so they wrap together. */
+.dash-tabs__spacer { margin-left: auto; display: inline-flex; align-items: center; }
+.dash-tabs__spacer a { font-size: 1.35rem; font-weight: 500; color: var(--w-muted); padding: .9rem .6rem; }
+.dash-tabs__spacer a:hover { color: var(--w-accent); opacity: 1; }
 
 .dash-list { list-style: none; padding: 0; margin: 0; }
 .dash-row { display: flex; align-items: center; justify-content: space-between; gap: 1.6rem; padding: 1.5rem .6rem; border-bottom: 1px solid var(--w-line); }
@@ -958,6 +961,21 @@ a:hover { opacity: .8; }
 .tag-mint__input { flex: 1; }
 
 .feature-image-preview { margin-top: .8rem; max-width: 100%; border-radius: 8px; border: 1px solid var(--w-line); }
+
+/* ---- HTML page editor: a hand-authored document is edited as source, not prose, so the
+   body field is a tall monospace textarea that never wraps or autocorrects — wrapping
+   would lie about the lines the author is reading. Publishing hangs off a panel below the
+   form; there's no sticky editor bar here to anchor the popover to. ---- */
+.field textarea.html-source {
+  font-family: var(--font-mono); font-size: 1.3rem; line-height: 1.55;
+  min-height: 58vh; white-space: pre; overflow-wrap: normal; tab-size: 2;
+}
+.editor-panel {
+  margin-top: 2.6rem; background: var(--w-panel); border: 1px solid var(--w-line);
+  border-radius: var(--w-radius); box-shadow: var(--w-shadow);
+}
+.editor-panel > h2 { font-family: var(--font-sans); font-size: 1.5rem; font-weight: 600; padding: 1.2rem 1.6rem; border-bottom: 1px solid var(--w-line); }
+.editor-panel__danger { margin-top: 2.6rem; }
 
 /* =========================================================================
    Form page (tag editor) + auth card

@@ -65,6 +65,35 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1.gh-article-title", text: posts(:published).title
   end
 
+  # --- HTML pages: the stored document IS the response. Asserted byte-for-byte
+  #     rather than with assert_select, because verbatim is the entire contract. ---
+  test "show serves a published HTML page as the exact stored document" do
+    get post_url(posts(:html_page), trailing_slash: true)
+    assert_response :success
+    assert_equal posts(:html_page).raw_html, response.body
+  end
+
+  test "an HTML page carries no layout markup" do
+    get post_url(posts(:html_page), trailing_slash: true)
+    assert_select "header.gh-head", count: 0
+    assert_select "footer", count: 0
+    assert_no_match %r{/assets/application}, response.body
+  end
+
+  test "show 404s for a draft HTML page" do
+    draft = HtmlPage.create!(title: "Unfinished Landing Page", raw_html: "<html><body>soon</body></html>")
+    get post_url(draft, trailing_slash: true)
+    assert_response :not_found
+  end
+
+  test "an HTML page is ETagged and answers 304 to a matching If-None-Match" do
+    get post_url(posts(:html_page), trailing_slash: true)
+    etag = response.headers["ETag"]
+    assert etag.present?
+    get post_url(posts(:html_page), trailing_slash: true), headers: { "If-None-Match" => etag }
+    assert_response :not_modified
+  end
+
   test "show 404s for a draft" do
     get post_url(posts(:draft), trailing_slash: true)
     assert_response :not_found

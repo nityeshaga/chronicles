@@ -1,0 +1,71 @@
+<%# The HTML-page editor, and deliberately the plainest surface on the writing side: a
+    title, a slug, and the document itself in a monospace textarea. No Lexxy canvas (this
+    body is bytes, not rich text), no autosave (saving a whole document is an explicit
+    act), no feature image or tags (the document carries its own head, and untagged is
+    what keeps these off the era shelves). Publishing is the same nested resource posts
+    and pages use, hung off a panel below the form rather than the editor's popover —
+    there's no sticky editor bar here to anchor one to. %>
+<div class="form-page">
+  <header class="form-page__head">
+    <%= link_to writing_posts_path, class: "editor-bar__back" do %>
+      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Writing</span>
+    <% end %>
+    <h1><%= post.persisted? ? "Edit HTML page" : "New HTML page" %></h1>
+    <% if post.persisted? %>
+      <%# Preview renders the stored bytes with no layout — the draft as it will publish. %>
+      <%= link_to "Preview", [ :writing, post ], class: "w-btn w-btn--ghost w-btn--sm" %>
+    <% end %>
+  </header>
+
+  <%= form_with model: [ :writing, post ], class: "stacked-form" do |form| %>
+    <% if post.errors.any? %>
+      <ul class="errors">
+        <% post.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    <% end %>
+
+    <% if flash[:notice].present? %>
+      <p class="autosave-status" data-state="saved"><%= flash[:notice] %></p>
+    <% end %>
+
+    <div class="field">
+      <%= form.label :title %>
+      <%= form.text_field :title %>
+      <small class="field__hint">Only the writing dashboard and the MCP listings show this — the served page uses the <code>&lt;title&gt;</code> in the document.</small>
+    </div>
+
+    <div class="field">
+      <%= form.label :slug, "URL slug" %>
+      <%= form.text_field :slug %>
+      <small class="field__hint">The page's public URL: <code>/<%= post.slug.presence || "…" %>/</code>. Changing it breaks inbound links.</small>
+    </div>
+
+    <div class="field">
+      <%= form.label :raw_html, "HTML document" %>
+      <%= form.text_area :raw_html, rows: 30, class: "html-source", spellcheck: false,
+            autocomplete: "off", autocapitalize: "off", autocorrect: "off",
+            placeholder: "<!DOCTYPE html>…" %>
+      <small class="field__hint">A complete, self-contained document — served verbatim, so relative asset paths won't resolve.</small>
+    </div>
+
+    <%= form.submit post.persisted? ? "Save HTML page" : "Save draft", class: "w-btn w-btn--primary" %>
+  <% end %>
+
+  <% if post.persisted? %>
+    <section class="editor-panel">
+      <h2>Publishing</h2>
+      <%= render "writing/posts/publishing", post: post %>
+    </section>
+
+    <%# Delete sits at the foot of the page, off the ship flow — the same place the post
+        editor buries it. %>
+    <div class="editor-panel__danger">
+      <%= button_to "Delete HTML page", [ :writing, post ], method: :delete,
+            class: "w-btn w-btn--danger w-btn--sm", form_class: "w-inline",
+            data: { turbo_confirm: "Delete this HTML page for good?" } %>
+    </div>
+  <% end %>
+</div>

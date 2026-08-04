@@ -30,3 +30,18 @@ about:
   slug: about
   status: published
   published_at: <%= 1.year.ago.to_fs(:db) %>
+
+# A complete hand-authored document served verbatim — the whole point of the kind,
+# so the fixture carries a real <head> and a marker the layout would never emit.
+html_page:
+  type: HtmlPage
+  title: Hands on Deck
+  slug: hands-on-deck
+  status: published
+  published_at: <%= 1.week.ago.to_fs(:db) %>
+  raw_html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head><title>Hands on Deck</title><style>body{margin:0}</style></head>
+    <body><h1 class="landing-hero">Hands on Deck</h1></body>
+    </html>

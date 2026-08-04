@@ -1,5 +1,5 @@
 <% content_for :title, "Writing" %>
-<% total = @scheduled.size + @drafts.size + @published.size + @pages.size %>
+<% total = @scheduled.size + @drafts.size + @published.size + @pages.size + @html_pages.size %>
 
 <div class="writing-dash" data-controller="dashboard">
   <header class="dash-head">
@@ -40,7 +40,14 @@
             data-status="page" data-dashboard-target="tab" data-action="dashboard#filter">
       Pages <span class="dash-tab__count"><%= @pages.size %></span>
     </button>
-    <%= link_to "New page", new_writing_page_path, class: "dash-tabs__spacer" %>
+    <button type="button" class="dash-tab" role="tab" aria-selected="false"
+            data-status="html_page" data-dashboard-target="tab" data-action="dashboard#filter">
+      HTML pages <span class="dash-tab__count"><%= @html_pages.size %></span>
+    </button>
+    <span class="dash-tabs__spacer">
+      <%= link_to "New page", new_writing_page_path %>
+      <%= link_to "New HTML page", new_writing_html_page_path %>
+    </span>
   </nav>
 
   <% if total.zero? %>
@@ -61,6 +68,9 @@
       <% end %>
       <% @pages.each do |page| %>
         <%= render "row", record: page, bucket: "page", edit_path: edit_writing_page_path(page) %>
+      <% end %>
+      <% @html_pages.each do |html_page| %>
+        <%= render "row", record: html_page, bucket: "html_page", edit_path: edit_writing_html_page_path(html_page) %>
       <% end %>
     </ul>
     <p class="dash-empty" data-dashboard-target="empty" hidden>Nothing in this view.</p>
