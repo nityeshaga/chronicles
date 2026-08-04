@@ -75,4 +75,19 @@ class PublishPostToolTest < ActiveSupport::TestCase
   test "returns a recovery error when not found" do
     assert_equal ToolErrors::POST_NOT_FOUND, PublishPostTool.new.call(id_or_slug: "nope")
   end
+
+  # HTML pages ride the same publishing verbs as everything else; the tools need no
+  # branch for them, which is the whole argument for the kind being one STI subclass.
+  test "publishes and unpublishes an html page like any other record" do
+    page = HtmlPage.create!(title: "Round Trip", raw_html: "<html><head><title>T</title></head><body>x</body></html>")
+
+    published = PublishPostTool.new.call(id_or_slug: page.slug)
+    assert_equal "published", published[:status]
+    assert_equal "https://#{Setting.current.production_host}/round-trip/", published[:url]
+    assert page.reload.published?
+
+    unpublished = UnpublishPostTool.new.call(id_or_slug: page.slug)
+    assert_equal "draft", unpublished[:status]
+    assert page.reload.draft?
+  end
 end

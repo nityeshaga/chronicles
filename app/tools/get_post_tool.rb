@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
 class GetPostTool < ActionTool::Base
+  include PostToolSupport
+
   BODY_CHARACTER_LIMIT = 20_000
 
   tool_name "get_post"
-  description "Get a single post or page with all authoring fields and its body HTML, windowed by body_offset/body_limit so a long essay can't blow the context."
+  description "Get a single post, page or HTML page with all authoring fields and its body HTML, windowed by body_offset/body_limit so a long essay can't blow the context. For an HTML page the window reads the stored document itself."
   annotations(
     title: "Get Post",
     read_only_hint: true,
@@ -23,12 +25,12 @@ class GetPostTool < ActionTool::Base
     user = Thread.current[:mcp_current_user]
     return ToolErrors::AUTH_REQUIRED unless user
 
-    key = id_or_slug.to_s
-    post = key.match?(/\A\d+\z/) ? Post.find_by(id: key) : Post.find_by(slug: key)
+    post = resolve_post(id_or_slug)
     return ToolErrors::POST_NOT_FOUND unless post
 
     # Raw stored fragment, not post.body.to_s (that renders the layout wrapper, which re-persists and nests on the next edit).
-    body_html = post.body&.body&.to_html.to_s
+    # An HTML page has no Action Text record at all — it IS its document, so the window reads that.
+    body_html = post.is_a?(HtmlPage) ? post.raw_html.to_s : post.body&.body&.to_html.to_s
     body_offset = [ body_offset, 0 ].max
     body_slice = body_html[body_offset, body_limit] || ""
 
@@ -36,7 +38,7 @@ class GetPostTool < ActionTool::Base
       id: post.id,
       slug: post.slug,
       title: post.title,
-      kind: post.is_a?(Page) ? "page" : "article",
+      kind: kind_of(post),
       status: status_of(post),
       published_at: post.published_at&.iso8601,
       excerpt: post.excerpt,
@@ -54,24 +56,4 @@ class GetPostTool < ActionTool::Base
       body_truncated: (body_offset + body_slice.length) < body_html.length
     }
   end
-
-  private
-    def status_of(post)
-      if post.published?
-        "published"
-      elsif post.scheduled?
-        "scheduled"
-      else
-        "draft"
-      end
-    end
-
-    def public_url(post)
-      Rails.application.routes.url_helpers.post_url(
-        post,
-        host: Setting.current.production_host,
-        protocol: "https",
-        trailing_slash: true
-      )
-    end
 end

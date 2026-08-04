@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 class ListPostsTool < ActionTool::Base
+  include PostToolSupport
+
   DEFAULT_LIMIT = 20
   MAX_LIMIT = 100
 
   tool_name "list_posts"
-  description "List posts and pages with optional filters (status, kind, tag, title query). Paginated; returns metadata only, never bodies — call get_post for a body."
+  description "List posts, pages and HTML pages with optional filters (status, kind, tag, title query). Paginated; returns metadata only, never bodies — call get_post for a body."
   annotations(
     title: "List Posts",
     read_only_hint: true,
@@ -16,7 +18,7 @@ class ListPostsTool < ActionTool::Base
 
   arguments do
     optional(:status).filled(:string).description("Filter by status: 'draft', 'scheduled' (a draft with a future publish time), or 'published'.")
-    optional(:kind).filled(:string).description("Filter by kind: 'article' (a blog post) or 'page' (a standalone page like About).")
+    optional(:kind).filled(:string).description("Filter by kind: 'article' (a blog post), 'page' (a standalone page like About) or 'html_page' (a whole hand-authored HTML document).")
     optional(:tag).filled(:string).description("Filter by tag slug.")
     optional(:query).filled(:string).description("Case-insensitive substring match on the title.")
     optional(:limit).filled(:integer).description("Max results (default: #{DEFAULT_LIMIT}, max: #{MAX_LIMIT}).")
@@ -32,7 +34,10 @@ class ListPostsTool < ActionTool::Base
 
     scope = Post.all
     scope = scope.merge(Post.articles) if kind == "article"
+    # Exact types, not the STI hierarchy: kind: "page" means About, never the HTML pages
+    # that inherit from it — they answer to their own kind and their own tools.
     scope = scope.where(type: "Page") if kind == "page"
+    scope = scope.where(type: "HtmlPage") if kind == "html_page"
 
     now = Time.current
     case status
@@ -77,19 +82,5 @@ class ListPostsTool < ActionTool::Base
         excerpt: post.excerpt,
         tags: post.tags.map(&:slug)
       }
-    end
-
-    def kind_of(post)
-      post.is_a?(Page) ? "page" : "article"
-    end
-
-    def status_of(post)
-      if post.published?
-        "published"
-      elsif post.scheduled?
-        "scheduled"
-      else
-        "draft"
-      end
     end
 end

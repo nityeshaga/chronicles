@@ -7,8 +7,14 @@ module PostToolSupport
       key.match?(/\A\d+\z/) ? Post.find_by(id: key) : Post.find_by(slug: key)
     end
 
+    # HtmlPage < Page, so it has to be asked about first or every HTML page reports
+    # itself as a plain page and agents send it to the wrong tool.
     def kind_of(post)
-      post.is_a?(Page) ? "page" : "article"
+      case post
+      when HtmlPage then "html_page"
+      when Page     then "page"
+      else               "article"
+      end
     end
 
     def status_of(post)
@@ -33,10 +39,10 @@ module PostToolSupport
     def edit_url(post)
       helpers = Rails.application.routes.url_helpers
       options = { host: Setting.current.production_host, protocol: "https" }
-      if post.is_a?(Page)
-        helpers.edit_writing_page_url(post, **options)
-      else
-        helpers.edit_writing_post_url(post, **options)
+      case post
+      when HtmlPage then helpers.edit_writing_html_page_url(post, **options)
+      when Page     then helpers.edit_writing_page_url(post, **options)
+      else               helpers.edit_writing_post_url(post, **options)
       end
     end
 
