@@ -14,14 +14,15 @@ Why bother, when Ghost exists and is good? Because Ghost — like every publishi
 
 That's the real product, and it works at two levels:
 
-1. **Your agent writes with you.** The app ships an MCP server at `/mcp` with 11 tools — your agent lists, drafts, edits (surgical body patches, not wholesale rewrites), tags, schedules, publishes, unpublishes, uploads images, embeds YouTube and X posts. claude.ai connects by pasting a URL; Claude Code connects with a token minted at `/writing/connect`.
+1. **Your agent writes with you.** The app ships an MCP server at `/mcp` with 13 tools — your agent lists, drafts, edits (surgical body patches, not wholesale rewrites), tags, schedules, publishes, unpublishes, uploads images, embeds YouTube and X posts, and publishes whole hand-authored HTML pages (landing pages served verbatim at a root slug, no blog chrome). claude.ai connects by pasting a URL; Claude Code connects with a token minted at `/writing/connect`.
 2. **Your agent rewrites the platform.** Want comments? A second author? A different homepage? A podcast feed? Those aren't missing features — they're conversations you haven't had with your agent yet. You own the complete source, in the simplest full-stack framework ever made for one person. On most platforms "infinite customizability" is something a marketing team wrote. Here it's just the license.
 
 A from-scratch agent build is a promise. This is proof: a real site you can visit, the complete source of that exact site, and the production landmines already mapped (see [Conventions and landmines](#conventions-and-landmines-read-before-changing-anything) — several of those bugs have been paid for so you don't have to pay them again).
 
 ## What's in the box
 
-- **The writing room** at `/writing` (sign-in required): drafts, scheduled, published, pages. A rich-text editor ([Lexxy](https://github.com/basecamp/lexxy), from Basecamp) that autosaves every 2 seconds. Publish now, or pick a future time and a background job does it for you.
+- **The writing room** at `/writing` (sign-in required): drafts, scheduled, published, pages, HTML pages. A rich-text editor ([Lexxy](https://github.com/basecamp/lexxy), from Basecamp) that autosaves every 2 seconds. Publish now, or pick a future time and a background job does it for you.
+- **HTML pages**: a third content kind (`HtmlPage < Page`) — one complete hand-authored HTML document served byte-for-byte at a root slug, for landing pages whose design *is* the content. Agents author them over MCP (`create_html_page` / `update_html_page`), which screens the document on the way in: `<title>` required, canonical link injected, missing meta description and relative asset paths reported. The writing UI edits them in a plain textarea and never touches the bytes.
 - **The reader experience**: designed homepage, tag pages, RSS at `/rss`, a Ghost-shaped sitemap index, full SEO/OG/Twitter/JSON-LD head tags, and 301s that keep old links alive forever.
 - **A Ghost importer** (`lib/ghost/`): posts, drafts, pages, tags, images, embeds — mobiledoc in, Action Text out. One-time and additive; re-importing wants a fresh database.
 - **MCP + OAuth for agents**, as above. Dynamic client registration included, so an agent can onboard itself from a pasted URL.
@@ -89,7 +90,7 @@ Pushing/merging to `main` auto-deploys: the `deploy` job in `.github/workflows/c
 | `app/models/setting.rb` | The one row that makes the site yours |
 | `lib/ghost/` | One-time Ghost import (mobiledoc → Action Text HTML). Keep: it documents the stored-content shape |
 | `app/controllers/writing/` | The authoring UI (posts, pages, tags, publishings, embeds) |
-| `app/tools/` + `config/initializers/mcp.rb` | The 11 MCP tools and the server doctrine |
+| `app/tools/` + `config/initializers/mcp.rb` | The 13 MCP tools and the server doctrine |
 | `app/views/shared/_meta.html.erb` | All SEO/OG/Twitter head tags, shaped for Ghost parity |
 | `app/javascript/controllers/` | Stimulus: autosave, autogrow, slug, embed, editor, dashboard… |
 | `app/assets/stylesheets/application.css` | The whole design, hand-written. Public typography + editor canvas share selector lists |
@@ -104,7 +105,7 @@ Pushing/merging to `main` auto-deploys: the `deploy` job in `.github/workflows/c
 - Imported post bodies contain Ghost's `kg-*` card markup (`kg-image-card`, `kg-gallery-card`, …) — the importer wrote it there on purpose. The `kg-*` CSS rules must stay or imported posts' images/galleries/embeds break. The `gh-*` class *names* are legacy and may be renamed someday, but the styles they carry ARE the site's design.
 - Sitemap URLs, RSS shape, and the `/author/:slug` redirect all match what Ghost served. Don't tidy them.
 
-**STI.** `Page < Post`, discriminated by `type`. Use the `Post.articles` scope for posts-only queries — never hand-type `where(type: "Post")`. `posts#show` and `Writing::PostsController#set_post` are unfiltered **on purpose** (pages are served/edited through them; the comments at those sites say so).
+**STI.** `HtmlPage < Page < Post`, discriminated by `type`. Use the `Post.articles` scope for posts-only queries — never hand-type `where(type: "Post")`. `posts#show` and `Writing::PostsController#set_post` are unfiltered **on purpose** (pages are served/edited through them; the comments at those sites say so). The one deliberate exception: `Writing::PagesController` and the dashboard's Pages bucket are scoped to exact type `"Page"` — an HtmlPage opened in the Lexxy form would have its raw document overwritten by an Action Text body.
 
 **Publishing.** `published_at` on a draft with a future time = a schedule. The enqueued job carries its scheduled time and publishes only if `published_at` still equals it — that identity check is what stops a stale job from republishing a post that was since unpublished. Two traps: timestamps are **floored to whole seconds** (SQLite keeps µs, the job serializer keeps ns — sub-second stamps break the equality; tests must floor too), and if you ever change `PublishJob#perform`'s signature, jobs already sitting in the production queue will error when they fire — check for scheduled posts before deploying such a change.
 
