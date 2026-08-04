@@ -12,6 +12,17 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # HTML pages are Pages by STI but are edited nowhere near the Lexxy form, so the
+  # Pages bucket scopes to the exact type — a row here would link straight into the
+  # editor that overwrites their stored document.
+  test "the Pages bucket excludes HTML pages" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+    assert_response :success
+    assert_select "a[href=?]", edit_writing_page_path(posts(:about))
+    assert_select "a[href=?]", edit_writing_page_path(posts(:html_page)), count: 0
+  end
+
   test "creates a post when signed in" do
     sign_in_as users(:nityesh)
     assert_difference -> { Post.articles.count }, 1 do

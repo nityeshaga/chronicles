@@ -52,7 +52,10 @@ class Writing::PagesController < Writing::BaseController
 
   private
     def set_page
-      @post = Page.find_by!(slug: params[:id])
+      # Exact type, so an HtmlPage slug 404s here rather than opening in the Lexxy
+      # form — saving that form would write an Action Text body over the stored
+      # document and silently lose it.
+      @post = Page.find_by!(type: "Page", slug: params[:id])
     end
 
     def page_params

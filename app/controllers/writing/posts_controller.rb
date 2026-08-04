@@ -14,7 +14,9 @@ class Writing::PostsController < Writing::BaseController
     @scheduled = scheduled
     @drafts = drafts
     @published = Post.articles.published.ordered
-    @pages = Page.ordered
+    # Exact type, not the STI subtree: an HtmlPage listed here would link into the
+    # Lexxy pages form, which writes an Action Text body over a raw-HTML record.
+    @pages = Page.where(type: "Page").ordered
   end
 
   def show
