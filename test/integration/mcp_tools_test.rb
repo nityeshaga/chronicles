@@ -37,6 +37,31 @@ class McpToolsTest < ActionDispatch::IntegrationTest
     assert_includes get_text, "draft"
   end
 
+  # The gate and the patch contract are unit-tested; what only the wire can prove is that
+  # an html_patches array of objects survives the transport's schema validation.
+  test "create_html_page then update_html_page round-trips a document through the transport" do
+    session_id = open_session
+    document = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<title>Wire Landing</title>\n<meta name=\"description\" content=\"x\">\n</head>\n<body><h1>Wire Landing</h1></body>\n</html>\n"
+
+    call_tool("create_html_page", { title: "Wire Landing", html: document }, session_id)
+    assert_response :success
+    create_result = JSON.parse(response.body).dig("result")
+    assert_not create_result["isError"]
+    assert_includes create_result.dig("content", 0, "text"), "wire-landing"
+
+    call_tool("update_html_page", {
+      id_or_slug: "wire-landing",
+      html_patches: [ { old: "<h1>Wire Landing</h1>", new: "<h1>Wire Landed</h1>" } ]
+    }, session_id)
+    assert_response :success
+    update_result = JSON.parse(response.body).dig("result")
+    assert_not update_result["isError"]
+
+    page = HtmlPage.find_by(slug: "wire-landing")
+    assert_includes page.raw_html, "<h1>Wire Landed</h1>"
+    assert_equal 1, page.raw_html.scan(/rel="canonical"/).size
+  end
+
   private
     def open_session
       post_mcp({
