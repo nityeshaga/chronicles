@@ -15,8 +15,10 @@ class Writing::PostsController < Writing::BaseController
     @drafts = drafts
     @published = Post.articles.published.ordered
     # Exact type, not the STI subtree: an HtmlPage listed here would link into the
-    # Lexxy pages form, which writes an Action Text body over a raw-HTML record.
+    # Lexxy pages form, which writes an Action Text body over a raw-HTML record. They
+    # get their own bucket instead, linking into their own editor.
     @pages = Page.where(type: "Page").ordered
+    @html_pages = HtmlPage.ordered
   end
 
   def show

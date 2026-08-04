@@ -767,8 +767,11 @@ a:hover { opacity: .8; }
 .dash-tab.is-active { color: var(--w-ink); border-bottom-color: var(--w-accent); }
 .dash-tab__count { font-size: 1.15rem; font-weight: 600; color: var(--w-faint); background: rgba(0, 0, 0, .05); border-radius: 20px; padding: .15rem .6rem; min-width: 2.1rem; text-align: center; }
 .dash-tab.is-active .dash-tab__count { color: var(--w-accent); background: rgba(180, 83, 9, .12); }
-.dash-tabs__spacer { margin-left: auto; font-size: 1.35rem; font-weight: 500; color: var(--w-muted); padding: .9rem .6rem; }
-.dash-tabs__spacer:hover { color: var(--w-accent); opacity: 1; }
+/* The "New …" links ride the tail of the tab row. Grouped, so the flex free space opens
+   once — before the pair — rather than between them, and so they wrap together. */
+.dash-tabs__spacer { margin-left: auto; display: inline-flex; align-items: center; }
+.dash-tabs__spacer a { font-size: 1.35rem; font-weight: 500; color: var(--w-muted); padding: .9rem .6rem; }
+.dash-tabs__spacer a:hover { color: var(--w-accent); opacity: 1; }
 
 .dash-list { list-style: none; padding: 0; margin: 0; }
 .dash-row { display: flex; align-items: center; justify-content: space-between; gap: 1.6rem; padding: 1.5rem .6rem; border-bottom: 1px solid var(--w-line); }

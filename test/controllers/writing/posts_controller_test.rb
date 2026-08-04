@@ -23,6 +23,15 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", edit_writing_page_path(posts(:html_page)), count: 0
   end
 
+  test "HTML pages get their own bucket linking into their own editor" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+    assert_response :success
+    assert_select ".dash-tab[data-status=?]", "html_page"
+    assert_select ".dash-row[data-status=?] a[href=?]", "html_page",
+      edit_writing_html_page_path(posts(:html_page))
+  end
+
   test "creates a post when signed in" do
     sign_in_as users(:nityesh)
     assert_difference -> { Post.articles.count }, 1 do
