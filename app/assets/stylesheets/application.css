@@ -959,6 +959,21 @@ a:hover { opacity: .8; }
 
 .feature-image-preview { margin-top: .8rem; max-width: 100%; border-radius: 8px; border: 1px solid var(--w-line); }
 
+/* ---- HTML page editor: a hand-authored document is edited as source, not prose, so the
+   body field is a tall monospace textarea that never wraps or autocorrects — wrapping
+   would lie about the lines the author is reading. Publishing hangs off a panel below the
+   form; there's no sticky editor bar here to anchor the popover to. ---- */
+.field textarea.html-source {
+  font-family: var(--font-mono); font-size: 1.3rem; line-height: 1.55;
+  min-height: 58vh; white-space: pre; overflow-wrap: normal; tab-size: 2;
+}
+.editor-panel {
+  margin-top: 2.6rem; background: var(--w-panel); border: 1px solid var(--w-line);
+  border-radius: var(--w-radius); box-shadow: var(--w-shadow);
+}
+.editor-panel > h2 { font-family: var(--font-sans); font-size: 1.5rem; font-weight: 600; padding: 1.2rem 1.6rem; border-bottom: 1px solid var(--w-line); }
+.editor-panel__danger { margin-top: 2.6rem; }
+
 /* =========================================================================
    Form page (tag editor) + auth card
    ========================================================================= */
