@@ -16,7 +16,7 @@ class UpdatePostTool < ActionTool::Base
   arguments do
     required(:id_or_slug).filled.description("The post's numeric id or its slug string.")
     optional(:title).filled(:string).description("New title.")
-    optional(:kind).filled(:string).description("Change the kind: 'article' or 'page'.")
+    optional(:kind).filled(:string).description("Change the kind: 'article' or 'page'. HTML pages are neither — they are edited with update_html_page.")
     optional(:body).filled(:string).description("Full replacement body HTML. Mutually exclusive with body_patches.")
     optional(:body_patches).value(:array, min_size?: 1).description('Array of {"old","new"} pairs for surgical edits. Each "old" must appear exactly once in the current body. Mutually exclusive with body.')
     optional(:excerpt).filled(:string).description("New excerpt / standfirst.")
@@ -34,8 +34,12 @@ class UpdatePostTool < ActionTool::Base
 
     post = resolve_post(id_or_slug)
     return ToolErrors::POST_NOT_FOUND unless post
+    # An HtmlPage has no Action Text body, so every field this tool writes would either
+    # no-op or quietly grow a body nothing renders. Refuse at the door.
+    return ToolErrors::IS_AN_HTML_PAGE if post.is_a?(HtmlPage)
 
     return { error: "body and body_patches are mutually exclusive. Pass body for a full replacement or body_patches for surgical edits, not both." } if body.present? && body_patches.present?
+    return ToolErrors::HTML_PAGE_KIND if kind == "html_page"
     return ToolErrors::INVALID_KIND if kind.present? && !%w[ article page ].include?(kind)
 
     slug_was = post.slug

@@ -15,7 +15,7 @@ class CreatePostTool < ActionTool::Base
 
   arguments do
     required(:title).filled(:string).description("The post title.")
-    optional(:kind).filled(:string).description("'article' (a blog post, the default) or 'page' (a standalone page like About).")
+    optional(:kind).filled(:string).description("'article' (a blog post, the default) or 'page' (a standalone page like About). A whole-document HTML page is not a kind here — it has its own tool, create_html_page.")
     optional(:body).filled(:string).description("Body HTML. For images/embeds use Ghost-parity kg-* card markup — call upload_image/create_embed rather than hand-writing it.")
     optional(:excerpt).filled(:string).description("The standfirst shown under the title, on the home feed, and in social cards.")
     optional(:slug).filled(:string).description("Explicit URL slug. Omit to auto-generate from the title.")
@@ -29,6 +29,9 @@ class CreatePostTool < ActionTool::Base
   def call(title:, kind: "article", body: nil, excerpt: nil, slug: nil, tags: nil, feature_image: nil, feature_image_caption: nil, meta_title: nil, meta_description: nil)
     user = Thread.current[:mcp_current_user]
     return ToolErrors::AUTH_REQUIRED unless user
+    # Named separately from the generic kind error: an agent reaching for html_page has the
+    # right intent and the wrong door, so send it to the door rather than to the kind list.
+    return ToolErrors::HTML_PAGE_KIND if kind == "html_page"
     return ToolErrors::INVALID_KIND unless %w[ article page ].include?(kind)
 
     post = (kind == "page" ? Page : Post).new(

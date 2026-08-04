@@ -56,6 +56,14 @@ class CreatePostToolTest < ActiveSupport::TestCase
     assert_equal ToolErrors::INVALID_KIND, CreatePostTool.new.call(title: "X", kind: "banana")
   end
 
+  test "rejects html_page as a kind and points at its own tool" do
+    result = CreatePostTool.new.call(title: "Landing", kind: "html_page")
+
+    assert_equal ToolErrors::HTML_PAGE_KIND, result
+    assert_includes result[:error], "create_html_page"
+    assert_nil Post.find_by(slug: "landing")
+  end
+
   test "squishing of the title is left to the model" do
     result = CreatePostTool.new.call(title: "  Spaced   Out  ")
     assert_equal "Spaced Out", Post.find(result[:id]).title
