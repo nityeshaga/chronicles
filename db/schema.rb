@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_23_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_04_075945) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.text "body"
     t.datetime "created_at", null: false
@@ -127,6 +127,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_23_120000) do
     t.string "meta_description"
     t.string "meta_title"
     t.datetime "published_at"
+    t.text "raw_html"
     t.text "raw_source"
     t.string "slug", null: false
     t.string "status", default: "draft", null: false
