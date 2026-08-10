@@ -946,6 +946,8 @@ a:hover { opacity: .8; }
 .publish-popover__head h2 { font-family: var(--font-sans); font-size: 1.5rem; font-weight: 600; }
 .publish-popover__body { padding: 1.6rem; display: flex; flex-direction: column; gap: 1.3rem; }
 .publish-state { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; font-size: 1.4rem; color: var(--w-muted); }
+.publish-state a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.publish-state a:hover { color: var(--w-ink); }
 .publish-actions { display: flex; gap: .8rem; flex-wrap: wrap; }
 .schedule-form { display: flex; flex-direction: column; gap: .9rem; }
 
