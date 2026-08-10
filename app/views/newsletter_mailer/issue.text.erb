@@ -1,0 +1,12 @@
+<%= @post.title %>
+<%= "=" * @post.title.length %>
+
+<%= @post.excerpt.presence %>
+
+<%= strip_tags(@post.body.to_s).squish %>
+
+Read this on the web: <%= post_url(@post, trailing_slash: true) %>
+
+---
+You're receiving this because you subscribed at <%= Setting.current.production_host %>.
+Unsubscribe: <%= @unsubscribe_url %>

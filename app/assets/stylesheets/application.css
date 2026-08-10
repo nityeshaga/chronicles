@@ -316,6 +316,8 @@ a:hover { opacity: .8; }
 .gh-error .error-message { font-family: var(--body); font-style: italic; font-size: 2.2rem; color: var(--ink-soft); margin-top: 1rem; }
 .gh-error a { display: inline-block; margin-top: 3rem; font-family: var(--mono); font-size: 1.2rem; letter-spacing: .14em; text-transform: uppercase; color: var(--terracotta); text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: 3px; }
 .gh-error a:hover { color: var(--terracotta-deep); opacity: 1; }
+.gh-error button { display: inline-block; margin-top: 3rem; font-family: var(--mono); font-size: 1.2rem; letter-spacing: .14em; text-transform: uppercase; color: var(--terracotta); background: none; border: none; border-bottom: 1px solid currentColor; padding: 0 0 3px; cursor: pointer; }
+.gh-error button:hover { color: var(--terracotta-deep); }
 
 /* ---- Responsive ---- */
 @media (max-width: 700px) {
@@ -944,6 +946,8 @@ a:hover { opacity: .8; }
 .publish-popover__head h2 { font-family: var(--font-sans); font-size: 1.5rem; font-weight: 600; }
 .publish-popover__body { padding: 1.6rem; display: flex; flex-direction: column; gap: 1.3rem; }
 .publish-state { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; font-size: 1.4rem; color: var(--w-muted); }
+.publish-state a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.publish-state a:hover { color: var(--w-ink); }
 .publish-actions { display: flex; gap: .8rem; flex-wrap: wrap; }
 .schedule-form { display: flex; flex-direction: column; gap: .9rem; }
 

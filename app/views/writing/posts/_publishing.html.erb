@@ -13,6 +13,27 @@
       <%= button_to "Unpublish", [ :writing, post, :publishing ], method: :delete,
             class: "w-btn w-btn--ghost w-btn--sm", form_class: "w-inline" %>
     </div>
+
+    <%# Newsletter: a published post can be mailed to the list exactly once. After it
+        goes out, the button is replaced by the sent stamp so it can't be re-sent.
+        Pages share this popover but aren't newsletterable, so they skip the block. %>
+    <% if post.newsletterable? %>
+    <div class="publish-newsletter">
+      <% if post.newsletter_sent? %>
+        <p class="publish-state">
+          <span class="status status--published">Sent</span>
+          Mailed to <%= link_to post.newsletter_recipients_count ? pluralize(post.newsletter_recipients_count, "subscriber") : "subscribers", writing_subscribers_path %>
+          <%= post.newsletter_sent_at.strftime("%-d %b %Y, %-l:%M %p") %>.
+        </p>
+      <% else %>
+        <% count = Subscriber.count %>
+        <p class="publish-state"><span>Goes to <%= link_to pluralize(count, "subscriber"), writing_subscribers_path %>.</span></p>
+        <%= button_to "Send as newsletter", [ :writing, post, :newsletter ], method: :post,
+              class: "w-btn w-btn--primary w-btn--sm", form_class: "w-inline",
+              data: { turbo_confirm: "Mail this post to all #{count} subscribers? This can’t be undone." } %>
+      <% end %>
+    </div>
+    <% end %>
   <% elsif post.scheduled? %>
     <p class="publish-state">
       <span class="status status--scheduled">Scheduled</span>

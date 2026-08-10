@@ -1,0 +1,22 @@
+<h1 style="font-family: Georgia, 'Times New Roman', serif; font-size: 28px; line-height: 1.2; margin: 0 0 8px;">
+  <%= link_to @post.title, post_url(@post, trailing_slash: true), style: "color: #1a1a1a; text-decoration: none;" %>
+</h1>
+
+<% if @post.excerpt.present? %>
+  <p style="font-family: Georgia, serif; font-size: 17px; color: #555; margin: 0 0 24px;"><%= @post.excerpt %></p>
+<% end %>
+
+<div style="font-family: Georgia, 'Times New Roman', serif; font-size: 17px; line-height: 1.7; color: #1a1a1a;">
+  <%= @post.body %>
+</div>
+
+<hr style="border: none; border-top: 1px solid #e0dccf; margin: 32px 0 16px;">
+
+<p style="font-family: Georgia, serif; font-size: 15px;">
+  <%= link_to "Read this on the web →", post_url(@post, trailing_slash: true), style: "color: #c4622d;" %>
+</p>
+
+<p style="font-family: Arial, sans-serif; font-size: 12px; color: #999; line-height: 1.5; margin-top: 24px;">
+  You’re receiving this because you subscribed at <%= Setting.current.production_host %>.<br>
+  <%= link_to "Unsubscribe", @unsubscribe_url, style: "color: #999;" %>
+</p>

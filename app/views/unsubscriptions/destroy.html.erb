@@ -1,0 +1,9 @@
+<% content_for :meta_title, "Unsubscribed" %>
+
+<main class="gh-main gh-outer">
+  <section class="gh-error gh-inner">
+    <h1 class="error-message">You’re unsubscribed.</h1>
+    <p>You won’t receive any more emails from <%= Setting.current.site_title %>.</p>
+    <%= link_to "Back to the front page →", root_path %>
+  </section>
+</main>

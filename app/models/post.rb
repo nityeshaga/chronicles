@@ -89,6 +89,28 @@ class Post < ApplicationRecord
   # A future publish stamp on a draft is a schedule waiting to fire.
   def scheduled? = draft? && published_at&.future? || false
 
+  # --- Newsletter (the model owns the guard + the stamp; the fan-out is a job) ---
+
+  # Mail this post to every subscriber, once. Stamping newsletter_sent_at up front is
+  # the idempotency guard: a double-clicked button or a re-POSTed form finds the post
+  # already stamped and no-ops, so no subscriber gets the same issue twice. The trade
+  # is that a total enqueue failure would still read as "sent" — acceptable here,
+  # because double-mailing a personal list is the worse outcome to protect against.
+  def deliver_newsletter
+    return false unless newsletter_ready?
+
+    # The recipient count is part of the stamp: the list keeps moving after the
+    # send, so "mailed to 142" must record 142 as it was in that moment.
+    update!(newsletter_sent_at: Time.current, newsletter_recipients_count: Subscriber.count)
+    Post::NewsletterJob.perform_later(self)
+    true
+  end
+
+  def newsletter_sent? = newsletter_sent_at.present?
+
+  # Only a live post that hasn't already gone out can be mailed.
+  def newsletter_ready? = published? && !newsletter_sent?
+
   # The description Ghost puts in og:/twitter:/JSON-LD: a custom excerpt if the
   # author wrote one, otherwise an auto-excerpt derived from the body. Never blank,
   # so social cards always have text. (Derive, don't store — no second source of truth.)
@@ -108,6 +130,9 @@ class Post < ApplicationRecord
   def body_class = "post-template"
   def article_meta? = true
   def show_title? = true
+  # Only blog articles mail the list; Pages/HtmlPages share the publish popover but
+  # have no newsletter route. Page overrides this to false.
+  def newsletterable? = true
 
   private
     # Ghost's fallback: strip the HTML to plain text, collapse whitespace, and cut
