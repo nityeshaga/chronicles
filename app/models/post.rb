@@ -99,7 +99,9 @@ class Post < ApplicationRecord
   def deliver_newsletter
     return false unless newsletter_ready?
 
-    update!(newsletter_sent_at: Time.current)
+    # The recipient count is part of the stamp: the list keeps moving after the
+    # send, so "mailed to 142" must record 142 as it was in that moment.
+    update!(newsletter_sent_at: Time.current, newsletter_recipients_count: Subscriber.count)
     Post::NewsletterJob.perform_later(self)
     true
   end

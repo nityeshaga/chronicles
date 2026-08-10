@@ -13,6 +13,7 @@ class PostNewsletterTest < ActiveSupport::TestCase
     end
 
     assert post.reload.newsletter_sent?
+    assert_equal Subscriber.count, post.newsletter_recipients_count
   end
 
   test "a draft can't be mailed" do

@@ -22,12 +22,15 @@
       <% if post.newsletter_sent? %>
         <p class="publish-state">
           <span class="status status--published">Sent</span>
-          Mailed to subscribers <%= post.newsletter_sent_at.strftime("%-d %b %Y, %-l:%M %p") %>.
+          Mailed to <%= post.newsletter_recipients_count ? pluralize(post.newsletter_recipients_count, "subscriber") : "subscribers" %>
+          <%= post.newsletter_sent_at.strftime("%-d %b %Y, %-l:%M %p") %>.
         </p>
       <% else %>
+        <% count = Subscriber.count %>
+        <p class="publish-state">Goes to <%= pluralize(count, "subscriber") %>.</p>
         <%= button_to "Send as newsletter", [ :writing, post, :newsletter ], method: :post,
               class: "w-btn w-btn--primary w-btn--sm", form_class: "w-inline",
-              data: { turbo_confirm: "Mail this post to all #{Subscriber.count} subscribers? This can’t be undone." } %>
+              data: { turbo_confirm: "Mail this post to all #{count} subscribers? This can’t be undone." } %>
       <% end %>
     </div>
     <% end %>
