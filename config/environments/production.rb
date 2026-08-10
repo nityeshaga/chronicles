@@ -66,9 +66,11 @@ Rails.application.configure do
   config.active_job.queue_adapter = :solid_queue
   config.solid_queue.connects_to = { database: { writing: :queue } }
 
-  # A bad address on the list must not abort the whole newsletter fan-out; Postmark
-  # reports the bounce out-of-band, so swallow the delivery error here.
-  config.action_mailer.raise_delivery_errors = false
+  # Delivery errors must surface: a transient Postmark failure retries on its own, a
+  # permanently-bad recipient is discarded (config/initializers/action_mailer.rb),
+  # and anything else lands in Solid Queue's failed set — never a silent drop that
+  # still reads as "sent".
+  config.action_mailer.raise_delivery_errors = true
 
   # Links (unsubscribe, read-on-web) and inlined assets in mailer templates resolve
   # against the canonical host.

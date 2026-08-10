@@ -25,10 +25,11 @@ Rails.application.routes.draw do
   # it must sit above the catch-all root-slug route at the bottom.
   resources :subscribers, only: :create
 
-  # Unsubscribe from the newsletter. GET is the visible footer link; POST is the RFC
-  # 8058 one-click that mail clients fire. Both destroy the subscriber via a signed
-  # token, so it's public and needs no session.
-  match "unsubscribe/:token", to: "unsubscriptions#show", via: %i[ get post ], as: :unsubscribe
+  # Unsubscribe from the newsletter. The footer link GETs a confirmation page (GET
+  # stays safe, so link-scanning proxies can't shrink the list); the page's button
+  # and the RFC 8058 one-click both POST the destroy. Signed token, no session.
+  get "unsubscribe/:token", to: "unsubscriptions#show", as: :unsubscribe
+  post "unsubscribe/:token", to: "unsubscriptions#destroy"
 
   resource :session, only: %i[ new create destroy ]
 

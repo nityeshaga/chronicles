@@ -1,9 +1,9 @@
-<% content_for :meta_title, "Unsubscribed" %>
+<% content_for :meta_title, "Unsubscribe" %>
 
 <main class="gh-main gh-outer">
   <section class="gh-error gh-inner">
-    <h1 class="error-message">You’re unsubscribed.</h1>
-    <p>You won’t receive any more emails from <%= Setting.current.site_title %>.</p>
-    <%= link_to "Back to the front page &rarr;".html_safe, root_path %>
+    <h1 class="error-message">Unsubscribe from the newsletter?</h1>
+    <p><%= @subscriber.email %> won’t receive any more emails from <%= Setting.current.site_title %>.</p>
+    <%= button_to "Unsubscribe", unsubscribe_path(token: params[:token], trailing_slash: true), data: { turbo: false } %>
   </section>
 </main>
