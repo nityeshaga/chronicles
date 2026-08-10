@@ -3,4 +3,5 @@ class Page < Post
   def body_class = "page-template"
   def article_meta? = false
   def show_title? = false
+  def newsletterable? = false
 end

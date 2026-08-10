@@ -25,6 +25,11 @@ Rails.application.routes.draw do
   # it must sit above the catch-all root-slug route at the bottom.
   resources :subscribers, only: :create
 
+  # Unsubscribe from the newsletter. GET is the visible footer link; POST is the RFC
+  # 8058 one-click that mail clients fire. Both destroy the subscriber via a signed
+  # token, so it's public and needs no session.
+  match "unsubscribe/:token", to: "unsubscriptions#show", via: %i[ get post ], as: :unsubscribe
+
   resource :session, only: %i[ new create destroy ]
 
   # OAuth — lets claude.ai connect to /mcp from a pasted URL. We manage apps via
@@ -47,6 +52,9 @@ Rails.application.routes.draw do
     root "posts#index"
     resources :posts do
       resource :publishing, only: %i[ create destroy ]
+      # Send the published post to the subscriber list — a one-shot, so a singular
+      # resource with just create. The "delivery" noun each send creates.
+      resource :newsletter, only: :create
     end
     # Pages have no index of their own — they're listed on the writing index alongside
     # posts — so drop that route rather than leave it pointing at a missing action.

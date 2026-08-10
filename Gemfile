@@ -27,6 +27,9 @@ gem "doorkeeper", "~> 5.8.2"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
 
+# Deliver the newsletter through Postmark's broadcast stream [https://github.com/ActiveCampaign/postmark-rails]
+gem "postmark-rails"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
