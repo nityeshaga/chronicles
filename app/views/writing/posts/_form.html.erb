@@ -139,11 +139,14 @@
         </div>
 
         <% if saving %>
-          <%# Delete lives at the foot of settings (Ghost's convention), off the ship flow. %>
+          <%# Delete lives at the foot of settings (Ghost's convention), off the ship flow.
+              The button belongs to the sibling #delete-post form below — a button_to here
+              would nest a <form> inside the edit form, and the HTML parser strips the inner
+              tag, turning Delete into a submit button of the edit form (a silent PATCH). %>
           <hr class="settings-panel__rule">
           <div class="settings-panel__danger">
-            <%= button_to "Delete #{post.model_name.human.downcase}", [ :writing, post ], method: :delete,
-                  class: "w-btn w-btn--danger w-btn--sm", form_class: "w-inline",
+            <%= button_tag "Delete #{post.model_name.human.downcase}", form: "delete-post",
+                  class: "w-btn w-btn--danger w-btn--sm",
                   data: { turbo_confirm: "Delete this #{post.model_name.human.downcase} for good?" } %>
           </div>
         <% end %>
@@ -161,6 +164,12 @@
       </header>
       <%= render "writing/posts/publishing", post: post %>
     </div>
+  <% end %>
+
+  <% if saving %>
+    <%# The delete <form>: a sibling of the autosaving form for the same reason as tag-mint —
+        nested forms get stripped by the parser. Its button sits in the settings panel above. %>
+    <%= form_with url: [ :writing, post ], method: :delete, id: "delete-post" do %><% end %>
   <% end %>
 
   <% if taggable && saving %>

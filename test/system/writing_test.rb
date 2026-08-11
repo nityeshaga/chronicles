@@ -26,6 +26,19 @@ class WritingTest < ApplicationSystemTestCase
     assert_text "A System-Tested Post"
   end
 
+  test "deleting a post from the editor" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+
+    visit edit_writing_post_url(draft)
+    # The button lives in the settings panel and submits the sibling #delete-post form
+    # via its form attribute.
+    click_on "Delete post"
+
+    assert_current_path writing_root_path
+    assert_not Post.exists?(draft.id)
+  end
+
   test "unpublishing returns a post to the drafts list" do
     sign_in_as users(:nityesh)
     published = posts(:published)

@@ -83,7 +83,9 @@ class Writing::PostsController < Writing::BaseController
 
   def destroy
     @post.destroy
-    redirect_to writing_root_url
+    # 303, not 302: the browser reaches here on a real DELETE fetch, and a 302 makes it
+    # replay DELETE against the redirect target — which has no DELETE route.
+    redirect_to writing_root_url, status: :see_other
   end
 
   private
