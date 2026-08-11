@@ -182,7 +182,28 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_difference -> { Post.count }, -1 do
       delete writing_post_url(draft)
     end
+    # 303: the browser arrives on a real DELETE fetch, and a 302 would make it replay
+    # DELETE against the redirect target.
     assert_redirected_to writing_root_url
+    assert_response :see_other
+  end
+
+  test "the editor's forms are all siblings — never nested" do
+    sign_in_as users(:nityesh)
+    get edit_writing_post_url(posts(:draft))
+
+    # The browser's HTML parser drops a <form> opened inside another form, which once
+    # turned the Delete button into a submit button of the edit form (a silent PATCH
+    # instead of a DELETE). assert_select can't see this — its HTML5 parser performs
+    # the same stripping — so pin the raw markup: form tags must strictly alternate.
+    response.body.scan(/<form[\s>]|<\/form>/).each_slice(2) do |pair|
+      assert_match(/\A<form[\s>]\z/, pair.first, "found a <form> nested inside another form")
+      assert_equal "</form>", pair.last
+    end
+
+    # And the delete button reaches its sibling form by the HTML form attribute.
+    assert_select "button[form=delete-post]", text: "Delete post"
+    assert_select "form#delete-post input[name=_method][value=delete]"
   end
 
   test "preview renders the public post template behind auth" do
