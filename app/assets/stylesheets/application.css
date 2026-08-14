@@ -500,22 +500,24 @@ a:hover { opacity: .8; }
   transition: transform .3s ease; transform-origin: bottom center;
 }
 .book:hover { transform: translateY(-14px); opacity: 1; }
-.book .spine-title { writing-mode: vertical-rl; font-family: var(--serif); font-weight: 800; letter-spacing: .03em; display: flex; align-items: center; gap: 10px; max-height: calc(100% - 44px); overflow: hidden; text-shadow: 0 1px 2px rgba(0, 0, 0, .45); }
-/* Light-toned spines carry dark ink, so a bright emboss reads better than a dark glow. */
-.b-writing .spine-title, .b-agi .spine-title { text-shadow: 0 1px 0 rgba(255, 255, 255, .55); }
-.book .count { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); font-family: var(--mono); font-size: 9px; opacity: .7; writing-mode: horizontal-tb; }
+.book .spine-title { writing-mode: vertical-rl; font-family: var(--serif); font-weight: 700; letter-spacing: .04em; display: flex; align-items: center; gap: 10px; max-height: calc(100% - 44px); overflow: hidden; }
+/* Dark spines get a faint press-in shadow; light spines read best with none at all. */
+.shelf-books .b-ml .spine-title, .shelf-books .b-comm .spine-title, .shelf-books .b-boot .spine-title, .shelf-books .b-era .spine-title { text-shadow: 0 1px 1px rgba(0, 0, 0, .3); }
+.book .count { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); font-family: var(--mono); font-size: 10px; opacity: .85; writing-mode: horizontal-tb; }
 .book .bands::before, .book .bands::after { content: ""; position: absolute; left: 6px; right: 6px; height: 2px; background: currentColor; opacity: .4; }
 .book .bands::before { top: 14px; }
 .book .bands::after { bottom: 34px; }
-.b-ml { width: 118px; height: 252px; background: linear-gradient(90deg, #6b503a, #59402c 60%, #48311f); color: #f0e6cf; font-size: 16px; }
-.b-writing { width: 70px; height: 228px; background: linear-gradient(90deg, #c99a4e, #a97f35 60%, #8a6428); color: #2f2410; font-size: 16.5px; }
-.b-comm { width: 90px; height: 248px; background: linear-gradient(90deg, #315142, #2a4437 60%, #223629); color: #f3ecd6; font-size: 17.5px; }
-.b-boot { width: 76px; height: 236px; background: linear-gradient(90deg, #bd6b3e, #a9552a 60%, #8f441d); color: #fdf3e2; font-size: 16.5px; }
-.b-agi { width: 76px; height: 220px; background: linear-gradient(90deg, #f7efdb, #eadfc2 60%, #d9caa4); color: #3a3226; font-size: 16px; transform: rotate(6deg) translateY(2px); transform-origin: bottom right; margin-left: -2px; }
-.b-agi:hover { transform: rotate(0) translateY(-10px); }
+/* Spine ink is scoped under .shelf-books so it outranks `.home-template a { color: inherit }`
+   — bare .b-* classes silently lose that fight and every spine falls back to page ink. */
+.shelf-books .b-ml { width: 118px; height: 252px; background: linear-gradient(90deg, #6b503a, #59402c 60%, #48311f); color: #f4ead2; font-size: 16px; }
+.shelf-books .b-writing { width: 70px; height: 228px; background: linear-gradient(90deg, #c99a4e, #a97f35 60%, #8a6428); color: #211708; font-size: 16.5px; }
+.shelf-books .b-comm { width: 90px; height: 248px; background: linear-gradient(90deg, #315142, #2a4437 60%, #223629); color: #f3ecd6; font-size: 17.5px; }
+.shelf-books .b-boot { width: 76px; height: 236px; background: linear-gradient(90deg, #bd6b3e, #a9552a 60%, #8f441d); color: #fff7e8; font-size: 16.5px; }
+.shelf-books .b-agi { width: 76px; height: 220px; background: linear-gradient(90deg, #f7efdb, #eadfc2 60%, #d9caa4); color: #33291c; font-size: 16px; transform: rotate(6deg) translateY(2px); transform-origin: bottom right; margin-left: -2px; }
+.shelf-books .b-agi:hover { transform: rotate(0) translateY(-10px); }
 .b-agi .ribbon { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 8px; height: 26px; background: var(--spool-red); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%); }
 /* Sensible default spine for a future sixth era (unknown slug). */
-.b-era { width: 80px; height: 240px; background: linear-gradient(90deg, var(--wood), var(--wood-deep) 60%, #48311f); color: #f0e6cf; font-size: 16px; }
+.shelf-books .b-era { width: 80px; height: 240px; background: linear-gradient(90deg, var(--wood), var(--wood-deep) 60%, #48311f); color: #f4ead2; font-size: 16px; }
 .plant { align-self: flex-end; margin-left: 26px; position: relative; width: 56px; height: 74px; }
 .plant .pot { position: absolute; bottom: 0; left: 8px; width: 40px; height: 30px; background: linear-gradient(180deg, #c96636, #a04c20); clip-path: polygon(6% 0, 94% 0, 80% 100%, 20% 100%); }
 .plant .leaf { position: absolute; bottom: 24px; width: 9px; height: 44px; background: #4c6b50; border-radius: 50% 50% 0 0; }
