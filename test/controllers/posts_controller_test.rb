@@ -9,7 +9,7 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
     assert_select "section#subscribe"
   end
 
-  test "index shelves every machine newest-shipped first, each shot linking out" do
+  test "index shelves every machine newest-updated first, each shot linking out" do
     get root_url
     shots = css_select(".machine .machine-shot").map { |a| a["href"] }
     assert_equal Machine.all.map(&:url), shots

@@ -1,8 +1,8 @@
 require "test_helper"
 
 class MachineTest < ActiveSupport::TestCase
-  test "machines shelve newest-shipped first" do
-    dates = Machine.all.map(&:shipped_on)
+  test "machines shelve newest-updated first" do
+    dates = Machine.all.map(&:updated_on)
     assert_equal dates.sort.reverse, dates
   end
 

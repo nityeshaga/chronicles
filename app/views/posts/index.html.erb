@@ -100,7 +100,7 @@
           </a>
           <h3 class="machine-title"><a href="<%= machine.url %>"><%= machine.name %></a></h3>
           <p class="machine-blurb"><%= machine.blurb %></p>
-          <div class="machine-shipped">Last shipped <%= machine.shipped_on.strftime("%-d %b %Y") %></div>
+          <div class="machine-shipped">Launched <%= machine.launched_on.strftime("%-d %b %Y") %> · Last updated <%= machine.updated_on.strftime("%-d %b %Y") %></div>
         </article>
       <% end %>
     </div>
