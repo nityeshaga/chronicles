@@ -6,9 +6,11 @@ class PostsController < ApplicationController
     # three for its "latest from the press" strip and shelves the eras below that.
     @posts = Post.articles.published.ordered
     @eras = Tag.eras.select { |era| era.published_article_count.positive? }
+    @machines = Machine.all
     # A signup redirect carries a one-time flash; skip conditional-GET so a cached
-    # ETag can't 304 the confirmation/error away before it's seen.
-    fresh_when @posts unless flash.any?
+    # ETag can't 304 the confirmation/error away before it's seen. The machines
+    # digest is in the ETag because the shelf reshuffles without any post changing.
+    fresh_when etag: [ @posts, Machine.cache_key ], last_modified: @posts.maximum(:updated_at) unless flash.any?
   end
 
   def show

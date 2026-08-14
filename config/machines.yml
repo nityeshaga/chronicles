@@ -1,0 +1,35 @@
+- slug: curated-connections
+  name: Curated Connections
+  url: https://curatedconnections.io
+  repo: nityeshaga/curated_connections_2
+  blurb: Self-driving community software for busy creators. Stop leaving member connections to chance — meaningful 1-on-1 connections, on autopilot.
+  launched_at: "2024-07-14"
+  updated_at: "2026-08-12"
+- slug: claude-home-base
+  name: Claude Home Base
+  url: https://github.com/nityeshaga/claude-home-base
+  repo: nityeshaga/claude-home-base
+  blurb: An always-on AI cofounder running on your Mac. Fork it. Configure it. Let it come alive.
+  launched_at: "2026-07-15"
+  updated_at: "2026-08-07"
+- slug: hands-on-deck
+  name: hands-on-deck
+  url: /hands-on-deck/
+  repo: EveryInc/hands-on-deck
+  blurb: The PowerPoint app, built for AI agents. You see a slide; the AI sees ten thousand lines of code.
+  launched_at: "2026-06-25"
+  updated_at: "2026-08-04"
+- slug: spool
+  name: Spool
+  url: https://myspool.xyz
+  repo: nityeshaga/spool
+  blurb: You're looking at the record button. Pick a screen, click the red thing, talk — the share link lands in your clipboard before you finish your sentence.
+  launched_at: "2026-06-17"
+  updated_at: "2026-07-23"
+- slug: teach-me-something
+  name: Teach Me Something
+  url: https://teachmesomething.xyz
+  repo: piyush5050/teach-me-something
+  blurb: Everyone has a subject that makes them feel stupid. Turn Claude or ChatGPT into your personal tutor.
+  launched_at: "2026-07-13"
+  updated_at: "2026-07-20"

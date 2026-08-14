@@ -9,11 +9,16 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
     assert_select "section#subscribe"
   end
 
-  test "index shows the three app machines" do
+  test "index shelves every machine newest-updated first, each shot linking out" do
     get root_url
-    assert_select ".machine .acts a.use[href=?]", "https://myspool.xyz"
-    assert_select ".machine .acts a.use[href=?]", "https://teachmesomething.xyz"
-    assert_select ".machine .acts a.use[href=?]", "https://curatedconnections.io"
+    shots = css_select(".machine .machine-shot").map { |a| a["href"] }
+    assert_equal Machine.all.map(&:url), shots
+  end
+
+  test "the workshop section is gone — open source shelves with everything else" do
+    get root_url
+    assert_select "section#source", count: 0
+    assert_select ".machine-title a[href=?]", "https://github.com/nityeshaga/claude-home-base"
   end
 
   test "index leads with the latest published articles" do
