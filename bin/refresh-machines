@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+# Rewrites shipped_at in config/machines.yml from each repo's latest default-
+# branch commit (needs an authenticated gh CLI for the private repos). Prints
+# nothing and exits 0 when the shelf is already current, so a scheduler can
+# commit only when the output is non-empty.
+require "yaml"
+require "json"
+require "date"
+
+path = File.expand_path("../config/machines.yml", __dir__)
+machines = YAML.load_file(path)
+changed = []
+
+machines.each do |machine|
+  latest = JSON.parse(`gh api repos/#{machine["repo"]}/commits?per_page=1`).first
+  date = Date.parse(latest.dig("commit", "committer", "date")).iso8601
+  changed << "#{machine["slug"]}: #{machine["shipped_at"]} -> #{date}" if machine["shipped_at"] != date
+  machine["shipped_at"] = date
+end
+
+if changed.any?
+  File.write(path, YAML.dump(machines))
+  puts changed
+end

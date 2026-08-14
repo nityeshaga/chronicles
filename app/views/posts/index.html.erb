@@ -88,74 +88,21 @@
     </svg>
   </div>
   <div class="wrap">
-    <div class="sec-label rise">The apps</div>
-    <h2 class="rise">Three places I built.</h2>
-    <p class="sec-lede rise">Each one is a real, working product — live right now, free to use. Nothing here is a screenshot of past glory.</p>
+    <div class="sec-label rise">The software</div>
+    <h2 class="rise">Software I&rsquo;m building these days.</h2>
+    <p class="sec-lede rise">I build a tonne of software with AI. Here it all is, in order of when I last shipped a commit to each one&rsquo;s main branch. (Yes, my AI employee updates this every day and reshuffles it from the latest data.)</p>
 
     <div class="machines">
-
-      <%# SPOOL %>
-      <article class="machine rise">
-        <div class="scene sc-spool" aria-hidden="true">
-          <div class="chrome"><i></i><i></i><i></i><span class="url">any tab, honestly</span></div>
-          <div class="rec"><i></i> Recording this tab</div>
-          <div class="bar"></div>
-          <div class="tick">take 1 · <b>00:14</b> · no login, no watermark</div>
-        </div>
-        <div class="doodle-mini machine-mini" aria-hidden="true">
-          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M28 18 h44 l-7 9 h-30 z"/>
-            <path d="M35 27 l0 40"/><path d="M65 27 l0 40"/>
-            <path d="M28 76 h44 l-7 -9 h-30 z"/>
-            <path d="M35 36 h30"/><path d="M35 45 h30"/><path d="M35 54 h30"/>
-            <path d="M65 62 c12 4 16 12 12 24"/>
-          </svg>
-        </div>
-        <h3 class="machine-title"><a href="https://myspool.xyz">Spool</a></h3>
-        <p class="machine-blurb">A Chrome extension for screen recording that stays out of your way: click, talk, share a link. The whole pitch fits in that sentence.</p>
-        <div class="acts"><a class="use" href="https://myspool.xyz">Add to Chrome&nbsp;↗</a></div>
-      </article>
-
-      <%# TEACH ME SOMETHING %>
-      <article class="machine rise">
-        <div class="scene sc-tms" aria-hidden="true">
-          <div class="chrome"><i></i><i></i><i></i><span class="url">teachmesomething.xyz/why-is-the-sky-blue</span></div>
-          <div class="row r1"></div><div class="row r2"></div><div class="row r3"></div><div class="row r4"></div>
-          <div class="panel">✦</div>
-          <div class="cap">drawing you a comic about Rayleigh scattering…</div>
-        </div>
-        <div class="doodle-mini machine-mini" aria-hidden="true">
-          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M50 14 c15 0 23 11 23 21 c0 9 -6 13 -9 20 l-28 0 c-3 -7 -9 -11 -9 -20 c0 -10 8 -21 23 -21 z"/>
-            <path d="M42 62 l16 0"/><path d="M43 70 l14 0"/><path d="M46 78 l8 0"/>
-            <path d="M43 40 c2 4 5 4 7 0 c2 4 5 4 7 0"/>
-          </svg>
-        </div>
-        <h3 class="machine-title"><a href="https://teachmesomething.xyz">Teach Me Something</a></h3>
-        <p class="machine-blurb">An AI tutor that teaches any topic you name — and draws its own diagrams and comics while it explains, because a sketch beats a paragraph.</p>
-        <div class="acts"><a class="use" href="https://teachmesomething.xyz">Open it&nbsp;↗</a></div>
-      </article>
-
-      <%# CURATED CONNECTIONS %>
-      <article class="machine rise">
-        <div class="scene sc-cc" aria-hidden="true">
-          <div class="chrome"><i></i><i></i><i></i><span class="url">curatedconnections.io</span></div>
-          <div class="m ma">RS</div>
-          <div class="m mb">AK</div>
-          <div class="link"></div>
-          <div class="word">matched · both said yes</div>
-        </div>
-        <div class="doodle-mini machine-mini" aria-hidden="true">
-          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M38 34 c9 0 17 7 17 16 c0 9 -8 16 -17 16 c-9 0 -16 -7 -16 -16 c0 -9 7 -16 16 -16 z"/>
-            <path d="M62 34 c9 0 16 7 16 16 c0 9 -7 16 -16 16 c-9 0 -17 -7 -17 -16 c0 -9 8 -16 17 -16 z"/>
-          </svg>
-        </div>
-        <h3 class="machine-title"><a href="https://curatedconnections.io">Curated Connections</a></h3>
-        <p class="machine-blurb">Member matching for online communities. One flat price, unlimited members, no per-seat math — the app that started the whole experiment.</p>
-        <div class="acts"><a class="use" href="https://curatedconnections.io">Open it&nbsp;↗</a></div>
-      </article>
-
+      <% @machines.each do |machine| %>
+        <article class="machine rise">
+          <a class="machine-shot" href="<%= machine.url %>">
+            <%= image_tag "machines/#{machine.slug}.jpg", alt: "The top of #{machine.name}'s landing page" %>
+          </a>
+          <h3 class="machine-title"><a href="<%= machine.url %>"><%= machine.name %></a></h3>
+          <p class="machine-blurb"><%= machine.blurb %></p>
+          <div class="machine-shipped">Last shipped <%= machine.shipped_on.strftime("%-d %b %Y") %></div>
+        </article>
+      <% end %>
     </div>
   </div>
 </section>
@@ -195,54 +142,6 @@
     </div>
   </div>
 </section>
-
-<%# ============ OPEN SOURCE ============ %>
-<section id="source">
-  <div class="doodle doodle-source" aria-hidden="true">
-    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M50 10 c4 0 7 3 7 7 c0 4 -3 7 -7 7 c-4 0 -7 -3 -7 -7 c0 -4 3 -7 7 -7 z"/>
-      <path d="M50 25 l0 16"/>
-      <path d="M50 41 c1 11 -16 10 -17 21 l0 7"/>
-      <path d="M50 41 c-1 11 17 10 17 21 l1 7"/>
-      <path d="M33 76 c4 0 7 3 7 7 c0 4 -3 7 -7 7 c-4 0 -7 -3 -7 -7 c0 -4 3 -7 7 -7 z"/>
-      <path d="M68 76 c4 0 7 3 7 7 c0 4 -4 7 -8 7 c-4 0 -6 -3 -6 -7 c0 -4 3 -7 7 -7 z"/>
-    </svg>
-  </div>
-  <div class="wrap">
-    <div class="sec-label rise">Source included</div>
-    <h2 class="rise">The workshop is open.</h2>
-    <p class="sec-lede rise">A publishing house with a print room you can walk into. The machinery behind all of this is on GitHub.</p>
-    <div class="repos">
-      <a class="repo rise" href="https://github.com/nityeshaga/claude-home-base">
-        <div class="doodle-mini repo-mini" aria-hidden="true">
-          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M26 54 l24 -20 24 20"/>
-            <path d="M32 52 l0 24 l36 0 l0 -24"/>
-            <path d="M50 76 l0 -12 l8 0 0 12"/>
-            <path d="M58 30 l0 -12"/>
-            <path d="M52 16 c4 -4 9 -4 13 0"/>
-          </svg>
-        </div>
-        <div class="path"><span class="dim">nityeshaga /</span> claude-home-base</div>
-        <p>An always-on AI cofounder that runs on your own Mac — the bot, setup, and plugins behind the third member of our team. Fork it, configure it, let it come alive.</p>
-        <div class="meta">Python · Claude Code · fork it yourself</div>
-      </a>
-      <a class="repo rise" href="/hands-on-deck/">
-        <div class="doodle-mini repo-mini" aria-hidden="true">
-          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M24 28 h52 v36 h-52 z"/>
-            <path d="M32 40 h24"/><path d="M32 48 h16"/>
-            <path d="M62 52 l1 20 6 -6 5 9 5 -3 -5 -9 8 -1 z"/>
-          </svg>
-        </div>
-        <div class="path"><span class="dim">nityesh.com /</span> hands-on-deck</div>
-        <p>Agent-native PowerPoint: one CLI that lets an AI inspect, edit, build, and check .pptx files through atomic JSON patches. Packaged as an Agent Skill.</p>
-        <div class="meta">Python · Agent Skill · from my day job at Every</div>
-      </a>
-    </div>
-  </div>
-</section>
-
 <%# ============ SUBSCRIBE ============ %>
 <section id="subscribe">
   <div class="doodle doodle-subscribe" aria-hidden="true">
