@@ -365,6 +365,17 @@ a:hover { opacity: .8; }
 }
 .mast-subscribe:hover { color: var(--terracotta-deep); border-color: var(--terracotta); background: rgba(176, 92, 52, .07); }
 
+/* The writer's shortcut from a published page into its editor. Floats clear of
+   the article so the reading design stays untouched. */
+.edit-pill {
+  position: fixed; right: 22px; bottom: 22px; z-index: 10;
+  font-family: var(--mono); font-size: 11.5px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--terracotta-deep); border: 1px solid #cdb694; border-radius: 99px;
+  padding: 7px 16px; background: var(--paper); text-decoration: none;
+  transition: border-color .2s ease, background .2s ease;
+}
+.edit-pill:hover { color: var(--terracotta-deep); border-color: var(--terracotta); background: var(--paper-deep); opacity: 1; }
+
 /* ---- Site footer (site-wide) ---- */
 .site-footer { border-top: 1px solid var(--line); padding: 34px 0 44px; margin-top: auto; }
 .site-footer .wrap { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }

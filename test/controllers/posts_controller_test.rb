@@ -32,6 +32,39 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".mast-nav a[href=?]", "/#library", count: 0
   end
 
+  test "the masthead offers the dashboard to the signed-in writer only" do
+    get root_url
+    assert_select ".mast-nav a[href=?]", "/writing/", count: 0
+
+    sign_in_as users(:nityesh)
+    get root_url
+    assert_select ".mast-nav a[href=?]", "/writing/"
+  end
+
+  test "an article offers its editor to the signed-in writer only" do
+    get "/a-published-post/"
+    assert_select ".edit-pill", count: 0
+
+    sign_in_as users(:nityesh)
+    get "/a-published-post/"
+    assert_select "a.edit-pill[href=?]", edit_writing_post_path(posts(:published))
+  end
+
+  test "a page's edit pill points at the page editor" do
+    sign_in_as users(:nityesh)
+    get "/about/"
+    assert_select "a.edit-pill[href=?]", edit_writing_page_path(posts(:about))
+  end
+
+  test "signing in invalidates the anonymous conditional GET" do
+    get "/a-published-post/"
+    etag = response.headers["ETag"]
+
+    sign_in_as users(:nityesh)
+    get "/a-published-post/", headers: { "If-None-Match" => etag }
+    assert_response :success
+  end
+
   test "index shelves eras that have published articles, linking to their tag pages" do
     get root_url
     # chronicles is an era fixture with a published article → a book on the shelf.

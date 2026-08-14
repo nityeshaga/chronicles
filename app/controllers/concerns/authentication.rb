@@ -18,9 +18,7 @@ module Authentication
     end
 
     def restore_authentication
-      if session = Session.find_by(id: cookies.signed[:session_token])
-        Current.session = session
-      end
+      Current.session ||= Session.find_by(id: cookies.signed[:session_token])
     end
 
     def request_authentication
@@ -33,7 +31,9 @@ module Authentication
     end
 
     def signed_in?
-      Current.session.present?
+      # Public pages skip require_authentication, so the writer-only chrome
+      # (dashboard nav, edit links) must resume the session for itself.
+      restore_authentication.present?
     end
 
     def start_new_session_for(user)

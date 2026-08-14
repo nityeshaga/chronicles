@@ -27,8 +27,9 @@
         <div class="wrap mast-band">
           <h1 class="wordmark"><a href="<%= root_path %>"><%= wordmark(Setting.current.site_title) %></a></h1>
           <nav class="mast-nav">
+            <% if signed_in? %><a href="/writing/">Dashboard</a><% end %>
             <a href="/about/">About</a>
-            <a class="mast-subscribe" href="/#subscribe">Get the next shipment</a>
+            <a class="mast-subscribe" href="/#subscribe">Get the next launch</a>
           </nav>
         </div>
       </header>
