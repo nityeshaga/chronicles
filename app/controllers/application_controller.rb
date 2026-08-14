@@ -10,6 +10,10 @@ class ApplicationController < ActionController::Base
   # client's cached copy.
   etag { Setting.current }
 
+  # Public pages grow writer-only chrome (dashboard nav, edit pill) once signed
+  # in; without this, a browser holding the anonymous copy would 304 it away.
+  etag { signed_in? }
+
   rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
 
   # Ghost served every URL with a trailing slash and 301'd the bare form; match it
