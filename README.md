@@ -56,16 +56,56 @@ What's deliberately *not* in the box: comments, analytics, payments, memberships
 
 ## Under the hood
 
-One Rails 8 app, no moving parts you didn't ask for.
+One Rails 8 app, no moving parts you didn't ask for. If a change would add a service or a build tool, it's probably the wrong change.
 
-- **Storage is SQLite, all the way down.** The database, background jobs (Solid Queue), cache (Solid Cache), and WebSocket cable (Solid Cable) all live in SQLite files. No Postgres, no Redis, no Sidekiq — one process, one disk.
-- **No build step, no `node_modules`.** Propshaft serves assets, import maps ship JS unbundled, Hotwire (Turbo + Stimulus) does the interactivity, and the CSS is hand-written. Nothing transpiles.
-- **Content is one STI table:** `HtmlPage < Page < Post`, discriminated by `type`. Posts are Action Text bodies; pages override a few seams; HTML pages are raw documents served verbatim at a root slug.
-- **Rich text is [Lexxy](https://github.com/basecamp/lexxy)** (Basecamp's editor) over Action Text, autosaving every 2 seconds against a `204`/bodyless-`422` contract so it never repaints mid-keystroke.
-- **The agent interface is a real MCP server** at `/mcp` — 13 tools behind OAuth 2.1 with dynamic client registration, so an agent onboards itself from a single pasted URL.
-- **Deploy is [Kamal](https://kamal-deploy.org)** to one ~$6 VPS behind Cloudflare. Push to `main`, CI runs the tests, Kamal ships the container. Health check at `/up`.
+| Layer | Choice | Boring on purpose |
+|---|---|---|
+| Framework | Rails 8, server-rendered ERB | one language, one process |
+| Database | SQLite | one file on one disk — no Postgres |
+| Jobs · cache · cable | Solid Queue · Solid Cache · Solid Cable | all in SQLite; no Redis, no Sidekiq |
+| Assets | Propshaft + import maps | no build step, no `node_modules` |
+| Interactivity | Hotwire (Turbo + Stimulus) + hand-written CSS | no JS framework, nothing transpiles |
+| Rich text | Action Text + [Lexxy](https://github.com/basecamp/lexxy) | Basecamp's editor, 2-second autosave |
+| Agent API | MCP server + OAuth 2.1 (Doorkeeper) | 13 tools, dynamic client registration |
+| Auth | hand-rolled sessions + `has_secure_password` | it's a one-author site |
+| Deploy | [Kamal](https://kamal-deploy.org) → one VPS behind Cloudflare | push to `main` → CI → ship, ~$6/mo |
 
-That's the whole stack. If a change would add a service or a build tool, it's probably the wrong change. The gotchas that bit me — Ghost URL parity, scheduled-publish identity checks, the autosave contract, Lexxy styling — are written down under [Conventions and landmines](#conventions-and-landmines-read-before-changing-anything), paid for so you don't pay them twice.
+### The data model
+
+Everything you publish is one row in `posts`, discriminated by `type` — [single-table inheritance](https://guides.rubyonrails.org/association_basics.html#single-table-inheritance-sti). A post carries its own slug, status, schedule and SEO; its body lives in Action Text, its images in Active Storage.
+
+```mermaid
+erDiagram
+    posts {
+        string   type "Post | Page | HtmlPage"
+        string   slug
+        string   status "draft | published"
+        datetime published_at
+        text     raw_html "HtmlPage: the verbatim document"
+    }
+    tags {
+        string name
+        string slug
+    }
+    posts ||--o{ taggings : ""
+    tags  ||--o{ taggings : ""
+    posts ||--o| action_text_rich_texts : "rich-text body"
+    posts ||--o{ active_storage_attachments : "uploaded images"
+    users ||--o{ api_tokens : "mints for MCP"
+```
+
+| Table | Holds | Key columns |
+|---|---|---|
+| `posts` | every article, page and HTML page (STI on `type`) | `type`, `slug`, `status`, `published_at`, `raw_html` |
+| `tags` + `taggings` | tags, and the post↔tag join | `slug`, `name` |
+| `settings` | the single row that makes the site yours | `site_title`, `author_name`, `production_host`, `twitter_handle` |
+| `subscribers` | captured emails (RSS today, newsletter when you write it) | `email` |
+| `users` | the author(s) | `email_address`, `password_digest` |
+| `api_tokens` | bearer tokens for Claude Code over MCP | `token_digest`, `expires_at` |
+
+Behind those sit the framework-managed tables you rarely touch by hand: Action Text bodies, Active Storage blobs, the OAuth application/grant/token trio for MCP, and the MCP + web session rows.
+
+The gotchas that bit me — Ghost URL parity, scheduled-publish identity checks, the autosave contract, Lexxy styling — are written down under [Conventions and landmines](#conventions-and-landmines-read-before-changing-anything), paid for so you don't pay them twice.
 
 ## Is this for you?
 
