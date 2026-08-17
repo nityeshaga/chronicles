@@ -767,6 +767,19 @@ a:hover { opacity: .8; }
 .dash-tab__count { font-size: 1.15rem; font-weight: 600; color: var(--w-faint); background: rgba(0, 0, 0, .05); border-radius: 20px; padding: .15rem .6rem; min-width: 2.1rem; text-align: center; }
 .dash-tab.is-active .dash-tab__count { color: var(--w-accent); background: rgba(180, 83, 9, .12); }
 
+/* Filter-as-you-type. Full width under the tabs, because the list it narrows is that
+   wide; borderless until focus so it reads as part of the list, not a form. */
+.dash-filter { position: relative; display: flex; align-items: center; }
+.dash-filter__icon { position: absolute; left: 1rem; color: var(--w-faint); pointer-events: none; }
+.dash-filter__field {
+  width: 100%; appearance: none; background: none; border: 0; border-radius: 0;
+  border-bottom: 1px solid transparent; padding: .9rem 1rem .9rem 3.3rem;
+  font-family: var(--font-sans); font-size: 1.45rem; color: var(--w-ink);
+}
+.dash-filter__field::placeholder { color: var(--w-faint); }
+.dash-filter__field:focus { outline: none; border-bottom-color: var(--w-line); }
+.dash-filter__field::-webkit-search-cancel-button { appearance: none; }
+
 .dash-list { list-style: none; padding: 0; margin: 0; }
 .dash-row { display: flex; align-items: center; justify-content: space-between; gap: 1.6rem; padding: 1.5rem .6rem; border-bottom: 1px solid var(--w-line); }
 .dash-row[hidden] { display: none; }

@@ -109,6 +109,25 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".dash-row__when", text: "· Published #{published.published_at.strftime("%-d %b %Y")}"
   end
 
+  # What the writer types is a title, a URL fragment or a tag; the row has to answer to
+  # all three, lowercased, because the filter never touches the server.
+  test "each row carries its title, slug and tag names for the filter to match" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+
+    search = css_select(".dash-row[data-status=published]").first["data-search"]
+    assert_includes search, "a published post"
+    assert_includes search, "a-published-post"
+    assert_includes search, "chronicles"
+  end
+
+  test "the filter box sits under the tabs and names what it matches" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+
+    assert_select ".dash-tabs + .dash-filter input[placeholder=?]", "Filter by title, slug or tag"
+  end
+
   # Counts describe the buckets, so they are a tally of the one list on screen.
   test "tab counts tally the rendered list" do
     sign_in_as users(:nityesh)

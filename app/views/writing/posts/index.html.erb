@@ -39,7 +39,7 @@
   <nav class="dash-tabs" aria-label="Filter posts">
     <% tabs.each_with_index do |(bucket, label, count), index| %>
       <button type="button" class="dash-tab<%= " is-active" if index.zero? %>" role="tab"
-              aria-selected="<%= index.zero? %>" data-status="<%= bucket %>"
+              aria-selected="<%= index.zero? %>" data-status="<%= bucket %>" data-label="<%= label %>"
               data-dashboard-target="tab" data-action="dashboard#select">
         <%= label %> <span class="dash-tab__count"><%= count %></span>
       </button>
@@ -52,6 +52,15 @@
       <%= link_to "Start your first post", new_writing_post_path, class: "w-btn w-btn--primary" %>
     </div>
   <% else %>
+    <%# Filtering is finding, so it sits where the finding happens: full width above the
+        list it narrows, matching whatever is already on the row — title, URL or tag. %>
+    <div class="dash-filter">
+      <svg class="dash-filter__icon" viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><circle cx="7" cy="7" r="4.4" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="m10.4 10.4 3.6 3.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <%= search_field_tag :q, nil, class: "dash-filter__field", placeholder: "Filter by title, slug or tag",
+            autocomplete: "off", aria: { label: "Filter by title, slug or tag" },
+            data: { dashboard_target: "query", action: "input->dashboard#filter keydown.esc->dashboard#clear" } %>
+    </div>
+
     <ul class="dash-list" data-dashboard-target="list">
       <%= render partial: "row", collection: @records, as: :record %>
     </ul>
