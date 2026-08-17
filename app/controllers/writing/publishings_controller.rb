@@ -1,9 +1,11 @@
 class Writing::PublishingsController < Writing::BaseController
   before_action :set_post
 
+  # The model answers false and says why, so a refusal comes back as the editor with the
+  # reason on it rather than a silent bounce off the same button.
   def create
     @post.publish(at: params[:published_at])
-    redirect_to [ :edit, :writing, @post ]
+    redirect_to [ :edit, :writing, @post ], alert: @post.errors.full_messages.to_sentence.presence
   end
 
   def destroy

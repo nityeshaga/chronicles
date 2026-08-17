@@ -187,7 +187,27 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_equal writing_post_url(Post.last), response.location
     # The id rides alongside it: identity the editor can keep, unlike a slug.
     assert_equal Post.last.id.to_s, response.headers["X-Post-Id"]
+    # And the address the tab should adopt, so a refresh reopens the draft.
+    assert_equal edit_writing_post_url(Post.last), response.headers["X-Edit-Url"]
     assert_equal "Fresh Draft", Post.last.title
+  end
+
+  # The mint is also what turns the open canvas into a saved-post editor: without a
+  # reload, Publish and everything else that needs a record has to arrive in the answer.
+  test "the mint answers with the chrome only a saved post can carry" do
+    sign_in_as users(:nityesh)
+    post writing_posts_url, headers: { "X-Autosave" => "true" },
+      params: { post: { title: "Fresh Draft", body: "<p>opening line</p>" } }
+    minted = Post.last
+
+    assert_equal "text/vnd.turbo-stream.html", response.media_type
+    assert_select "turbo-stream[target=editor-actions]" do
+      assert_select "a[href=?]", writing_post_path(minted), text: "Preview"
+      assert_select "button.editor-bar__publish", text: /Publish/
+    end
+    assert_select "turbo-stream[target=editor-overlays] .publish-popover"
+    assert_select "turbo-stream[target=editor-delete] button[form=delete-post]"
+    assert_select "turbo-stream[target=editor-tag-mint] #new-tag-mint"
   end
 
   test "autosave create refuses to mint a blank draft" do
@@ -366,6 +386,93 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".publish-newsletter form", count: 0
     assert_select ".publish-newsletter", text: /No subscribers yet — nothing to send\./
     assert_select ".publish-newsletter a[href=?]", writing_subscribers_path, text: "subscribers"
+  end
+
+  # --- The editor bar: no manual save, one view control, and a status line that opens
+  #     with the truth instead of waiting for a keystroke to say anything. ---
+  test "a new post carries no save button and nothing to publish" do
+    sign_in_as users(:nityesh)
+    get new_writing_post_url
+
+    assert_select "input[type=submit]", count: 0
+    assert_select ".editor-bar__publish", count: 0
+    assert_select "#editor-actions"
+    assert_select ".publish-popover", count: 0
+  end
+
+  test "the view control says Preview on a draft and View live once it's published" do
+    sign_in_as users(:nityesh)
+
+    get edit_writing_post_url(posts(:draft))
+    assert_select ".editor-bar a[href=?]", writing_post_path(posts(:draft)), text: "Preview"
+
+    get edit_writing_post_url(posts(:published))
+    assert_select ".editor-bar a[href=?]", post_path(posts(:published), trailing_slash: true), text: "View live"
+    # One control per meaning: the popover no longer carries its own copy.
+    assert_select ".publish-popover a", text: "View live", count: 0
+  end
+
+  test "the status line opens saying where the post stands, in the bar and in the panel" do
+    sign_in_as users(:nityesh)
+
+    get edit_writing_post_url(posts(:draft))
+    assert_select ".autosave-status[data-state=saved]", text: "Saved", count: 2
+
+    get edit_writing_post_url(posts(:scheduled))
+    assert_select ".autosave-status[data-state=saved]", text: "Saved · scheduled", count: 2
+
+    # A live post says what the next save costs before a key is pressed.
+    get edit_writing_post_url(posts(:published))
+    assert_select ".autosave-status[data-state=live]", text: "Live · saves go public", count: 2
+  end
+
+  # The saved-state copy is Ruby's, handed to the client as a finished sentence rather
+  # than a rule for building one.
+  test "the form hands the editor the sentence to print once a save lands" do
+    sign_in_as users(:nityesh)
+
+    get edit_writing_post_url(posts(:published))
+    assert_select "form[data-autosave-saved-text-value=?]", "Saved · live"
+
+    get edit_writing_post_url(posts(:draft))
+    assert_select "form[data-autosave-saved-text-value=Saved]"
+  end
+
+  # --- The untitled guard: the placeholder title is the model letting body-first
+  #     writing persist, not a title. It can't reach the public site. ---
+  test "an untitled draft shows the empty title field, not the placeholder word" do
+    sign_in_as users(:nityesh)
+    untitled = Post.create!(body: "<p>body first</p>")
+
+    get edit_writing_post_url(untitled)
+    assert_equal "Untitled", untitled.title
+    assert_select "textarea.editor-canvas__title", text: ""
+  end
+
+  test "the popover refuses to publish an untitled draft and says where it would land" do
+    sign_in_as users(:nityesh)
+    untitled = Post.create!(body: "<p>body first</p>")
+
+    get edit_writing_post_url(untitled)
+    assert_select ".publish-note",
+      text: /Give it a title first — right now it would go live at #{Setting.current.production_host}\/untitled\//
+    assert_select ".schedule-form input[type=submit][disabled]"
+
+    # And the server refuses it too, with the reason on the page rather than a silent
+    # bounce off the same button.
+    post writing_post_publishing_url(untitled)
+    assert untitled.reload.draft?
+    assert_nil untitled.published_at
+    follow_redirect!
+    assert_select "ul.errors li", text: /is still the placeholder/
+  end
+
+  test "a titled draft's popover publishes without a note" do
+    sign_in_as users(:nityesh)
+    get edit_writing_post_url(posts(:draft))
+
+    assert_select ".publish-note[hidden]"
+    assert_select ".schedule-form input[type=submit][disabled]", count: 0
   end
 
   test "preview renders the public post template behind auth" do

@@ -12,10 +12,9 @@
       <span>Writing</span>
     <% end %>
     <h1><%= post.persisted? ? "Edit HTML page" : "New HTML page" %></h1>
-    <% if post.persisted? %>
-      <%# Preview renders the stored bytes with no layout — the draft as it will publish. %>
-      <%= link_to "Preview", [ :writing, post ], class: "w-btn w-btn--ghost w-btn--sm" %>
-    <% end %>
+    <%# Here Preview renders the stored bytes with no layout — the document as it will
+        publish. Same control, same labels as the post editor bar. %>
+    <%= render "writing/posts/view_button", post: post, size: "w-btn--sm" if post.persisted? %>
   </header>
 
   <%= form_with model: [ :writing, post ], class: "stacked-form",

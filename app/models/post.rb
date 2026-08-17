@@ -159,6 +159,8 @@ class Post < ApplicationRecord
   # Only blog articles mail the list; Pages/HtmlPages share the publish popover but
   # have no newsletter route. Page overrides this to false.
   def newsletterable? = true
+  # Tags are the era shelves the blog feed is built from, so only articles carry them.
+  def taggable? = true
 
   # Which tab of the writing dashboard this record answers to. An article splits by its
   # own publish state; the page kinds are a bucket each whatever their state, because

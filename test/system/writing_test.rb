@@ -1,18 +1,26 @@
 require "application_system_test_case"
 
 class WritingTest < ApplicationSystemTestCase
-  test "signing in, writing a post, and publishing it" do
+  # Autosave is the only save, so a brand-new canvas carries no save button — and nothing
+  # to publish until autosave has minted the draft, which needs the JavaScript this driver
+  # doesn't run. Publishing is exercised from a draft that already exists.
+  test "a new post offers no save button and nothing to publish yet" do
     sign_in_as users(:nityesh)
     assert_text "Writing"
 
     click_on "New post"
-    fill_in "Title", with: "A System-Tested Post"
-    click_on "Save draft"
+    assert_field "Title", with: ""
+    assert_no_button "Save draft"
+    assert_no_selector ".editor-bar__publish"
+    assert_no_selector ".publish-popover"
+  end
 
-    # Landed on the editor for the new draft.
-    assert_field "Title", with: "A System-Tested Post"
-    post = Post.find_by!(slug: "a-system-tested-post")
-    assert post.draft?
+  test "publishing a draft from the editor" do
+    sign_in_as users(:nityesh)
+    post = posts(:draft)
+
+    visit edit_writing_post_url(post)
+    assert_selector ".editor-bar .autosave-status", text: "Saved"
 
     # The publish control lives in its own popover; the schedule form publishes now
     # when its time is left blank.
@@ -23,7 +31,7 @@ class WritingTest < ApplicationSystemTestCase
 
     # It now renders on its public URL.
     visit post_path(post)
-    assert_text "A System-Tested Post"
+    assert_text post.title
   end
 
   test "deleting a post from the editor" do

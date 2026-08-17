@@ -1,0 +1,20 @@
+<%# The answer to the autosave mint. The draft is real now, so everything the editor held
+    back for a saved record arrives in place — Publish and its popover, the view button,
+    Delete, the tag mint — without a reload and without moving the caret. Every action is
+    an update into a slot the form already rendered empty, so each of these partials is
+    the only place its markup exists. Shared with Writing::PagesController, which mints
+    through the same form. %>
+<%= turbo_stream.update "editor-actions" do %>
+  <%= render "writing/posts/editor_actions", post: @post %>
+<% end %>
+<%= turbo_stream.update "editor-overlays" do %>
+  <%= render "writing/posts/editor_overlays", post: @post %>
+<% end %>
+<%= turbo_stream.update "editor-delete" do %>
+  <%= render "writing/posts/editor_delete", post: @post %>
+<% end %>
+<% if @post.taggable? %>
+  <%= turbo_stream.update "editor-tag-mint" do %>
+    <%= render "writing/posts/tag_mint", post: @post %>
+  <% end %>
+<% end %>

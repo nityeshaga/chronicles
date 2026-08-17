@@ -1,0 +1,9 @@
+<%# The editor-bar controls that only a saved post can offer. Rendered into #editor-actions
+    on load, and streamed into it again the moment autosave mints the draft, so Publish
+    arrives without a reload — one renderer, so the two moments can never drift. Nothing
+    here on a canvas that hasn't been saved: there is nothing yet to view or to publish. %>
+<%= render "writing/posts/view_button", post: post, size: nil %>
+<button type="button" class="w-btn w-btn--primary editor-bar__publish" data-action="editor#togglePublish" aria-haspopup="dialog">
+  <% if post.published? %>Published<% elsif post.scheduled? %>Scheduled<% else %>Publish<% end %>
+  <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>

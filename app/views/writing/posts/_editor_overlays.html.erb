@@ -1,0 +1,25 @@
+<%# The three things that hang off a saved post outside the autosaving form: the publish
+    popover, and the two sibling <form>s the settings panel drives by `form` attribute.
+    They are siblings rather than children for the reason the panel's comments give — a
+    nested <form> is stripped by the parser — and they live in one partial so the mint's
+    turbo_stream can bring them all in at once. %>
+<div class="publish-popover" data-editor-target="publish" role="dialog" aria-label="Publishing">
+  <header class="publish-popover__head">
+    <h2>Publishing</h2>
+    <button type="button" class="panel-close" data-action="editor#close" aria-label="Close">
+      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+  </header>
+  <%= render "writing/posts/publishing", post: post %>
+</div>
+
+<%= form_with url: [ :writing, post ], method: :delete, id: "delete-post" do %><% end %>
+
+<% if post.taggable? %>
+  <%# Minting a tag is an act, not a byproduct, so it gets its own form and never rides
+      autosave. POSTs to Writing::TagsController#create, which streams the refreshed
+      checkbox list back. %>
+  <%= form_with url: writing_tags_path, id: "new-tag-form" do %>
+    <%= hidden_field_tag :post_id, post.slug %>
+  <% end %>
+<% end %>

@@ -638,6 +638,8 @@ a:hover { opacity: .8; }
 .w-btn--danger { background: var(--w-panel); color: var(--w-danger); border-color: rgba(176, 0, 32, .32); }
 .w-btn--danger:hover { background: #fdecef; }
 .w-btn--sm { font-size: 1.3rem; padding: .6rem 1rem; }
+.w-btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+.w-btn--primary:disabled:hover { background: var(--w-accent); }
 .w-btn--block { width: 100%; padding: 1.1rem; font-size: 1.5rem; }
 .w-inline { display: inline; margin: 0; }
 
@@ -859,6 +861,10 @@ a:hover { opacity: .8; }
 }
 .editor-bar__side { display: flex; align-items: center; gap: .8rem; min-width: 0; }
 .editor-bar__side--end { justify-content: flex-end; }
+/* Only a turbo_stream target: the mint has to aim at something, and this is it. It must
+   not become a layout box in the process, hence display:contents — the buttons inside
+   stay direct flex children of the bar. */
+.editor-bar__actions { display: contents; }
 .editor-bar__back { display: inline-flex; align-items: center; gap: .5rem; font-size: 1.4rem; font-weight: 500; color: var(--w-muted); }
 .editor-bar__back:hover { color: var(--w-ink); opacity: 1; }
 .editor-bar__publish svg { opacity: .75; }
@@ -871,7 +877,14 @@ a:hover { opacity: .8; }
 .autosave-status:empty { padding-left: 0; border-left: 0; }
 .autosave-status[data-state="saved"] { color: var(--w-ok); }
 .autosave-status[data-state="unsaved"] { color: var(--w-muted); }
-.autosave-status[data-state="error"] { color: var(--w-danger); }
+.autosave-status[data-state="error"],
+.autosave-status[data-state="refused"] { color: var(--w-danger); }
+/* The idle line on a live post. It is a warning, not a reassurance, so it wears the
+   LIVE pill's dot rather than the pill's confidence. */
+.autosave-status[data-state="live"] { color: var(--w-muted); gap: .5rem; }
+.autosave-status[data-state="live"]::before {
+  content: ""; width: .7rem; height: .7rem; border-radius: 50%; background: var(--w-ok);
+}
 
 /* Match the published measure: max-width + horizontal padding land the contenteditable
    at ~680px (the live .gh-content width) on any desktop viewport. Padding tracks viewport
@@ -947,10 +960,13 @@ a:hover { opacity: .8; }
 }
 .settings-panel.is-open { transform: translateX(0); visibility: visible; }
 .settings-panel__head, .publish-popover__head {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   padding: 1.6rem 2rem; border-bottom: 1px solid var(--w-line); flex-shrink: 0;
 }
-.settings-panel__head h2 { font-family: var(--font-sans); font-size: 1.6rem; font-weight: 600; }
+/* The panel carries its own copy of the save status, so the heading takes the slack and
+   status + close sit together on the right. */
+.settings-panel__head h2 { font-family: var(--font-sans); font-size: 1.6rem; font-weight: 600; margin-right: auto; }
+.settings-panel__head .autosave-status { padding-left: 0; border-left: 0; }
 .settings-panel__body { flex: 1; overflow-y: auto; padding: 2rem; display: flex; flex-direction: column; gap: 1.7rem; }
 .settings-panel__rule { border: 0; border-top: 1px solid var(--w-line); margin: .2rem 0; }
 
@@ -972,6 +988,9 @@ a:hover { opacity: .8; }
 .publish-state a:hover { color: var(--w-ink); }
 .publish-actions { display: flex; gap: .8rem; flex-wrap: wrap; }
 .schedule-form { display: flex; flex-direction: column; gap: .9rem; }
+/* The one thing standing between a reflex click and nityesh.com/untitled/. No display of
+   its own, so the hidden attribute stays the last word on whether it shows. */
+.publish-note { font-size: 1.35rem; line-height: 1.45; color: var(--w-accent-ink); }
 
 /* ---- Tags (existing checkboxes + the deliberate mint control) ---- */
 .tag-checkboxes { display: flex; flex-wrap: wrap; gap: .6rem; }
@@ -1031,6 +1050,16 @@ a:hover { opacity: .8; }
 
 /* ---- Responsive ---- */
 @media (max-width: 640px) {
+  /* The status line carries a sentence on a live post, so on a phone it has to give way
+     rather than shove the publish controls off the bar. (The rest of the phone editor
+     chrome — icon-only Settings, a chevron back link — is its own piece of work.) */
+  .editor-bar__back { flex: none; }
+  .editor-bar .autosave-status {
+    display: block; min-width: 0;
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  }
+  .editor-bar .autosave-status::before { display: inline-block; vertical-align: middle; margin-right: .5rem; }
+
   .settings-panel { width: 100vw; }
   .publish-popover { left: max(3vmin, 14px); right: max(3vmin, 14px); width: auto; }
   .editor-canvas { padding-top: 3rem; }
