@@ -31,6 +31,13 @@ class Writing::HtmlPagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "textarea[name=?]", "html_page[raw_html]", text: /Hands on Deck/
   end
 
+  test "the editor carries the slug-status frame" do
+    sign_in_as users(:nityesh)
+    get edit_writing_html_page_url(posts(:html_page))
+    assert_select "turbo-frame#slug-status[data-slug-target=status]"
+    assert_select "input[name=?][data-slug-target=slug]", "html_page[slug]"
+  end
+
   # No autosave contract here — saving a whole document is an explicit act — so an
   # ordinary save just lands back on the editor with a notice.
   test "saving edits the stored document and returns to the editor" do

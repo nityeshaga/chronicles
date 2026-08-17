@@ -1,0 +1,7 @@
+<%# The state IS the label — Available / Taken / Reserved — so there's no second list of
+    words to keep in step with the states. Blank slug, blank frame. %>
+<turbo-frame id="slug-status">
+  <% if @state %>
+    <span data-state="<%= @state %>"><%= @state.to_s.capitalize %></span>
+  <% end %>
+</turbo-frame>

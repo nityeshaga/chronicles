@@ -233,6 +233,15 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_select "form#delete-post input[name=_method][value=delete]"
   end
 
+  # The slug field's availability line: an empty frame the slug controller aims at the
+  # slugs endpoint as the writer types.
+  test "the editor carries the slug-status frame" do
+    sign_in_as users(:nityesh)
+    get edit_writing_post_url(posts(:draft))
+    assert_select "turbo-frame#slug-status[data-slug-target=status]"
+    assert_select "input[name=?][data-slug-target=slug]", "post[slug]"
+  end
+
   test "preview renders the public post template behind auth" do
     sign_in_as users(:nityesh)
     get writing_post_url(posts(:draft))

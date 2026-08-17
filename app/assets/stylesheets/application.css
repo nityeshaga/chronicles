@@ -691,6 +691,18 @@ a:hover { opacity: .8; }
 .field input[type="file"] { font-size: 1.3rem; color: var(--w-muted); }
 .field code, .stacked-form code { font-family: var(--font-mono); font-size: .88em; background: rgba(0, 0, 0, .05); padding: .1em .4em; border-radius: 4px; }
 
+/* Live slug availability — the frame the editor points at the slug's own URL. Same dot as
+   the status pills, shrunk to hint size; the height is held so the field never jumps. */
+.slug-status { display: block; min-height: 1.7rem; }
+.slug-status span {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-family: var(--font-sans); font-size: 1.2rem; font-weight: 600; letter-spacing: .01em;
+}
+.slug-status span::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.slug-status [data-state="available"] { color: var(--w-ok); }
+.slug-status [data-state="taken"],
+.slug-status [data-state="reserved"] { color: var(--w-danger); }
+
 .errors {
   list-style: none; margin: 1.6rem auto; max-width: 72rem; padding: 1.2rem 1.6rem;
   background: #fdecef; border: 1px solid rgba(176, 0, 32, .25); border-radius: 8px;

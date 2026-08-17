@@ -71,6 +71,12 @@ Rails.application.routes.draw do
     resources :tags, only: %i[ index edit update create ]
     resources :embeds, only: %i[ create ]
     resources :uploads, only: %i[ create ]
+    # "Is this URL still free?", asked from the editor as the writer types. The slug IS the
+    # id, dots and all: widen the segment and drop the format suffix, or "notes.md" arrives
+    # as the id "notes". It answers HTML whatever the slug's extension suggests — the dot
+    # belongs to the writer's slug, not to this request.
+    resources :slugs, only: :show, format: false, defaults: { format: :html },
+      constraints: { id: %r{[^/]+} }
     resource :connect, only: %i[ show ]
     resources :api_tokens, only: %i[ create destroy ]
     resources :connected_apps, only: %i[ destroy ]

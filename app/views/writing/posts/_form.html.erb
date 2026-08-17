@@ -21,6 +21,7 @@
       swaps to the persisted PATCH URL in place — so an author never loses an untitled tab. %>
   <%= form_with model: [ :writing, post ], class: "editor-shell__form", data: {
         controller: "slug autosave", autosave_persisted_value: saving,
+        slug_url_value: writing_slug_path("SLUG"), slug_original_value: post.slug,
         action: "input->autosave#change lexxy:change->autosave#change turbo:submit-end->autosave#committed" } do |form| %>
     <header class="editor-bar">
       <div class="editor-bar__side">
@@ -91,7 +92,9 @@
         <div class="field">
           <%= form.label :slug, "URL slug" %>
           <%= form.text_field :slug, data: { slug_target: "slug", autosave_target: "slug",
-                action: "input->slug#edited change->autosave#commit" } %>
+                action: "input->slug#edited input->slug#check change->autosave#commit" } %>
+          <%# Availability, answered by the server as the writer types. %>
+          <turbo-frame id="slug-status" class="slug-status" data-slug-target="status" aria-live="polite"></turbo-frame>
         </div>
 
         <% if taggable %>
