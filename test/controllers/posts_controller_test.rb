@@ -29,10 +29,11 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # The masthead nav advertises destinations, not scroll positions: an in-page
-  # anchor dressed as a site section is a lie the reader only catches after clicking.
+  # anchor dressed as a site section is a lie the reader only catches after
+  # clicking. About isn't there either — the homepage already sends readers to it.
   test "the masthead nav offers real destinations only" do
     get root_url
-    assert_select ".mast-nav a[href=?]", "/about/"
+    assert_select ".mast-nav a[href=?]", "/about/", count: 0
     assert_select ".mast-nav a[href=?]", "/#apps", count: 0
     assert_select ".mast-nav a[href=?]", "/#library", count: 0
   end
