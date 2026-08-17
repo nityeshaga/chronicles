@@ -13,16 +13,19 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Account actions belong in the account menu, not a mis-click from the writing controls
-  # — signing out mid-draft was one slipped click away when they shared a bar.
-  test "the account menu holds the account actions, and the bar holds none of them" do
+  # — signing out mid-draft was one slipped click away when they shared a bar. The menu
+  # now sits in the page's bottom-left corner, so the header holds none of it at all.
+  test "the account menu holds the account actions, and the header holds none of them" do
     sign_in_as users(:nityesh)
     get writing_posts_url
 
+    assert_select ".writing-dash > details.dash-menu"
     assert_select ".dash-menu a[href=?]", root_path, text: "View site"
     assert_select ".dash-menu a[href=?]", writing_connect_path, text: "Connect"
     assert_select ".dash-menu form[action=?] input[name=_method][value=delete]", session_path
     assert_select ".dash-menu button", text: "Sign out"
 
+    assert_select ".dash-head .dash-menu", count: 0
     assert_select ".dash-head__actions > a[href=?]", writing_connect_path, count: 0
     assert_select ".dash-head__actions > form[action=?]", session_path, count: 0
   end

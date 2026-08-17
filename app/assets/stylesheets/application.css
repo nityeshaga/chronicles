@@ -743,13 +743,18 @@ a:hover { opacity: .8; }
 .dash-head__brand h1 { font-family: var(--font-serif); font-size: clamp(3.4rem, 4vw, 4.2rem); font-weight: 600; letter-spacing: -.015em; }
 .dash-head__actions { display: flex; align-items: center; gap: .8rem; flex-wrap: wrap; }
 
-/* The account menu: a quiet round gear at the far right, sized off .w-btn so it lines up
-   with the writing controls it sits beside. */
-.dash-menu { position: relative; }
-.dash-menu__button { padding: .85rem; border-radius: 50%; color: var(--w-muted); list-style: none; }
+/* The account menu: a quiet round gear pinned to the bottom-left corner of the viewport,
+   floating over the list on a soft shadow. Its panel is the shared .w-menu, flipped to
+   open upward and align left — there's nothing below or to the left of it. */
+.dash-menu { position: fixed; left: 22px; bottom: 22px; z-index: 10; }
+.dash-menu__button {
+  padding: .85rem; border-radius: 50%; color: var(--w-muted); list-style: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 6px 16px rgba(0, 0, 0, .10);
+}
 .dash-menu__button::-webkit-details-marker { display: none; }
 .dash-menu__button:hover,
 .dash-menu[open] .dash-menu__button { color: var(--w-ink); }
+.dash-menu .w-menu { top: auto; bottom: calc(100% + .6rem); right: auto; left: 0; }
 
 .dash-tabs { display: flex; align-items: center; gap: .2rem; flex-wrap: wrap; border-bottom: 1px solid var(--w-line); margin-bottom: 1rem; }
 .dash-tab {
@@ -1001,4 +1006,7 @@ a:hover { opacity: .8; }
   .publish-popover { left: max(3vmin, 14px); right: max(3vmin, 14px); width: auto; }
   .editor-canvas { padding-top: 3rem; }
   .dash-row { align-items: flex-start; }
+  /* The corner gear floats over the page; give the dashboard a foot as tall as the
+     control (button plus its inset) so it can never sit on the last row's actions. */
+  .writing-dash { padding-bottom: 14rem; }
 }
