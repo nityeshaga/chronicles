@@ -54,6 +54,19 @@ This ran a real publication before it was open-sourced. The port from Ghost was 
 
 What's deliberately *not* in the box: comments, analytics, payments, memberships, multi-author. Not because any of it is hard — because one person hasn't needed it yet. This isn't a feature matrix that has to look complete; it's a codebase honest about being small. It ships with one author because I am one person. If you want a second, that's an afternoon — not a paywall.
 
+## Under the hood
+
+One Rails 8 app, no moving parts you didn't ask for.
+
+- **Storage is SQLite, all the way down.** The database, background jobs (Solid Queue), cache (Solid Cache), and WebSocket cable (Solid Cable) all live in SQLite files. No Postgres, no Redis, no Sidekiq — one process, one disk.
+- **No build step, no `node_modules`.** Propshaft serves assets, import maps ship JS unbundled, Hotwire (Turbo + Stimulus) does the interactivity, and the CSS is hand-written. Nothing transpiles.
+- **Content is one STI table:** `HtmlPage < Page < Post`, discriminated by `type`. Posts are Action Text bodies; pages override a few seams; HTML pages are raw documents served verbatim at a root slug.
+- **Rich text is [Lexxy](https://github.com/basecamp/lexxy)** (Basecamp's editor) over Action Text, autosaving every 2 seconds against a `204`/bodyless-`422` contract so it never repaints mid-keystroke.
+- **The agent interface is a real MCP server** at `/mcp` — 13 tools behind OAuth 2.1 with dynamic client registration, so an agent onboards itself from a single pasted URL.
+- **Deploy is [Kamal](https://kamal-deploy.org)** to one ~$6 VPS behind Cloudflare. Push to `main`, CI runs the tests, Kamal ships the container. Health check at `/up`.
+
+That's the whole stack. If a change would add a service or a build tool, it's probably the wrong change. The gotchas that bit me — Ghost URL parity, scheduled-publish identity checks, the autosave contract, Lexxy styling — are written down under [Conventions and landmines](#conventions-and-landmines-read-before-changing-anything), paid for so you don't pay them twice.
+
 ## Is this for you?
 
 **Fork this if:** you run a coding agent as a matter of course; your writing and side projects are scattered across platforms you only rent; you want a site your agent can operate *and* reshape; or you're leaving Ghost and want your archive, URLs, and SEO to arrive intact.
