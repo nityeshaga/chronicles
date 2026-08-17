@@ -32,11 +32,11 @@ class PublishPostTool < ActionTool::Base
         return { error: "Could not parse 'at' as ISO8601. Use a form like '2026-08-01T09:00:00Z'." }
       end
       return { error: "'at' is in the past. Omit 'at' to publish now, or pass a future time." } unless time.future?
-
-      post.publish_at(time)
-    else
-      post.publish
     end
+
+    # One verb for both branches, and the model's own words for the refusal: the rule
+    # lives in one place, so a new one reaches the agent without touching this tool.
+    return { error: post.errors.full_messages.to_sentence } unless post.publish(at: time)
 
     {
       status: status_of(post),
