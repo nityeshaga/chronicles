@@ -71,9 +71,9 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     posts(:about).touch
     get writing_posts_url
 
-    assert_equal Post.order(updated_at: :desc).map(&:title),
-      css_select(".dash-row__title").map(&:text)
-    assert_equal "About", css_select(".dash-row__title").first.text
+    assert_equal Post.order(updated_at: :desc).map { |record| "/#{record.slug}/" },
+      css_select(".dash-row__url").map(&:text)
+    assert_equal "/about/", css_select(".dash-row__url").first.text
   end
 
   # "Edited 23 Dec" reads identically in 2024 and 2025, and this stamp is the sort axis.
@@ -89,13 +89,24 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
 
   # The go-live time is the Scheduled tab's sort axis, so the client reads it off the row
   # rather than parsing the sentence next to it.
-  test "a scheduled row carries its go-live time as a sort key" do
+  test "a scheduled row carries its go-live time as a sort key and says it in the app's zone" do
     sign_in_as users(:nityesh)
     get writing_posts_url
 
     scheduled = posts(:scheduled)
     assert_select ".dash-row[data-status=scheduled][data-goes-live=?]", scheduled.published_at.iso8601
+    assert_select ".dash-row__when",
+      text: "· Goes live #{scheduled.published_at.strftime("%-d %b %Y, %-l:%M %p %Z")}"
     assert_select ".dash-row[data-status=draft][data-goes-live=?]", "", true
+  end
+
+  test "a published row shows its URL and the date it went live" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+
+    published = posts(:published)
+    assert_select ".dash-row[data-status=published] .dash-row__url", text: "/#{published.slug}/"
+    assert_select ".dash-row__when", text: "· Published #{published.published_at.strftime("%-d %b %Y")}"
   end
 
   # Counts describe the buckets, so they are a tally of the one list on screen.

@@ -1,17 +1,21 @@
 <%# One row of the writing dashboard. The data-* stamps are what the dashboard controller
     sorts and buckets on, so it never has to parse the text it is showing: data-status is
-    the tab, data-edited and data-goes-live are the two sort axes. The pill and the date
-    read the record's own state, so a published page still reads as published. %>
+    the tab, data-edited and data-goes-live are the two sort axes. The pill and the dates read the record's own
+    state, so a published page still reads as published. %>
 <li class="dash-row" data-status="<%= record.dashboard_bucket %>" data-dashboard-target="row"
     data-edited="<%= record.updated_at.iso8601 %>"
     data-goes-live="<%= record.published_at.iso8601 if record.scheduled? %>">
   <%= link_to edit_polymorphic_path([ :writing, record ]), class: "dash-row__link" do %>
     <span class="dash-row__title"><%= record.title.presence || "Untitled" %></span>
-    <% if record.tags.any? %>
-      <span class="dash-row__tags">
-        <% record.tags.each do |tag| %><span class="chip"><%= tag.name %></span><% end %>
-      </span>
-    <% end %>
+    <span class="dash-row__meta">
+      <span class="dash-row__url">/<%= record.slug %>/</span>
+      <% if record.scheduled? %>
+        <span class="dash-row__when">· Goes live <%= record.published_at.strftime("%-d %b %Y, %-l:%M %p %Z") %></span>
+      <% elsif record.published? && record.published_at %>
+        <span class="dash-row__when">· Published <%= record.published_at.strftime("%-d %b %Y") %></span>
+      <% end %>
+      <% record.tags.each do |tag| %><span class="chip"><%= tag.name %></span><% end %>
+    </span>
   <% end %>
 
   <span class="dash-row__side">

@@ -775,6 +775,11 @@ a:hover { opacity: .8; }
 .dash-row__title { font-family: var(--font-serif); font-size: 1.85rem; font-weight: 500; letter-spacing: -.005em; color: var(--w-ink); }
 .dash-row__link:hover .dash-row__title { color: var(--w-accent); }
 .dash-row__slug { font-size: 1.3rem; color: var(--w-faint); }
+/* The post row's second line — URL, then when it went (or goes) live, then the tags.
+   A full basis inside the link's existing wrap is what drops it onto its own line, so
+   the rows on Tags / Subscribers / Connect keep the single-line shape they share. */
+.dash-row__meta { flex-basis: 100%; display: flex; align-items: baseline; gap: .5rem .8rem; flex-wrap: wrap; }
+.dash-row__url, .dash-row__when { font-family: var(--font-mono); font-size: 1.2rem; color: var(--w-faint); }
 .dash-row__tags { display: inline-flex; gap: .5rem; flex-wrap: wrap; }
 .chip { font-size: 1.15rem; font-weight: 500; color: var(--w-muted); background: rgba(0, 0, 0, .055); border-radius: 20px; padding: .25rem .8rem; letter-spacing: .01em; }
 .dash-row__side { display: flex; align-items: center; gap: 1.4rem; flex-shrink: 0; }
