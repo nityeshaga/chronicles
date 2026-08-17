@@ -631,6 +631,24 @@ a:hover { opacity: .8; }
 .w-btn--block { width: 100%; padding: 1.1rem; font-size: 1.5rem; }
 .w-inline { display: inline; margin: 0; }
 
+/* ---- Dropdowns. Every menu on this surface is a native <details>; this is the panel
+   its <summary> drops. Right-aligned because they all hang off a right-hand control. ---- */
+.w-menu {
+  position: absolute; top: calc(100% + .6rem); right: 0; z-index: 30;
+  min-width: 17rem; display: flex; flex-direction: column; padding: .5rem;
+  background: var(--w-panel); border: 1px solid var(--w-line-strong);
+  border-radius: var(--w-radius); box-shadow: var(--w-shadow);
+}
+.w-menu a,
+.w-menu button {
+  appearance: none; background: none; border: 0; width: 100%; text-align: left; cursor: pointer;
+  font-family: var(--font-sans); font-size: 1.4rem; font-weight: 500; line-height: 1;
+  color: var(--w-ink); white-space: nowrap; padding: .8rem .9rem; border-radius: 6px;
+}
+.w-menu a:hover,
+.w-menu button:hover { background: rgba(0, 0, 0, .06); color: var(--w-ink); opacity: 1; }
+.w-menu form { margin: 0; }
+
 /* ---- Shared form fields ---- */
 .field { display: flex; flex-direction: column; gap: .55rem; }
 .field > label,
@@ -689,6 +707,14 @@ a:hover { opacity: .8; }
 .dash-eyebrow { display: block; font-size: 1.2rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--w-accent); margin-bottom: .5rem; }
 .dash-head__brand h1 { font-family: var(--font-serif); font-size: clamp(3.4rem, 4vw, 4.2rem); font-weight: 600; letter-spacing: -.015em; }
 .dash-head__actions { display: flex; align-items: center; gap: .8rem; flex-wrap: wrap; }
+
+/* The account menu: a quiet round gear at the far right, sized off .w-btn so it lines up
+   with the writing controls it sits beside. */
+.dash-menu { position: relative; }
+.dash-menu__button { padding: .85rem; border-radius: 50%; color: var(--w-muted); list-style: none; }
+.dash-menu__button::-webkit-details-marker { display: none; }
+.dash-menu__button:hover,
+.dash-menu[open] .dash-menu__button { color: var(--w-ink); }
 
 .dash-tabs { display: flex; align-items: center; gap: .2rem; flex-wrap: wrap; border-bottom: 1px solid var(--w-line); margin-bottom: 1rem; }
 .dash-tab {

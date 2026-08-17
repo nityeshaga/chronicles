@@ -12,6 +12,21 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # Account actions belong in the account menu, not a mis-click from the writing controls
+  # — signing out mid-draft was one slipped click away when they shared a bar.
+  test "the account menu holds the account actions, and the bar holds none of them" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+
+    assert_select ".dash-menu a[href=?]", root_path, text: "View site"
+    assert_select ".dash-menu a[href=?]", writing_connect_path, text: "Connect"
+    assert_select ".dash-menu form[action=?] input[name=_method][value=delete]", session_path
+    assert_select ".dash-menu button", text: "Sign out"
+
+    assert_select ".dash-head__actions > a[href=?]", writing_connect_path, count: 0
+    assert_select ".dash-head__actions > form[action=?]", session_path, count: 0
+  end
+
   # HTML pages are Pages by STI but are edited nowhere near the Lexxy form, so the
   # Pages bucket scopes to the exact type — a row here would link straight into the
   # editor that overwrites their stored document.
