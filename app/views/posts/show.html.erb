@@ -5,5 +5,5 @@
 <%# Outside the fragment cache above — the pill must never be baked into the
     copy an anonymous reader is served. %>
 <% if signed_in? %>
-  <%= link_to "Edit", @post.is_a?(Page) ? edit_writing_page_path(@post) : edit_writing_post_path(@post), class: "edit-pill" %>
+  <%= link_to "Edit", @post.is_a?(Page) ? edit_writing_page_path(@post) : edit_writing_post_path(@post), class: "edit-pill admin-link" %>
 <% end %>

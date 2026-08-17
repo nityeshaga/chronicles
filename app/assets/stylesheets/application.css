@@ -366,15 +366,25 @@ a:hover { opacity: .8; }
 .mast-subscribe:hover { color: var(--terracotta-deep); border-color: var(--terracotta); background: rgba(176, 92, 52, .07); }
 
 /* The writer's shortcut from a published page into its editor. Floats clear of
-   the article so the reading design stays untouched. */
-.edit-pill {
-  position: fixed; right: 22px; bottom: 22px; z-index: 10;
-  font-family: var(--mono); font-size: 11.5px; letter-spacing: .18em; text-transform: uppercase;
-  color: var(--terracotta-deep); border: 1px solid #cdb694; border-radius: 99px;
-  padding: 7px 16px; background: var(--paper); text-decoration: none;
-  transition: border-color .2s ease, background .2s ease;
+   the article so the reading design stays untouched; its looks come from
+   .admin-link below, like every other back-office control. */
+.edit-pill { position: fixed; right: 22px; bottom: 22px; z-index: 10; }
+
+/* Back-office chrome, deliberately outside the reader's design language. The
+   page is paper and terracotta; an admin control is a near-black sticker with
+   square-ish corners, so the writer never mistakes a control only he can see for
+   something a visitor is being shown. Scoped under .gh-viewport to outrank
+   `.home-template a { color: inherit }` on the homepage. */
+.gh-viewport a.admin-link {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--paper); background: var(--ink); border: 1px solid var(--ink); border-radius: 6px;
+  padding: 6px 12px; text-decoration: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 2px 6px rgba(43, 38, 32, .28);
+  transition: background .2s ease, border-color .2s ease;
 }
-.edit-pill:hover { color: var(--terracotta-deep); border-color: var(--terracotta); background: var(--paper-deep); opacity: 1; }
+.gh-viewport a.admin-link::before { content: "\270E"; font-size: 13px; letter-spacing: 0; }
+.gh-viewport a.admin-link:hover { color: var(--paper); background: var(--terracotta-deep); border-color: var(--terracotta-deep); opacity: 1; }
 
 /* ---- Site footer (site-wide) ---- */
 .site-footer { border-top: 1px solid var(--line); padding: 34px 0 44px; margin-top: auto; }
@@ -631,6 +641,36 @@ a:hover { opacity: .8; }
 .w-btn--block { width: 100%; padding: 1.1rem; font-size: 1.5rem; }
 .w-inline { display: inline; margin: 0; }
 
+/* ---- Dropdowns. Every menu on this surface is a native <details>; this is the panel
+   its <summary> drops. Right-aligned because they all hang off a right-hand control. ---- */
+.w-menu {
+  position: absolute; top: calc(100% + .6rem); right: 0; z-index: 30;
+  min-width: 17rem; display: flex; flex-direction: column; padding: .5rem;
+  background: var(--w-panel); border: 1px solid var(--w-line-strong);
+  border-radius: var(--w-radius); box-shadow: var(--w-shadow);
+}
+.w-menu a,
+.w-menu button {
+  appearance: none; background: none; border: 0; width: 100%; text-align: left; cursor: pointer;
+  font-family: var(--font-sans); font-size: 1.4rem; font-weight: 500; line-height: 1;
+  color: var(--w-ink); white-space: nowrap; padding: .8rem .9rem; border-radius: 6px;
+}
+.w-menu a:hover,
+.w-menu button:hover { background: rgba(0, 0, 0, .06); color: var(--w-ink); opacity: 1; }
+
+/* ---- Split button: one primary action fused to a caret that drops its rarer siblings.
+   Same primary fill throughout, a hairline of the button's own border between them. ---- */
+.w-split { display: inline-flex; }
+.w-split__main { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.w-split__more { position: relative; display: inline-flex; }
+.w-split__caret {
+  padding-left: .9rem; padding-right: .9rem; list-style: none;
+  border-top-left-radius: 0; border-bottom-left-radius: 0;
+  border-left-color: rgba(255, 255, 255, .38);
+}
+.w-split__caret::-webkit-details-marker { display: none; }
+.w-split__more[open] .w-split__caret { background: var(--w-accent-ink); }
+
 /* ---- Shared form fields ---- */
 .field { display: flex; flex-direction: column; gap: .55rem; }
 .field > label,
@@ -659,6 +699,18 @@ a:hover { opacity: .8; }
 .field textarea, .stacked-form textarea { resize: vertical; line-height: 1.5; }
 .field input[type="file"] { font-size: 1.3rem; color: var(--w-muted); }
 .field code, .stacked-form code { font-family: var(--font-mono); font-size: .88em; background: rgba(0, 0, 0, .05); padding: .1em .4em; border-radius: 4px; }
+
+/* Live slug availability — the frame the editor points at the slug's own URL. Same dot as
+   the status pills, shrunk to hint size; the height is held so the field never jumps. */
+.slug-status { display: block; min-height: 1.7rem; }
+.slug-status span {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-family: var(--font-sans); font-size: 1.2rem; font-weight: 600; letter-spacing: .01em;
+}
+.slug-status span::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.slug-status [data-state="available"] { color: var(--w-ok); }
+.slug-status [data-state="taken"],
+.slug-status [data-state="reserved"] { color: var(--w-danger); }
 
 .errors {
   list-style: none; margin: 1.6rem auto; max-width: 72rem; padding: 1.2rem 1.6rem;
@@ -690,6 +742,19 @@ a:hover { opacity: .8; }
 .dash-head__brand h1 { font-family: var(--font-serif); font-size: clamp(3.4rem, 4vw, 4.2rem); font-weight: 600; letter-spacing: -.015em; }
 .dash-head__actions { display: flex; align-items: center; gap: .8rem; flex-wrap: wrap; }
 
+/* The account menu: a quiet round gear pinned to the bottom-left corner of the viewport,
+   floating over the list on a soft shadow. Its panel is the shared .w-menu, flipped to
+   open upward and align left — there's nothing below or to the left of it. */
+.dash-menu { position: fixed; left: 22px; bottom: 22px; z-index: 10; }
+.dash-menu__button {
+  padding: .85rem; border-radius: 50%; color: var(--w-muted); list-style: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 6px 16px rgba(0, 0, 0, .10);
+}
+.dash-menu__button::-webkit-details-marker { display: none; }
+.dash-menu__button:hover,
+.dash-menu[open] .dash-menu__button { color: var(--w-ink); }
+.dash-menu .w-menu { top: auto; bottom: calc(100% + .6rem); right: auto; left: 0; }
+
 .dash-tabs { display: flex; align-items: center; gap: .2rem; flex-wrap: wrap; border-bottom: 1px solid var(--w-line); margin-bottom: 1rem; }
 .dash-tab {
   appearance: none; background: none; border: 0; border-bottom: 2px solid transparent;
@@ -701,11 +766,6 @@ a:hover { opacity: .8; }
 .dash-tab.is-active { color: var(--w-ink); border-bottom-color: var(--w-accent); }
 .dash-tab__count { font-size: 1.15rem; font-weight: 600; color: var(--w-faint); background: rgba(0, 0, 0, .05); border-radius: 20px; padding: .15rem .6rem; min-width: 2.1rem; text-align: center; }
 .dash-tab.is-active .dash-tab__count { color: var(--w-accent); background: rgba(180, 83, 9, .12); }
-/* The "New …" links ride the tail of the tab row. Grouped, so the flex free space opens
-   once — before the pair — rather than between them, and so they wrap together. */
-.dash-tabs__spacer { margin-left: auto; display: inline-flex; align-items: center; }
-.dash-tabs__spacer a { font-size: 1.35rem; font-weight: 500; color: var(--w-muted); padding: .9rem .6rem; }
-.dash-tabs__spacer a:hover { color: var(--w-accent); opacity: 1; }
 
 .dash-list { list-style: none; padding: 0; margin: 0; }
 .dash-row { display: flex; align-items: center; justify-content: space-between; gap: 1.6rem; padding: 1.5rem .6rem; border-bottom: 1px solid var(--w-line); }
@@ -945,4 +1005,7 @@ a:hover { opacity: .8; }
   .publish-popover { left: max(3vmin, 14px); right: max(3vmin, 14px); width: auto; }
   .editor-canvas { padding-top: 3rem; }
   .dash-row { align-items: flex-start; }
+  /* The corner gear floats over the page; give the dashboard a foot as tall as the
+     control (button plus its inset) so it can never sit on the last row's actions. */
+  .writing-dash { padding-bottom: 14rem; }
 }

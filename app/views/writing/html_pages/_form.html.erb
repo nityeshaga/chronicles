@@ -18,7 +18,8 @@
     <% end %>
   </header>
 
-  <%= form_with model: [ :writing, post ], class: "stacked-form" do |form| %>
+  <%= form_with model: [ :writing, post ], class: "stacked-form",
+        data: { controller: "slug", **slug_check_values(post) } do |form| %>
     <% if post.errors.any? %>
       <ul class="errors">
         <% post.errors.full_messages.each do |message| %>
@@ -39,7 +40,8 @@
 
     <div class="field">
       <%= form.label :slug, "URL slug" %>
-      <%= form.text_field :slug %>
+      <%= form.text_field :slug, data: { slug_target: "slug", action: "input->slug#check" } %>
+      <%= render "writing/slugs/status" %>
       <small class="field__hint">The page's public URL: <code>/<%= post.slug.presence || "…" %>/</code>. Changing it breaks inbound links.</small>
     </div>
 

@@ -71,6 +71,12 @@ Rails.application.routes.draw do
     resources :tags, only: %i[ index edit update create ]
     resources :embeds, only: %i[ create ]
     resources :uploads, only: %i[ create ]
+    # "Is this URL still free?", asked from the editor as the writer types. Singular, and
+    # the slug rides in the query: it's what the question is about, not where to ask it.
+    # Keeping it out of the path is also what lets a writer try "notes.md" — in a path
+    # segment that dot would be read as a format suffix, and the slug would arrive as
+    # "notes".
+    resource :slug, only: :show
     resource :connect, only: %i[ show ]
     resources :api_tokens, only: %i[ create destroy ]
     resources :connected_apps, only: %i[ destroy ]

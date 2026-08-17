@@ -12,6 +12,36 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # Account actions belong in the account menu, not a mis-click from the writing controls
+  # — signing out mid-draft was one slipped click away when they shared a bar. The menu
+  # now sits in the page's bottom-left corner, so the header holds none of it at all.
+  test "the account menu holds the account actions, and the header holds none of them" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+
+    assert_select ".writing-dash > details.dash-menu"
+    assert_select ".dash-menu a[href=?]", root_path, text: "View site"
+    assert_select ".dash-menu a[href=?]", writing_connect_path, text: "Connect"
+    assert_select ".dash-menu form[action=?] input[name=_method][value=delete]", session_path
+    assert_select ".dash-menu button", text: "Sign out"
+
+    assert_select ".dash-head .dash-menu", count: 0
+    assert_select ".dash-head__actions > a[href=?]", writing_connect_path, count: 0
+    assert_select ".dash-head__actions > form[action=?]", session_path, count: 0
+  end
+
+  # Three "New …" controls became one: a post is a single click, its two rarer siblings
+  # drop out of the caret instead of trailing the tab row.
+  test "the New control keeps a post one click and hangs the other kinds off its caret" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+
+    assert_select ".w-split a.w-btn--primary[href=?]", new_writing_post_path, text: /New post/
+    assert_select ".w-split .w-menu a[href=?]", new_writing_page_path, text: "New page"
+    assert_select ".w-split .w-menu a[href=?]", new_writing_html_page_path, text: "New HTML page"
+    assert_select ".dash-tabs a", count: 0
+  end
+
   # HTML pages are Pages by STI but are edited nowhere near the Lexxy form, so the
   # Pages bucket scopes to the exact type — a row here would link straight into the
   # editor that overwrites their stored document.
@@ -52,6 +82,8 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_response :created
     # Location is the created resource — the exact URL the JS will PATCH, adopted verbatim.
     assert_equal writing_post_url(Post.last), response.location
+    # The id rides alongside it: identity the editor can keep, unlike a slug.
+    assert_equal Post.last.id.to_s, response.headers["X-Post-Id"]
     assert_equal "Fresh Draft", Post.last.title
   end
 
@@ -204,6 +236,15 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     # And the delete button reaches its sibling form by the HTML form attribute.
     assert_select "button[form=delete-post]", text: "Delete post"
     assert_select "form#delete-post input[name=_method][value=delete]"
+  end
+
+  # The slug field's availability line: an empty frame the slug controller aims at the
+  # slugs endpoint as the writer types.
+  test "the editor carries the slug-status frame" do
+    sign_in_as users(:nityesh)
+    get edit_writing_post_url(posts(:draft))
+    assert_select "turbo-frame#slug-status[data-slug-target=status]"
+    assert_select "input[name=?][data-slug-target=slug]", "post[slug]"
   end
 
   test "preview renders the public post template behind auth" do

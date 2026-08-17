@@ -29,10 +29,11 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # The masthead nav advertises destinations, not scroll positions: an in-page
-  # anchor dressed as a site section is a lie the reader only catches after clicking.
+  # anchor dressed as a site section is a lie the reader only catches after
+  # clicking. About isn't there either — the homepage already sends readers to it.
   test "the masthead nav offers real destinations only" do
     get root_url
-    assert_select ".mast-nav a[href=?]", "/about/"
+    assert_select ".mast-nav a[href=?]", "/about/", count: 0
     assert_select ".mast-nav a[href=?]", "/#apps", count: 0
     assert_select ".mast-nav a[href=?]", "/#library", count: 0
   end
@@ -53,6 +54,18 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:nityesh)
     get "/a-published-post/"
     assert_select "a.edit-pill[href=?]", edit_writing_post_path(posts(:published))
+  end
+
+  # Both writer-only controls are back-office chrome, not part of the reader's
+  # page — one shared class carries that treatment, so it can't drift apart.
+  test "the writer's controls wear the admin styling, not the reader's" do
+    sign_in_as users(:nityesh)
+
+    get root_url
+    assert_select ".mast-nav a.admin-link[href=?]", "/writing/"
+
+    get "/a-published-post/"
+    assert_select "a.edit-pill.admin-link[href=?]", edit_writing_post_path(posts(:published))
   end
 
   test "a page's edit pill points at the page editor" do

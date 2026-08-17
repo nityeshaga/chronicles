@@ -10,12 +10,24 @@
     <div class="dash-head__actions">
       <%= link_to "Tags", writing_tags_path, class: "w-btn w-btn--ghost" %>
       <%= link_to "Subscribers", writing_subscribers_path, class: "w-btn w-btn--ghost" %>
-      <%= link_to "Connect", writing_connect_path, class: "w-btn w-btn--ghost" %>
-      <%= button_to "Sign out", session_path, method: :delete, class: "w-btn w-btn--ghost", form_class: "w-inline" %>
-      <%= link_to new_writing_post_path, class: "w-btn w-btn--primary" do %>
-        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-        New post
-      <% end %>
+      <%# One "New" control for three kinds of publication. A post is what gets written
+          almost every time, so it stays a single click; the two rare kinds hang off the
+          caret rather than trailing the tab row where nobody looked for them. %>
+      <div class="w-split">
+        <%= link_to new_writing_post_path, class: "w-btn w-btn--primary w-split__main" do %>
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          New post
+        <% end %>
+        <details class="w-split__more">
+          <summary class="w-btn w-btn--primary w-split__caret" aria-haspopup="true" aria-label="Other kinds of page">
+            <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </summary>
+          <div class="w-menu">
+            <%= link_to "New page", new_writing_page_path %>
+            <%= link_to "New HTML page", new_writing_html_page_path %>
+          </div>
+        </details>
+      </div>
     </div>
   </header>
 
@@ -44,10 +56,6 @@
             data-status="html_page" data-dashboard-target="tab" data-action="dashboard#filter">
       HTML pages <span class="dash-tab__count"><%= @html_pages.size %></span>
     </button>
-    <span class="dash-tabs__spacer">
-      <%= link_to "New page", new_writing_page_path %>
-      <%= link_to "New HTML page", new_writing_html_page_path %>
-    </span>
   </nav>
 
   <% if total.zero? %>
@@ -75,4 +83,20 @@
     </ul>
     <p class="dash-empty" data-dashboard-target="empty" hidden>Nothing in this view.</p>
   <% end %>
+
+  <%# Account and whole-site actions, pinned to the bottom-left corner and out of the
+      writing bar entirely: signing out isn't a writing act and shouldn't sit a mis-click
+      away from one. (Bottom-right is the public site's Edit sticker.) A native <details>
+      is the whole menu — open/closed is the element's own state, so there's nothing to
+      script; its panel opens upward because there's nothing below it. %>
+  <details class="dash-menu">
+    <summary class="w-btn w-btn--ghost dash-menu__button" aria-haspopup="true" aria-label="Account">
+      <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><circle cx="8" cy="8" r="2.4" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 1.4v1.7M8 12.9v1.7M2.4 8H.7M15.3 8h-1.7M3.9 3.9l1.2 1.2M10.9 10.9l1.2 1.2M12.1 3.9l-1.2 1.2M5.1 10.9l-1.2 1.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+    </summary>
+    <div class="w-menu">
+      <%= link_to "View site", root_path %>
+      <%= link_to "Connect", writing_connect_path %>
+      <%= button_to "Sign out", session_path, method: :delete, form_class: "w-inline" %>
+    </div>
+  </details>
 </div>

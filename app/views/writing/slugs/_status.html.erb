@@ -1,0 +1,9 @@
+<%# locals: (state: nil) %>
+<%# The frame the editor points at the check URL: rendered empty by the forms, and again
+    with a verdict as the response that swaps into them. The state IS the label — Available
+    / Taken / Reserved — so there's no second list of words to keep in step with it. %>
+<turbo-frame id="slug-status" class="slug-status" data-slug-target="status" aria-live="polite">
+  <% if state %>
+    <span data-state="<%= state %>"><%= state.to_s.capitalize %></span>
+  <% end %>
+</turbo-frame>

@@ -68,7 +68,10 @@ class WritingTest < ApplicationSystemTestCase
   test "reaching Connect from the dashboard and minting a token" do
     sign_in_as users(:nityesh)
     visit writing_posts_url
-    click_on "Connect"
+    # Connect lives in the account menu, a native <details> the rack_test driver can't
+    # open (no JavaScript, and it doesn't act on summary clicks), so reach the link
+    # where it sits rather than through the disclosure.
+    find(".dash-menu a", text: "Connect", visible: :all).click
 
     assert_selector "h2", text: "Claude Code"
     assert_text "claude mcp add"
