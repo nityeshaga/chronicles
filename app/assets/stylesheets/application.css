@@ -773,15 +773,14 @@ a:hover { opacity: .8; }
 .dash-row:hover { background: rgba(0, 0, 0, .018); }
 .dash-row__link { display: flex; align-items: baseline; gap: 1rem 1.4rem; flex-wrap: wrap; flex: 1; min-width: 0; }
 .dash-row__title { font-family: var(--font-serif); font-size: 1.85rem; font-weight: 500; letter-spacing: -.005em; color: var(--w-ink); }
-.dash-row__link:hover .dash-row__title { color: var(--w-accent); }
+/* On tags the whole row is one edit target, so the Edit button lights the name too. */
+.dash-row__link:hover .dash-row__title,
+.dash-list--tags .dash-row:hover .dash-row__title { color: var(--w-accent); }
 .dash-row__slug { font-size: 1.3rem; color: var(--w-faint); }
 .dash-row__tags { display: inline-flex; gap: .5rem; flex-wrap: wrap; }
 .chip { font-size: 1.15rem; font-weight: 500; color: var(--w-muted); background: rgba(0, 0, 0, .055); border-radius: 20px; padding: .25rem .8rem; letter-spacing: .01em; }
 .dash-row__side { display: flex; align-items: center; gap: 1.4rem; flex-shrink: 0; }
 .dash-row__date { font-size: 1.3rem; color: var(--w-faint); font-variant-numeric: tabular-nums; white-space: nowrap; }
-
-/* Tags: the row is one edit target, so hovering the Edit button lights the name too. */
-.dash-list--tags .dash-row:hover .dash-row__title { color: var(--w-accent); }
 
 .dash-note { margin-top: 1.6rem; font-size: 1.35rem; color: var(--w-faint); }
 
@@ -908,10 +907,10 @@ a:hover { opacity: .8; }
 }
 
 /* Lexxy draws the dropdown caret at .3ch square, which at our toolbar size renders as a
-   dot — the text-style and highlight buttons stop reading as menus. Same specificity as
-   the gem's own rule (two classes + a pseudo-element) and later in the cascade, since the
-   writing layout loads lexxy.css from :head before the app stylesheet. No !important. */
-.editor-canvas__body .lexxy-editor__toolbar-button--chevron:after {
+   dot — the text-style and highlight buttons stop reading as menus. One step above the
+   gem's own rule, so it wins on specificity rather than on load order. No !important. */
+.editor-canvas__body lexxy-editor .lexxy-editor__toolbar-button--chevron:after {
+  /* The caret is a rotated corner, so growing it drops its visual centre — pull it back. */
   block-size: .65ch; inline-size: .65ch; margin-block-start: -.2ch;
 }
 

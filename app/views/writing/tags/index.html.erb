@@ -29,7 +29,11 @@
           <% end %>
           <span class="dash-row__side">
             <span class="dash-row__date"><%= pluralize tag.posts.count, "post" %></span>
-            <%= link_to "Edit", edit_writing_tag_path(tag), class: "w-btn w-btn--ghost w-btn--sm" %>
+            <%# Same destination as the row link, so it is a label for that control, not a
+                second one: out of the tab order and out of the accessibility tree, or every
+                row would cost two tab stops and announce its tag twice. %>
+            <%= link_to "Edit", edit_writing_tag_path(tag), class: "w-btn w-btn--ghost w-btn--sm",
+                  tabindex: -1, aria: { hidden: true } %>
           </span>
         </li>
       <% end %>

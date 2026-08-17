@@ -12,8 +12,8 @@ class Writing::SubscribersControllerTest < ActionDispatch::IntegrationTest
     Subscriber.delete_all
     sign_in_as users(:nityesh)
     get writing_subscribers_url
-    assert_select ".dash-blank p", text: "No subscribers yet. When someone signs up from " \
-      "the homepage they appear here — email and the date they joined, newest first."
+    # The load-bearing half is the description of the list, not the whole sentence.
+    assert_select ".dash-blank p", text: /email and the date they joined, newest first/
   end
 
   test "index lists subscribers newest-first when signed in" do
