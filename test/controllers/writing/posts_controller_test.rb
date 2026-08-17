@@ -247,6 +247,26 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[name=?][data-slug-target=slug]", "post[slug]"
   end
 
+  # Mailing the list is irreversible, so the control is deliberately quiet: ghost weight
+  # (the popover's only loud thing is the LIVE pill) behind a confirm. With nobody
+  # subscribed there is nothing to send, so the button is absent rather than sitting there
+  # ready to fail.
+  test "the newsletter button is quiet and confirms when there are subscribers" do
+    sign_in_as users(:nityesh)
+    get edit_writing_post_url(posts(:published))
+    assert_select ".publish-newsletter [data-turbo-confirm]", text: "Send as newsletter"
+    assert_select ".publish-newsletter .w-btn--primary", count: 0
+  end
+
+  test "with nobody subscribed there is no newsletter button, and a line saying why" do
+    Subscriber.delete_all
+    sign_in_as users(:nityesh)
+    get edit_writing_post_url(posts(:published))
+    assert_select ".publish-newsletter form", count: 0
+    assert_select ".publish-newsletter", text: /No subscribers yet — nothing to send\./
+    assert_select ".publish-newsletter a[href=?]", writing_subscribers_path, text: "subscribers"
+  end
+
   test "preview renders the public post template behind auth" do
     sign_in_as users(:nityesh)
     get writing_post_url(posts(:draft))

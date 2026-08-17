@@ -16,6 +16,9 @@
 
     <%# Newsletter: a published post can be mailed to the list exactly once. After it
         goes out, the button is replaced by the sent stamp so it can't be re-sent.
+        With nobody subscribed there is nothing to send, so the button is absent rather
+        than disabled — a control that can only fail is noise. The button that remains is
+        a ghost: same weight as Unpublish, so the LIVE pill stays the loudest thing here.
         Pages share this popover but aren't newsletterable, so they skip the block. %>
     <% if post.newsletterable? %>
     <div class="publish-newsletter">
@@ -25,11 +28,13 @@
           Mailed to <%= link_to post.newsletter_recipients_count ? pluralize(post.newsletter_recipients_count, "subscriber") : "subscribers", writing_subscribers_path %>
           <%= post.newsletter_sent_at.strftime("%-d %b %Y, %-l:%M %p") %>.
         </p>
+      <% elsif Subscriber.none? %>
+        <p class="publish-state"><span>No <%= link_to "subscribers", writing_subscribers_path %> yet — nothing to send.</span></p>
       <% else %>
         <% count = Subscriber.count %>
         <p class="publish-state"><span>Goes to <%= link_to pluralize(count, "subscriber"), writing_subscribers_path %>.</span></p>
         <%= button_to "Send as newsletter", [ :writing, post, :newsletter ], method: :post,
-              class: "w-btn w-btn--primary w-btn--sm", form_class: "w-inline",
+              class: "w-btn w-btn--ghost w-btn--sm", form_class: "w-inline",
               data: { turbo_confirm: "Mail this post to all #{count} subscribers? This can’t be undone." } %>
       <% end %>
     </div>
