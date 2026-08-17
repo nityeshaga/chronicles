@@ -26,6 +26,11 @@ class Post < ApplicationRecord
 
   validates :title, presence: true
   validates :slug, presence: true, uniqueness: true
+  # Public posts live at the site root, so a slug the router already answers for — writing,
+  # rss, sitemap.xml — is not a URL this post can have: the post would save and then be
+  # unreachable at its own address. Slug owns the question; this is the same one the
+  # editor's availability line asks, so the two can't drift.
+  validate :slug_must_not_be_reserved
   # Anything on its way to the public — live now, or a draft with a schedule waiting to
   # fire — must carry a title someone chose. A validation rather than a guard inside the
   # publish verbs, because the verbs are not the only way in: the scheduled job calls
@@ -39,7 +44,7 @@ class Post < ApplicationRecord
   # one. Runs before generate_slug so a fresh untitled draft slugs as "untitled", and
   # since generate_slug only fires on a blank slug, re-filling never churns the slug.
   before_validation :fill_placeholder_title
-  before_validation :generate_slug, on: :create
+  before_validation :generate_slug
   before_save :stamp_published_at
 
   def to_param = slug
@@ -83,6 +88,25 @@ class Post < ApplicationRecord
   # Never given a title anyone chose — either blank, or still wearing the placeholder.
   # What the editor asks before it offers to publish.
   def untitled? = title.blank? || title == PLACEHOLDER_TITLE
+
+  # Is this post's URL a promise? Live, or committed to going live — either way someone
+  # can be holding the link (a scheduled post is already in the writer's calendar and his
+  # announcements), so the address stops being ours to re-derive from a retitle. Only a
+  # hand edit moves it after this, and the editor warns before it does.
+  def addressed? = published? || scheduled?
+
+  # The editor's save, and the reason a keystroke is never refused over a URL. A name
+  # that isn't free — someone else holds it, or the router does — leaves the slug where it
+  # was and lets everything else land; the availability line beside the field is already
+  # saying why, and a writer mid-sentence can't read a validation error. A blank slug is
+  # the editor saying the URL is still the title's to invent, so it falls through to
+  # generate_slug. Every other caller (the MCP tools, the console) still gets the
+  # refusal — they can read one.
+  def autosave(attributes = {})
+    assign_attributes(attributes)
+    self.slug = slug_was if slug.present? && slug_changed? && !Slug.new(slug, except: id).available?
+    save
+  end
 
   def publish_now
     update!(status: :published, published_at: Time.current)
@@ -205,20 +229,26 @@ class Post < ApplicationRecord
       self.title = PLACEHOLDER_TITLE if title.blank? && draft?
     end
 
-    # Slugs are unique, but titles aren't — two "Untitled" autosave drafts (or two posts
-    # honestly sharing a name) must both persist, so suffix a counter until the slug is free.
-    # Free means what it means to the editor's live check: Slug says, for both of us.
+    # A blank slug means the URL is the title's to invent — on the first save and on every
+    # later one, which is what keeps a draft minted at "Why I mov" from staying at
+    # /why-i-mov/ while its title grows. Slugs are unique and titles aren't, so suffix a
+    # counter until the name is free; free means what it means to the editor's live check,
+    # because Slug answers for both of us. The record never counts against itself.
     def generate_slug
       return if slug.present?
 
       base = title.to_s.parameterize
       candidate = base
       n = 2
-      while Slug.new(candidate).taken?
+      until Slug.new(candidate, except: id).available?
         candidate = "#{base}-#{n}"
         n += 1
       end
       self.slug = candidate
+    end
+
+    def slug_must_not_be_reserved
+      errors.add(:slug, "is a name the site already uses") if slug.present? && Slug.new(slug).reserved?
     end
 
     def stamp_published_at

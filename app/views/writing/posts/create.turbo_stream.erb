@@ -1,9 +1,11 @@
-<%# The answer to the autosave mint. The draft is real now, so everything the editor held
-    back for a saved record arrives in place — Publish and its popover, the view button,
-    Delete, the tag mint — without a reload and without moving the caret. Every action is
-    an update into a slot the form already rendered empty, so each of these partials is
-    the only place its markup exists. Shared with Writing::PagesController, which mints
-    through the same form. %>
+<%# The answer to the autosave mint, and to a rename. The draft is real now, so
+    everything the editor held back for a saved record arrives in place — Publish and its
+    popover, the view button, Delete, the tag mint — without a reload and without moving
+    the caret. A rename gets the same answer for the same reason: every one of these
+    addresses the record, so a slug that moved leaves all of them pointing at a URL that
+    no longer exists. Every action is an update into a slot the form already rendered
+    empty, so each of these partials is the only place its markup exists. Shared with
+    Writing::PagesController, which writes through the same form. %>
 <%= turbo_stream.update "editor-actions" do %>
   <%= render "writing/posts/editor_actions", post: @post %>
 <% end %>

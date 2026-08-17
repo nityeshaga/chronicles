@@ -41,7 +41,9 @@ class Writing::PostsController < Writing::BaseController
     @post = Post.new(post_params)
     return head :unprocessable_entity if autosave_request? && !draft_content?(post_params)
 
-    if @post.save
+    # The editor's save never refuses a keystroke over a URL (Post#autosave); every other
+    # way in still gets the validations.
+    if autosave_request? ? @post.autosave : @post.save
       adopt_feature_image_upload(@post)
       if autosave_request?
         render_mint(@post)
@@ -55,34 +57,10 @@ class Writing::PostsController < Writing::BaseController
     end
   end
 
-  # Two ways in, one action. The debounced autosave hits this as a silent fetch (an
-  # X-Autosave header): on success it answers 204 so nothing repaints and the cursor never
-  # jumps; on a validation failure it answers a bodyless 422 so a bad keystroke can't
-  # repaint the page either — autosave stays as invisible as it is on success. The slug
-  # rides that path with everything else, so a rename answers 204 too, with the addresses
-  # it moved (see Writing::Autosaving). A slug someone else holds fails the uniqueness
-  # validation and lands in the same silent 422: the record keeps the URL it had, and the
-  # availability line under the field is what says why.
-  #
-  # An explicit save (the feature-image file, the only field left off the silent path) is
-  # a normal Turbo submit, which can't read headers — so a rename there still redirects
-  # once to the new edit URL, and a validation failure re-renders the form with its errors.
+  # Two ways in, one action — and the same one pages answer, so it lives in
+  # Writing::Autosaving rather than in two files that have already drifted once.
   def update
-    slug_was = @post.slug
-    if @post.update(post_params)
-      adopt_feature_image_upload(@post)
-      if autosave_request?
-        render_autosave(@post, renamed: @post.slug != slug_was)
-      elsif @post.slug == slug_was
-        head :no_content
-      else
-        redirect_to edit_writing_post_url(@post)
-      end
-    elsif autosave_request?
-      head :unprocessable_entity
-    else
-      render :edit, status: :unprocessable_entity
-    end
+    update_from_editor(@post, post_params)
   end
 
   def destroy

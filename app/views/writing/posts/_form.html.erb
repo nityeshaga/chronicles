@@ -66,8 +66,8 @@
           and showing it back would make him delete a word he never wrote. %>
       <%= form.text_area :title, rows: 1, class: "editor-canvas__title", placeholder: "Title",
             value: (post.title unless post.untitled?),
-            autofocus: !saving, data: { controller: "autogrow", slug_target: "source",
-            action: "input->slug#suggest input->autogrow#grow input->editor#retitle" } %>
+            autofocus: !saving, data: { controller: "autogrow",
+            action: "input->autogrow#grow input->editor#retitle" } %>
 
       <%# The excerpt is the standfirst: edited inline as a subtitle here (Ghost-style), the
           same attribute the public <h1> subtitle and social cards read. %>
@@ -76,20 +76,22 @@
             data: { controller: "autogrow", action: "input->autogrow#grow" } %>
 
       <%# The post's public address, on the canvas because that is where it is decided —
-          the host and the trailing slash are the site's, the middle is the writer's. It
-          rides the same silent save as the prose (following the title while it is still
-          auto, committing on change once it has been hand-edited), so the line always
-          shows the URL the site actually serves rather than the one it was going to. %>
+          the host and the trailing slash are the site's, the middle is the writer's.
+          data-auto is who owns it: while the server says the URL is still the title's to
+          invent, the field only ever displays what the last save kept (never a guess of
+          its own, so it can't show a URL the site doesn't serve). The writer's first
+          keystroke here takes it over for good, and from then on it rides the silent save
+          like the prose, committing on change. %>
       <div class="url-line">
         <span class="url-line__url"><span class="url-line__host"><%= Setting.current.production_host %>/</span><%=
           form.label :slug, "URL slug", class: "sr-only" %><%=
           form.text_field :slug, class: "url-line__slug", title: "Edit the URL", placeholder: "your-url",
-            data: { slug_target: "slug", autosave_target: "slug",
+            data: { slug_target: "slug", autosave_target: "slug", auto: post.new_record? || post.untitled?,
             action: "input->slug#edited input->slug#check input->autosave#holdSlug change->autosave#commitSlug" } %>/</span>
         <%# Availability, answered by the server as the writer types. %>
         <%= render "writing/slugs/status" %>
-        <% if post.published? || post.scheduled? %>
-          <p class="url-line__hint">Live URL — changing it breaks links people already have.</p>
+        <% if post.addressed? %>
+          <p class="url-line__hint"><%= live_url_warning %></p>
         <% end %>
       </div>
 

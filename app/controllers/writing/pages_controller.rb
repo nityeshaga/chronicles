@@ -25,7 +25,7 @@ class Writing::PagesController < Writing::BaseController
     @post = Page.new(page_params)
     return head :unprocessable_entity if autosave_request? && !draft_content?(page_params)
 
-    if @post.save
+    if autosave_request? ? @post.autosave : @post.save
       adopt_feature_image_upload(@post)
       if autosave_request?
         render_mint(@post)
@@ -39,25 +39,9 @@ class Writing::PagesController < Writing::BaseController
     end
   end
 
-  # Same autosave contract as posts (see Writing::PostsController#update): silent 204/422
-  # for the debounced fetch — carrying the moved addresses when it renamed the slug — and
-  # a one-time redirect only when an explicit save renames it.
+  # The same action posts answer, on the same form — see Writing::Autosaving.
   def update
-    slug_was = @post.slug
-    if @post.update(page_params)
-      adopt_feature_image_upload(@post)
-      if autosave_request?
-        render_autosave(@post, renamed: @post.slug != slug_was)
-      elsif @post.slug == slug_was
-        head :no_content
-      else
-        redirect_to edit_writing_page_url(@post)
-      end
-    elsif autosave_request?
-      head :unprocessable_entity
-    else
-      render :edit, status: :unprocessable_entity
-    end
+    update_from_editor(@post, page_params)
   end
 
   def destroy

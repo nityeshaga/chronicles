@@ -18,6 +18,61 @@ class PostTest < ActiveSupport::TestCase
     assert_raises(ActiveRecord::RecordInvalid) { Post.create!(title: "Two", slug: "dupe") }
   end
 
+  # Public posts live at the site root, so a name the router already answers for would
+  # save fine and then be unreachable at its own address.
+  test "a slug the router already owns is refused" do
+    post = Post.new(title: "Writing", slug: "writing")
+    assert_not post.valid?
+    assert_includes post.errors[:slug], "is a name the site already uses"
+  end
+
+  test "an invented slug steps past names that are taken or reserved" do
+    Post.create!(title: "Notes")
+    assert_equal "notes-2", Post.create!(title: "Notes").slug
+    assert_equal "writing-2", Post.create!(title: "Writing").slug
+  end
+
+  # The editor's save. A blank slug means the URL is still the title's to invent, so it
+  # follows a retitle instead of freezing at whatever the first two seconds derived.
+  test "autosave re-derives a blank slug from the title" do
+    post = Post.create!(title: "Why I Mov")
+    assert_equal "why-i-mov", post.slug
+
+    post.autosave(title: "Why I Moved My Blog", slug: nil)
+    assert_equal "why-i-moved-my-blog", post.reload.slug
+  end
+
+  # A keystroke is never refused over a URL: the name that isn't free is dropped, the
+  # prose it arrived with is not.
+  test "autosave keeps the slug it had when the one asked for isn't free" do
+    Post.create!(title: "One", slug: "spoken-for")
+    post = Post.create!(title: "Two", slug: "mine")
+
+    assert post.autosave(slug: "spoken-for", title: "Two, Revised")
+    assert_equal "mine", post.reload.slug
+    assert_equal "Two, Revised", post.title
+
+    assert post.autosave(slug: "writing")
+    assert_equal "mine", post.reload.slug
+  end
+
+  # Every other caller can read an error, so every other caller still gets one.
+  test "a plain save still refuses a slug that is taken" do
+    Post.create!(title: "One", slug: "spoken-for")
+    post = Post.create!(title: "Two", slug: "mine")
+
+    assert_not post.update(slug: "spoken-for")
+    assert_equal "mine", post.reload.slug
+  end
+
+  # Once a post is addressed, someone can be holding the link — the editor stops
+  # re-deriving the URL from the title and only a hand edit moves it.
+  test "addressed covers a live post and one committed to going live" do
+    assert posts(:published).addressed?
+    assert posts(:scheduled).addressed?
+    assert_not posts(:draft).addressed?
+  end
+
   test "defaults to draft" do
     assert Post.new.draft?
   end

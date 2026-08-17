@@ -47,7 +47,7 @@ class Writing::TagsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:nityesh)
     draft = posts(:draft)
     assert_difference -> { Tag.count }, 1 do
-      post writing_tags_url, params: { tag_name: "Field Notes", post_id: draft.slug },
+      post writing_tags_url, params: { tag_name: "Field Notes", post_id: draft.id },
         as: :turbo_stream
     end
     assert_includes draft.reload.tags.map(&:slug), "field-notes"
@@ -58,7 +58,7 @@ class Writing::TagsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:nityesh)
     draft = posts(:draft)
     assert_no_difference -> { Tag.count } do
-      post writing_tags_url, params: { tag_name: "chronicles", post_id: draft.slug },
+      post writing_tags_url, params: { tag_name: "chronicles", post_id: draft.id },
         as: :turbo_stream
     end
     assert_includes draft.reload.tags, tags(:chronicles)
@@ -68,7 +68,7 @@ class Writing::TagsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:nityesh)
     draft = posts(:draft)
     assert_no_difference -> { Tag.count } do
-      post writing_tags_url, params: { tag_name: "  ", post_id: draft.slug }, as: :turbo_stream
+      post writing_tags_url, params: { tag_name: "  ", post_id: draft.id }, as: :turbo_stream
     end
   end
 
@@ -76,7 +76,7 @@ class Writing::TagsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:nityesh)
     draft = posts(:draft)
     assert_no_difference -> { Tag.count } do
-      post writing_tags_url, params: { tag_name: "???", post_id: draft.slug }, as: :turbo_stream
+      post writing_tags_url, params: { tag_name: "???", post_id: draft.id }, as: :turbo_stream
     end
     assert_response :success
   end
@@ -84,7 +84,7 @@ class Writing::TagsControllerTest < ActionDispatch::IntegrationTest
   test "minting against an unknown post is unprocessable" do
     sign_in_as users(:nityesh)
     assert_no_difference -> { Tag.count } do
-      post writing_tags_url, params: { tag_name: "Field Notes", post_id: "no-such-post" },
+      post writing_tags_url, params: { tag_name: "Field Notes", post_id: "0" },
         as: :turbo_stream
     end
     assert_response :unprocessable_entity
