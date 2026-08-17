@@ -108,8 +108,11 @@ class Post < ApplicationRecord
 
   def newsletter_sent? = newsletter_sent_at.present?
 
-  # Only a live post that hasn't already gone out can be mailed.
-  def newsletter_ready? = published? && !newsletter_sent?
+  # Only a live post that hasn't already gone out, and has somebody to go out to, can be
+  # mailed. The empty list belongs here rather than in the view: the send is one-shot, so
+  # a stale tab posting after the last subscriber leaves would otherwise burn the stamp
+  # and record "mailed to 0".
+  def newsletter_ready? = published? && !newsletter_sent? && Subscriber.any?
 
   # The description Ghost puts in og:/twitter:/JSON-LD: a custom excerpt if the
   # author wrote one, otherwise an auto-excerpt derived from the body. Never blank,

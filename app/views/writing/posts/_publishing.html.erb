@@ -28,14 +28,15 @@
           Mailed to <%= link_to post.newsletter_recipients_count ? pluralize(post.newsletter_recipients_count, "subscriber") : "subscribers", writing_subscribers_path %>
           <%= post.newsletter_sent_at.strftime("%-d %b %Y, %-l:%M %p") %>.
         </p>
-      <% elsif Subscriber.none? %>
-        <p class="publish-state"><span>No <%= link_to "subscribers", writing_subscribers_path %> yet — nothing to send.</span></p>
-      <% else %>
+      <% elsif post.newsletter_ready? %>
         <% count = Subscriber.count %>
         <p class="publish-state"><span>Goes to <%= link_to pluralize(count, "subscriber"), writing_subscribers_path %>.</span></p>
         <%= button_to "Send as newsletter", [ :writing, post, :newsletter ], method: :post,
               class: "w-btn w-btn--ghost w-btn--sm", form_class: "w-inline",
-              data: { turbo_confirm: "Mail this post to all #{count} subscribers? This can’t be undone." } %>
+              data: { turbo_confirm: "Mail this post to all #{pluralize(count, "subscriber")}? This can’t be undone." } %>
+      <% else %>
+        <%# Live, unsent and not ready leaves exactly one case: nobody to send to. %>
+        <p class="publish-state"><span>No <%= link_to "subscribers", writing_subscribers_path %> yet — nothing to send.</span></p>
       <% end %>
     </div>
     <% end %>

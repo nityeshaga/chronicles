@@ -11,7 +11,7 @@ class Writing::NewslettersController < Writing::BaseController
         notice: "Newsletter queued to #{count} #{"subscriber".pluralize(count)}."
     else
       redirect_to [ :edit, :writing, @post ],
-        alert: "This post can’t be sent — it must be published and not already mailed."
+        alert: "This post can’t be sent — it must be published, not already mailed, and have someone to go to."
     end
   end
 
