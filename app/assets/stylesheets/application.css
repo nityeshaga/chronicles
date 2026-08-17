@@ -903,9 +903,34 @@ a:hover { opacity: .8; }
   line-height: 1.1; letter-spacing: -.022em;
 }
 .editor-canvas__subtitle {
-  margin-bottom: 2.8rem; font-size: clamp(1.7rem, .23vw + 1.61rem, 1.9rem);
+  margin-bottom: 1.4rem; font-size: clamp(1.7rem, .23vw + 1.61rem, 1.9rem);
   line-height: 1.45; letter-spacing: -.018em; color: var(--w-muted);
 }
+
+/* The URL, under the subtitle: quiet enough to ignore while writing, legible enough to
+   check. The dotted underline is the whole affordance — it says "this part is yours"
+   without a box or a label, and goes solid when it has the caret. */
+.url-line {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 1.4rem;
+  margin-bottom: 2.8rem;
+  font-family: var(--font-mono); font-size: 1.3rem; color: var(--w-faint);
+}
+.url-line__url { display: inline-flex; align-items: baseline; max-width: 100%; }
+.url-line__slug {
+  padding: 0 .1rem; border: 0; border-bottom: 1px dotted var(--w-muted); border-radius: 0;
+  background: none; font: inherit; color: var(--w-ink); cursor: text;
+  /* Sized by its content, so the trailing slash sits against the slug rather than at the
+     end of a box (browsers without it fall back to the input's default width). */
+  field-sizing: content; min-width: 6ch; max-width: 100%;
+}
+.url-line__slug:focus { outline: none; border-bottom: 1px solid var(--w-ink); }
+.url-line__slug::placeholder { color: var(--w-faint); }
+/* The live-URL warning is for the moment of editing, not a banner to live with. */
+.url-line__hint {
+  flex-basis: 100%; display: none; margin: .4rem 0 0;
+  font-family: var(--font-sans); font-size: 1.2rem; font-weight: 500; color: var(--w-danger);
+}
+.url-line:focus-within .url-line__hint { display: block; }
 /* The three canvas placeholders read as one hint, so they share one colour. Lexxy paints
    the body's from its `placeholder` attribute at two-thirds ink; opacity: 1 hands the
    tone back to the colour (and undoes Firefox's own ::placeholder fade while it's here). */

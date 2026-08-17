@@ -26,6 +26,10 @@ class Slug
     :available
   end
 
+  # Free to use, in one word: named, unclaimed, and routable. The editor's line asks it
+  # of what the writer typed; Post#generate_slug asks it of every candidate it invents.
+  def available? = state == :available
+
   def taken?
     Post.where.not(id: @except).exists?(slug: text)
   end

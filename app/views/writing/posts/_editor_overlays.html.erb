@@ -20,6 +20,8 @@
       autosave. POSTs to Writing::TagsController#create, which streams the refreshed
       checkbox list back. %>
   <%= form_with url: writing_tags_path, id: "new-tag-form" do %>
-    <%= hidden_field_tag :post_id, post.slug %>
+    <%# The id, not the slug: the URL line can rename this post between the page load and
+        the click, and identity is the one thing a rename doesn't move. %>
+    <%= hidden_field_tag :post_id, post.id %>
   <% end %>
 <% end %>

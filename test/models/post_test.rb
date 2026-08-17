@@ -18,6 +18,81 @@ class PostTest < ActiveSupport::TestCase
     assert_raises(ActiveRecord::RecordInvalid) { Post.create!(title: "Two", slug: "dupe") }
   end
 
+  # Public posts live at the site root, so a name the router already answers for would
+  # save fine and then be unreachable at its own address.
+  test "a slug the router already owns is refused" do
+    post = Post.new(title: "Writing", slug: "writing")
+    assert_not post.valid?
+    assert_includes post.errors[:slug], "is a name the site already uses"
+  end
+
+  test "an invented slug steps past names that are taken or reserved" do
+    Post.create!(title: "Notes")
+    assert_equal "notes-2", Post.create!(title: "Notes").slug
+    assert_equal "writing-2", Post.create!(title: "Writing").slug
+  end
+
+  # The editor's save. Asked to derive, the URL follows the title instead of freezing at
+  # whatever the first two seconds of typing it produced.
+  test "the editor's save re-derives the URL from the title when asked to" do
+    post = Post.create!(title: "Why I Mov")
+    assert_equal "why-i-mov", post.slug
+
+    post.save_keeping_url({ title: "Why I Moved My Blog" }, derive_slug: true)
+    assert_equal "why-i-moved-my-blog", post.reload.slug
+  end
+
+  # A keystroke is never refused over a URL: the name that isn't free is dropped, the
+  # prose it arrived with is not.
+  test "the editor's save keeps the slug it had when the one asked for isn't free" do
+    Post.create!(title: "One", slug: "spoken-for")
+    post = Post.create!(title: "Two", slug: "mine")
+
+    assert post.save_keeping_url({ slug: "spoken-for", title: "Two, Revised" })
+    assert_equal "mine", post.reload.slug
+    assert_equal "Two, Revised", post.title
+
+    assert post.save_keeping_url({ slug: "writing" })
+    assert_equal "mine", post.reload.slug
+  end
+
+  # An emptied field is a name the post can't have, not a request to invent a new one —
+  # reading the two as one thing is how a cleared field once moved a published URL.
+  test "the editor's save keeps the slug it had when the field arrives empty" do
+    post = Post.create!(title: "Live One", slug: "live-one", status: :published)
+
+    assert post.save_keeping_url({ slug: "", excerpt: "still edited" })
+    assert_equal "live-one", post.reload.slug
+    assert_equal "still edited", post.excerpt
+  end
+
+  # An old post holding a name the router has since claimed must still be publishable:
+  # what is reserved changes with routes.rb, and only a slug that is moving is asked.
+  test "a reserved name is only refused of a slug that is moving" do
+    post = Post.create!(title: "Legacy", slug: "legacy")
+    post.update_column(:slug, "writing")
+
+    assert post.reload.publish
+    assert post.published?
+  end
+
+  # Every other caller can read an error, so every other caller still gets one.
+  test "a plain save still refuses a slug that is taken" do
+    Post.create!(title: "One", slug: "spoken-for")
+    post = Post.create!(title: "Two", slug: "mine")
+
+    assert_not post.update(slug: "spoken-for")
+    assert_equal "mine", post.reload.slug
+  end
+
+  # Once a post is addressed, someone can be holding the link — the editor stops
+  # re-deriving the URL from the title and only a hand edit moves it.
+  test "addressed covers a live post and one committed to going live" do
+    assert posts(:published).addressed?
+    assert posts(:scheduled).addressed?
+    assert_not posts(:draft).addressed?
+  end
+
   test "defaults to draft" do
     assert Post.new.draft?
   end

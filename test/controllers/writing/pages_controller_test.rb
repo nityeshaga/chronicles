@@ -43,17 +43,47 @@ class Writing::PagesControllerTest < ActionDispatch::IntegrationTest
     assert_empty response.body
   end
 
-  # The silent path is silent on failure too. This is the half that had drifted: a failed
-  # page mint used to render a whole form down a wire the client reads as a dead session.
-  test "a failed autosave create stays bodyless" do
+  # A URL someone else holds no longer costs the writer his draft: the mint keeps the
+  # name it can have (Post#autosave) and the page exists either way.
+  test "autosave create mints under a free name when the one asked for is taken" do
     sign_in_as users(:nityesh)
     posts(:about).update_column(:slug, "taken-twice")
 
-    post writing_pages_url, headers: { "X-Autosave" => "true" },
-      params: { page: { title: "Taken Twice", body: "<p>hi</p>", slug: "taken-twice" } }
+    assert_difference -> { Page.count }, 1 do
+      post writing_pages_url, headers: { "X-Autosave" => "true" },
+        params: { page: { title: "Taken Twice", body: "<p>hi</p>", slug: "taken-twice" } }
+    end
+
+    assert_response :created
+    assert_equal "taken-twice-2", Page.last.slug
+    assert_equal "taken-twice-2", response.headers["X-Slug"]
+  end
+
+  # The silent path is silent on failure too. This is the half that had drifted: a failed
+  # page save used to render a whole form down a wire the client reads as a dead session.
+  test "a failed autosave stays bodyless" do
+    sign_in_as users(:nityesh)
+
+    patch writing_page_url(posts(:about)), headers: { "X-Autosave" => "true" },
+      params: { page: { title: "" } }
 
     assert_response :unprocessable_entity
     assert_empty response.body
+  end
+
+  # Pages are renamed through the same silent path posts are, and the editor is handed
+  # the pages route home — polymorphic routing, no branch in the concern.
+  test "an autosaved rename hands a page its own edit URL" do
+    sign_in_as users(:nityesh)
+    page = posts(:about)
+
+    patch writing_page_url(page), headers: { "X-Autosave" => "true" },
+      params: { page: { slug: "about-me" } }
+
+    assert_response :ok
+    assert_equal "about-me", page.reload.slug
+    assert_equal edit_writing_page_url(page), response.headers["X-Edit-Url"]
+    assert_equal writing_page_url(page), response.location
   end
 
   # --- Pages share the autosave contract with posts: the debounced fetch is silent

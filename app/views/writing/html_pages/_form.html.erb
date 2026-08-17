@@ -41,7 +41,7 @@
       <%= form.label :slug, "URL slug" %>
       <%= form.text_field :slug, data: { slug_target: "slug", action: "input->slug#check" } %>
       <%= render "writing/slugs/status" %>
-      <small class="field__hint">The page's public URL: <code>/<%= post.slug.presence || "…" %>/</code>. Changing it breaks inbound links.</small>
+      <small class="field__hint">The page's public URL: <code>/<%= post.slug.presence || "…" %>/</code>.<%= " #{live_url_warning}" if post.addressed? %></small>
     </div>
 
     <div class="field">

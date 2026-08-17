@@ -25,7 +25,7 @@ class Writing::TagsController < Writing::BaseController
   # post being edited, and stream back the refreshed checkbox list so it appears checked.
   def create
     name = params[:tag_name].to_s.strip
-    @post = Post.find_by(slug: params[:post_id])
+    @post = Post.find_by(id: params[:post_id])
     return head :unprocessable_entity unless @post
 
     # A name that parameterizes to nothing (e.g. "???" or a non-Latin script) can't yield

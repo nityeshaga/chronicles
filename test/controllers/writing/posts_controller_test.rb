@@ -252,8 +252,10 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
   test "autosave persists changes and returns no content" do
     sign_in_as users(:nityesh)
     draft = posts(:draft)
+    # The slug rides along on a post whose field the writer has taken over — sending it
+    # unchanged is what says "leave the URL alone", and the answer stays a bare 204.
     patch writing_post_url(draft), headers: { "X-Autosave" => "true" },
-      params: { post: { title: "Autosaved Title", body: "<p>edited</p>" } }
+      params: { post: { title: "Autosaved Title", body: "<p>edited</p>", slug: draft.slug } }
     assert_response :no_content
     assert_equal "Autosaved Title", draft.reload.title
   end
@@ -424,13 +426,246 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_select "form#delete-post input[name=_method][value=delete]"
   end
 
-  # The slug field's availability line: an empty frame the slug controller aims at the
-  # slugs endpoint as the writer types.
-  test "the editor carries the slug-status frame" do
+  # --- The URL: on the canvas, under the subtitle, where it is decided — with the
+  #     availability frame the slug controller aims at the slugs endpoint beside it. ---
+  test "the canvas carries the URL line: the host, the slug field, and its status frame" do
     sign_in_as users(:nityesh)
     get edit_writing_post_url(posts(:draft))
-    assert_select "turbo-frame#slug-status[data-slug-target=status]"
-    assert_select "input[name=?][data-slug-target=slug]", "post[slug]"
+
+    assert_select ".editor-canvas .url-line" do
+      assert_select ".url-line__host", text: "#{Setting.current.production_host}/"
+      assert_select "input[name=?][data-slug-target=slug][data-autosave-target=slug]", "post[slug]"
+      assert_select "turbo-frame#slug-status[data-slug-target=status]"
+    end
+  end
+
+  # Who owns the URL, stamped on the field so both controllers read one fact. A post with
+  # a title the writer chose has a URL to keep; a new or still-untitled one doesn't, so
+  # the server goes on inventing it until someone types over it.
+  test "the URL field says whether it is still following the title" do
+    sign_in_as users(:nityesh)
+
+    get new_writing_post_url
+    assert_select ".url-line__slug[data-auto=true]"
+
+    get edit_writing_post_url(Post.create!(body: "<p>body first</p>"))
+    assert_select ".url-line__slug[data-auto=true]"
+
+    get edit_writing_post_url(posts(:draft))
+    assert_select ".url-line__slug[data-auto=false]"
+  end
+
+  # The panel is settings, and the URL is not one of them any more — nor is the excerpt,
+  # which has been the subtitle on the canvas all along.
+  test "the settings panel holds neither the URL nor a note about the subtitle" do
+    sign_in_as users(:nityesh)
+    get edit_writing_post_url(posts(:draft))
+
+    assert_select ".settings-panel input[name=?]", "post[slug]", count: 0
+    assert_select ".settings-panel", text: /Excerpt \/ subtitle/, count: 0
+  end
+
+  # A URL that is already out in the world is a different thing to edit, so the line says
+  # so — but only when the writer is in it, which is when it matters.
+  test "a live URL warns what changing it costs, and a draft's does not" do
+    sign_in_as users(:nityesh)
+
+    get edit_writing_post_url(posts(:published))
+    assert_select ".url-line__hint", text: "Live URL — changing it breaks links people already have."
+
+    get edit_writing_post_url(posts(:scheduled))
+    assert_select ".url-line__hint", count: 1
+
+    get edit_writing_post_url(posts(:draft))
+    assert_select ".url-line__hint", count: 0
+  end
+
+  # --- The URL: the server owns it until the writer takes the field over, and either way
+  #     a rename is answered with the chrome, because every part of that chrome is
+  #     addressed by the slug that just moved. ---
+  test "an autosave with no slug lets the title re-derive the URL" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+
+    patch writing_post_url(draft), headers: { "X-Autosave" => "true" },
+      params: { post: { title: "Notes On Shipping" } }
+
+    assert_response :ok
+    assert_equal "notes-on-shipping", draft.reload.slug
+    assert_equal "notes-on-shipping", response.headers["X-Slug"]
+    assert_equal edit_writing_post_url(draft), response.headers["X-Edit-Url"]
+    assert_equal writing_post_url(draft), response.location
+    assert_equal draft.id.to_s, response.headers["X-Post-Id"]
+  end
+
+  # A URL that is already out in the world is not the title's to move. Only a hand edit
+  # can break that promise, and the editor warns before it does.
+  test "a title change never re-derives an addressed post's URL" do
+    sign_in_as users(:nityesh)
+
+    [ posts(:published), posts(:scheduled) ].each do |post|
+      was = post.slug
+      patch writing_post_url(post), headers: { "X-Autosave" => "true" },
+        params: { post: { title: "A Wholly Different Name" } }
+
+      assert_response :no_content
+      assert_equal was, post.reload.slug
+      assert_equal "A Wholly Different Name", post.title
+    end
+  end
+
+  test "a hand-edited slug renames the post and hands back where it moved to" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+
+    patch writing_post_url(draft), headers: { "X-Autosave" => "true" },
+      params: { post: { slug: "renamed-by-hand" } }
+
+    assert_response :ok
+    assert_equal "renamed-by-hand", draft.reload.slug
+    assert_equal "renamed-by-hand", response.headers["X-Slug"]
+    assert_equal edit_writing_post_url(draft), response.headers["X-Edit-Url"]
+  end
+
+  # Everything hanging off a saved post addresses it by slug — Publish, Delete, the tag
+  # mint, the untitled note — so a rename that didn't re-stamp them would leave the writer
+  # clicking Publish at a URL that stopped existing two keystrokes ago.
+  test "a rename re-stamps every control that addresses the post" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+
+    patch writing_post_url(draft), headers: { "X-Autosave" => "true" },
+      params: { post: { slug: "re-stamped" } }
+
+    assert_equal "text/vnd.turbo-stream.html", response.media_type
+    assert_select "turbo-stream[target=editor-actions] a[href=?]", writing_post_path(draft.reload), text: "Preview"
+    assert_select "turbo-stream[target=editor-overlays]" do
+      assert_select "form[action=?]", writing_post_publishing_path(draft)
+      assert_select "form[action=?]", writing_post_path(draft)
+      # Identity, not an address: the tag mint names the record by id, so it survives the
+      # next rename whether or not this stream reaches it.
+      assert_select "input[name=post_id][value=?]", draft.id.to_s
+    end
+  end
+
+  # And re-stamps nothing else. The Delete button reaches its form by the HTML form
+  # attribute and the tag mint names the post by id, so a rename has nothing to say to
+  # either — sending them would retype a half-written tag name into an empty box every
+  # couple of seconds while the title is still being typed.
+  test "a rename leaves alone the controls that carry no URL" do
+    sign_in_as users(:nityesh)
+
+    patch writing_post_url(posts(:draft)), headers: { "X-Autosave" => "true" },
+      params: { post: { slug: "re-stamped" } }
+
+    assert_select "turbo-stream[target=editor-delete]", count: 0
+    assert_select "turbo-stream[target=editor-tag-mint]", count: 0
+  end
+
+  # The mint is the moment they arrive, so it does send them.
+  test "the mint installs the controls only a saved post can carry" do
+    sign_in_as users(:nityesh)
+
+    post writing_posts_url, headers: { "X-Autosave" => "true" },
+      params: { post: { title: "Freshly Minted", body: "<p>hi</p>" } }
+
+    assert_select "turbo-stream[target=editor-delete]"
+    assert_select "turbo-stream[target=editor-tag-mint]"
+  end
+
+  # Nothing moved, nothing to adopt: the ordinary keystroke save stays a bare 204.
+  test "an autosave that leaves the slug alone carries no addresses" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+    patch writing_post_url(draft), headers: { "X-Autosave" => "true" },
+      params: { post: { title: "Still A Draft Post", slug: draft.slug } }
+
+    assert_response :no_content
+    assert_nil response.headers["X-Slug"]
+    assert_nil response.location
+  end
+
+  # The prose is never held hostage by the URL. A name someone else holds leaves the slug
+  # where it was and saves everything else; the availability line beside the field is what
+  # says why, and it is already on screen.
+  test "a hand-edited slug that is taken keeps the old URL and still saves the prose" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+
+    patch writing_post_url(draft), headers: { "X-Autosave" => "true" },
+      params: { post: { slug: posts(:published).slug, title: "Renamed Too", body: "<p>kept</p>" } }
+
+    assert_response :no_content
+    assert_equal "a-draft-post", draft.reload.slug
+    assert_equal "Renamed Too", draft.title
+    assert_includes draft.body.to_s, "kept"
+  end
+
+  # Emptying the field is a name the post can't have, not a request to invent a new one.
+  # Read as one thing — the model's blank slug means "derive" — an empty field walked a
+  # published post to a new URL and 404'd the one people were holding.
+  test "a cleared URL field never moves a live post" do
+    sign_in_as users(:nityesh)
+    published = posts(:published)
+
+    patch writing_post_url(published), headers: { "X-Autosave" => "true" },
+      params: { post: { slug: "", excerpt: "still edited" } }
+
+    assert_response :no_content
+    assert_equal "a-published-post", published.reload.slug
+    assert_equal "still edited", published.excerpt
+  end
+
+  # Same for a name the router already answers for: /writing is the dashboard, so no post
+  # can live there. The site's own names are as taken as another post's.
+  test "a hand-edited slug the site reserves keeps the old URL and still saves the prose" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+
+    patch writing_post_url(draft), headers: { "X-Autosave" => "true" },
+      params: { post: { slug: "writing", title: "Reserved Name" } }
+
+    assert_response :no_content
+    assert_equal "a-draft-post", draft.reload.slug
+    assert_equal "Reserved Name", draft.title
+  end
+
+  # In auto mode the writer never meets the refusal at all: the server derives past
+  # whatever is in the way, and the field adopts what it kept.
+  test "a title the site cannot host is derived past, not refused" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+
+    patch writing_post_url(draft), headers: { "X-Autosave" => "true" }, params: { post: { title: "Writing" } }
+
+    assert_response :ok
+    assert_equal "writing-2", draft.reload.slug
+    assert_equal "writing-2", response.headers["X-Slug"]
+  end
+
+  test "a title another post already used is derived past too" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+
+    patch writing_post_url(draft), headers: { "X-Autosave" => "true" },
+      params: { post: { title: posts(:published).title } }
+
+    assert_response :ok
+    assert_equal "#{posts(:published).slug}-2", draft.reload.slug
+    assert_equal draft.slug, response.headers["X-Slug"]
+  end
+
+  # The mint invents the slug for the same reason, and has to say which one it landed on
+  # — otherwise the canvas shows a URL the site doesn't serve.
+  test "the mint hands back the slug it actually kept" do
+    sign_in_as users(:nityesh)
+    post writing_posts_url, headers: { "X-Autosave" => "true" },
+      params: { post: { title: posts(:published).title, body: "<p>same name, new post</p>" } }
+
+    assert_response :created
+    assert_equal "a-published-post-2", Post.last.slug
+    assert_equal Post.last.slug, response.headers["X-Slug"]
+    assert_equal edit_writing_post_url(Post.last), response.headers["X-Edit-Url"]
   end
 
   # Mailing the list is irreversible, so the send is never one click: the confirm is the
