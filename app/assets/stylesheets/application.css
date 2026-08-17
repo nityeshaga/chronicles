@@ -1027,3 +1027,18 @@ a:hover { opacity: .8; }
      control (button plus its inset) so it can never sit on the last row's actions. */
   .writing-dash { padding-bottom: 14rem; }
 }
+
+/* 600px, not the 640 above: it is the same threshold the dashboard controller uses to
+   decide whether focusing the filter box would pop a phone keyboard. Six wrapped tabs
+   cost three rows of a phone screen before the first post; one scrolling strip costs
+   one, and swiping it is the gesture the row of them already looks like. */
+@media (max-width: 600px) {
+  .dash-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .dash-tabs::-webkit-scrollbar { display: none; }
+  .dash-tab { flex: 0 0 auto; }
+
+  /* The pill and "Edited 16 Aug 2026" can't share 390px with a serif headline and a URL,
+     and the headline is what he is scanning for. Stack them: title, URL, then state. */
+  .writing-dash .dash-row { flex-direction: column; gap: .8rem; }
+  .writing-dash .dash-row__side { gap: 1rem; }
+}
