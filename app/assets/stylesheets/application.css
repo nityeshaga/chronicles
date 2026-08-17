@@ -942,6 +942,25 @@ a:hover { opacity: .8; }
   block-size: .65ch; inline-size: .65ch; margin-block-start: -.2ch;
 }
 
+/* Embeds, seen from the editor. A YouTube frame plays here exactly as it will on the
+   published page. A tweet can't: the live page swaps the blockquote for the real thing
+   once Twitter's widget script loads (tweets_controller), and no widget runs on the
+   writer's canvas. So dress the blockquote as a card that says what it is and where it
+   goes, rather than leaving it looking like a stray pull-quote. */
+.editor-canvas__body .kg-embed-card { margin: 2.4rem 0; }
+.editor-canvas__body .kg-embed-card iframe { max-width: 100%; border-radius: 8px; }
+.editor-canvas__body blockquote.twitter-tweet {
+  width: 100%; margin: 0; padding: 1.4rem 1.6rem; border: 1px solid var(--w-line-strong);
+  border-radius: 10px; background: var(--w-panel);
+  font-family: var(--font-sans); font-size: 1.45rem; line-height: 1.5; font-style: normal;
+}
+.editor-canvas__body blockquote.twitter-tweet::before {
+  content: "Tweet — renders on the published page"; display: block; margin-bottom: .6rem;
+  font-size: 1.15rem; font-weight: 600; font-style: normal;
+  letter-spacing: .07em; text-transform: uppercase; color: var(--w-muted);
+}
+.editor-canvas__body blockquote.twitter-tweet a { word-break: break-all; }
+
 /* ---- Overlays: shared scrim, settings slide-over, publish popover ---- */
 .editor-shell__scrim {
   position: fixed; inset: 0; z-index: 40; background: rgba(20, 18, 14, .3);
