@@ -1,10 +1,4 @@
 <% content_for :title, "Writing" %>
-<%# The tab counts are a tally of the one list on screen, never a second query that could
-    quietly disagree with it. They describe the buckets, so the filter never changes them. %>
-<% counts = @records.map(&:dashboard_bucket).tally %>
-<% tabs = [ [ "all", "All", @records.size ] ] +
-     { "draft" => "Drafts", "scheduled" => "Scheduled", "published" => "Published",
-       "page" => "Pages", "html_page" => "HTML pages" }.map { |bucket, label| [ bucket, label, counts[bucket].to_i ] } %>
 
 <div class="writing-dash" data-controller="dashboard">
   <header class="dash-head">
@@ -37,11 +31,15 @@
   </header>
 
   <nav class="dash-tabs" aria-label="Filter posts">
-    <% tabs.each_with_index do |(bucket, label, count), index| %>
-      <button type="button" class="dash-tab<%= " is-active" if index.zero? %>" role="tab"
-              aria-selected="<%= index.zero? %>" data-status="<%= bucket %>" data-label="<%= label %>"
+    <%# Toggle buttons, not ARIA tabs: there is one list under them all, and role="tab"
+        promises a tabpanel each and arrow-key navigation that don't exist here. Pressed
+        is the state, and it is the attribute — nothing shadows it in a class or in JS. %>
+    <% dashboard_tabs(@records).each_with_index do |tab, index| %>
+      <button type="button" class="dash-tab" aria-pressed="<%= index.zero? %>"
+              data-status="<%= tab[:bucket] %>" data-label="<%= tab[:label] %>"
+              data-sort="<%= tab[:sort] %>" data-direction="<%= tab[:direction] %>"
               data-dashboard-target="tab" data-action="dashboard#select">
-        <%= label %> <span class="dash-tab__count"><%= count %></span>
+        <%= tab[:label] %> <span class="dash-tab__count"><%= tab[:count] %></span>
       </button>
     <% end %>
   </nav>
@@ -64,7 +62,9 @@
     <ul class="dash-list" data-dashboard-target="list">
       <%= render partial: "row", collection: @records, as: :record %>
     </ul>
-    <p class="dash-empty" data-dashboard-target="empty" hidden>Nothing in this view.</p>
+    <%# Empty until the controller fills it: what it should say depends on which tab is
+        pressed and what is in the filter box, and neither is known here. %>
+    <p class="dash-empty" data-dashboard-target="empty" hidden></p>
   <% end %>
 
   <%# Account and whole-site actions, pinned to the bottom-left corner and out of the

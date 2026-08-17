@@ -121,11 +121,24 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_includes search, "chronicles"
   end
 
-  test "the filter box sits under the tabs and names what it matches" do
+  test "the filter box names what it matches" do
     sign_in_as users(:nityesh)
     get writing_posts_url
 
-    assert_select ".dash-tabs + .dash-filter input[placeholder=?]", "Filter by title, slug or tag"
+    assert_select ".dash-filter input[type=search][placeholder=?]", "Filter by title, slug or tag"
+  end
+
+  # The axis a tab reads down rides on the tab, so the JS sorts what it is told to and
+  # never has to know that "scheduled" is the one that reads forward in time.
+  test "each tab carries the axis it sorts by, and Scheduled is the one that differs" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+
+    assert_select ".dash-tab[data-status=all][data-sort=edited][data-direction='-1'][aria-pressed=true]"
+    assert_select ".dash-tab[data-status=published][data-sort=edited][data-direction='-1']"
+    assert_select ".dash-tab[data-status=scheduled][data-sort='goes-live'][data-direction='1']"
+    assert_select ".dash-tab[aria-pressed=true]", count: 1
+    assert_select ".dash-tab[role=tab]", count: 0
   end
 
   # Counts describe the buckets, so they are a tally of the one list on screen.
