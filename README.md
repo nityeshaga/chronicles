@@ -2,6 +2,8 @@
 
 The live source of [nityesh.com](https://nityesh.com) — a one-person publishing house, in one Rails app.
 
+**→ [Read the pitch at nityesh.com/chronicles](https://nityesh.com/chronicles/)** — and note that landing page is itself an HTML page this engine published, byte-for-byte, over MCP.
+
 > This is the live source of nityesh.com. I break it constantly and chronicle the breakage. There is no stable version — fork it and it's yours. If it breaks, ask your agent to fix it for you.
 
 That paragraph is the entire support policy. It is also most of the pitch.
