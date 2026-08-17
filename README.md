@@ -1,28 +1,47 @@
 # chronicles
 
-The live source of [nityesh.com](https://nityesh.com) — a one-person publishing house, in one Rails app.
+**A blog you *rewrite*, not one you configure.** The open-source engine behind [nityesh.com](https://nityesh.com) — one vanilla Rails app, MIT licensed, small enough to hold in your head, that your coding agent both operates and reshapes.
 
-**→ [Read the pitch at nityesh.com/chronicles](https://nityesh.com/chronicles/)** — and note that landing page is itself an HTML page this engine published, byte-for-byte, over MCP.
+**→ [Read the pitch at nityesh.com/chronicles](https://nityesh.com/chronicles/)** — a landing page this engine published, byte-for-byte, over MCP.
 
-> This is the live source of nityesh.com. I break it constantly and chronicle the breakage. There is no stable version — fork it and it's yours. If it breaks, ask your agent to fix it for you.
+> I break it constantly and chronicle the breakage. There is no stable version — fork it and it's yours. If it breaks, ask your agent to fix it.
 
-That paragraph is the entire support policy. It is also most of the pitch.
+That's the entire support policy. It's also most of the pitch.
 
-## What this is
+## Ghost is good. WordPress is good. So why build another one?
 
-I ran my blog on Ghost for years. In 2026 I ported the whole publication to this app — the migration was parity-gated, meaning a script compared the two sites URL by URL until they matched. Same reader experience, same SEO, same publishing workflow: clean URLs, tags, RSS, sitemaps, social cards, scheduled publishing, a proper rich-text editor. My Search Console never noticed the switch. So when I say it has feature parity with the Ghost core, the evidence is that you're reading a site that runs on it, and Google still likes me.
+Because every blog platform ever made — Ghost, WordPress, Substack, all of them — answers the question *"how do I change this?"* with a settings page, a theme marketplace, or a plugin API. Someone else decided in advance which knobs you're allowed to turn.
 
-Why bother, when Ghost exists and is good? Because Ghost — like every publishing platform — is built to be **configured**. This is built to be **rewritten**. There is no settings maze, no theme marketplace, no plugin API. There is a vanilla Rails codebase small enough to hold in your head, and all of it is yours to change.
+Chronicles answers that same question with **the source code.** A vanilla Rails app small enough to hold in your head, yours under an MIT license. Not a template you fill in — a codebase you own.
 
-That's the real product, and it works at three levels:
+> On most platforms, "infinite customizability" is something a marketing team wrote. Here it's just the license.
 
-1. **Your agent writes with you.** The app ships an MCP server at `/mcp` with 13 tools — your agent lists, drafts, edits (surgical body patches, not wholesale rewrites), tags, schedules, publishes, unpublishes, uploads images, embeds YouTube and X posts. claude.ai connects by pasting a URL; Claude Code connects with a token minted at `/writing/connect`.
-2. **Your agent ships pages, not just posts.** Agents are unreasonably good at writing beautiful HTML — so here, a complete hand-authored document is a first-class publication, not an attachment. `create_html_page` takes a whole landing page and serves it byte-for-byte at a root slug on your domain: no blog chrome, in your sitemap, canonical injected, screened on the way in so it can't ship without a `<title>` or with asset paths that 404. All the SEO of a regular post, none of the template. The proof is live: [nityesh.com/hands-on-deck](https://nityesh.com/hands-on-deck/) is a landing page an agent published over MCP — byte-identical to its hand-crafted source, save the one canonical line the gate added.
-3. **Your agent rewrites the platform.** Want comments? A second author? A different homepage? A podcast feed? Those aren't missing features — they're conversations you haven't had with your agent yet. You own the complete source, in the simplest full-stack framework ever made for one person. On most platforms "infinite customizability" is something a marketing team wrote. Here it's just the license.
+That's the asymmetry. The missing feature — comments, a second author, a podcast feed, a homepage that looks nothing like this one — isn't a roadmap item you wait for or a plugin you hope exists. **It's a conversation you haven't had with your agent yet.**
 
-A from-scratch agent build is a promise. This is proof: a real site you can visit, the complete source of that exact site, and the production landmines already mapped (see [Conventions and landmines](#conventions-and-landmines-read-before-changing-anything) — several of those bugs have been paid for so you don't have to pay them again).
+This isn't a promise, it's proof: [nityesh.com](https://nityesh.com) runs on it, you're reading its complete source, and the production landmines are already mapped (see [Conventions and landmines](#conventions-and-landmines-read-before-changing-anything) — those bugs are paid for so you don't pay them twice).
+
+## Your agent doesn't just write on it. It runs it, and rewrites it.
+
+Owning the source only matters if changing it is cheap. It is — because the same agent you write with is the one that reshapes the platform underneath you. Three levels, each one deeper.
+
+1. **It writes with you.** An MCP server at `/mcp` with 13 tools — your agent lists, drafts, tags, schedules, publishes, unpublishes, uploads images, embeds YouTube and X, and edits with surgical body patches, never wholesale rewrites of your prose. claude.ai connects from a pasted URL; Claude Code connects with a token minted at `/writing/connect`.
+2. **It ships pages, not just posts.** Agents are unreasonably good at writing beautiful HTML — so here a complete hand-authored document is a first-class publication, not an attachment. `create_html_page` serves it byte-for-byte at a root slug: no blog chrome, in your sitemap, canonical injected, screened on the way in so it can't ship without a `<title>` or with asset paths that 404. All the SEO of a regular post, none of the template. Live proof: the [landing page](https://nityesh.com/chronicles/) for this repo and [nityesh.com/hands-on-deck](https://nityesh.com/hands-on-deck/) were both published this way, byte-identical to their hand-crafted source.
+3. **It rewrites the platform.** Want comments? A second author? A different homepage entirely? Those aren't features you're missing — they're features you haven't asked for yet. You hold the complete source in the simplest full-stack framework ever made for one person.
+
+## A product manages you. A codebase answers to you.
+
+| A hosted platform | Chronicles |
+|---|---|
+| Change what the settings screen allows | Change anything — it's Rails you can read |
+| Wait for the roadmap, or the right plugin | Ask your agent; ship it this afternoon |
+| Customization is a feature you rent | Customization is the MIT license |
+| Your archive and SEO live on their terms | Your archive, URLs and SEO arrive intact |
+| Support tickets and version upgrades | Fork it, own it, never look back |
+| The engine is a black box you configure | The engine is the product, and it's yours |
 
 ## What's in the box
+
+This ran a real publication before it was open-sourced. The port from Ghost was parity-gated — a script compared both sites URL by URL until they matched. My Search Console never noticed the switch. So this is a real publishing engine, not a starter kit:
 
 - **The writing room** at `/writing` (sign-in required): drafts, scheduled, published, pages, HTML pages. A rich-text editor ([Lexxy](https://github.com/basecamp/lexxy), from Basecamp) that autosaves every 2 seconds. Publish now, or pick a future time and a background job does it for you.
 - **HTML pages**: a third content kind (`HtmlPage < Page`) — one complete hand-authored HTML document served byte-for-byte at a root slug, for landing pages whose design *is* the content. Agents author them over MCP (`create_html_page` / `update_html_page`), which screens the document on the way in: `<title>` required, canonical link injected, missing meta description and relative asset paths reported. The writing UI edits them in a plain textarea and never touches the bytes.
@@ -33,11 +52,64 @@ A from-scratch agent build is a promise. This is proof: a real site you can visi
 - **Email capture**: a subscribe form that stores addresses (list at `/writing/subscribers`). Full honesty: it *collects* subscribers; it does not yet *send* them anything. RSS delivers today; your subscribers wait patiently in a table. Sending is a chapter I haven't written — your agent may write yours sooner.
 - **Kamal deploy** to one cheap VPS. Push to `main`, tests pass, site ships. SQLite for everything (database, jobs, cache, cable), no build step, no node_modules. Runs comfortably on a $6 droplet.
 
-What's deliberately *not* in the box: comments, analytics, payments, memberships, multi-author. Not because they're hard — because I haven't needed them yet. This isn't a feature matrix; it's a codebase. It ships with one author because I am one person.
+What's deliberately *not* in the box: comments, analytics, payments, memberships, multi-author. Not because any of it is hard — because one person hasn't needed it yet. This isn't a feature matrix that has to look complete; it's a codebase honest about being small. It ships with one author because I am one person. If you want a second, that's an afternoon — not a paywall.
+
+## Under the hood
+
+One Rails 8 app, no moving parts you didn't ask for. If a change would add a service or a build tool, it's probably the wrong change.
+
+| Layer | Choice | Boring on purpose |
+|---|---|---|
+| Framework | Rails 8, server-rendered ERB | one language, one process |
+| Database | SQLite | one file on one disk — no Postgres |
+| Jobs · cache · cable | Solid Queue · Solid Cache · Solid Cable | all in SQLite; no Redis, no Sidekiq |
+| Assets | Propshaft + import maps | no build step, no `node_modules` |
+| Interactivity | Hotwire (Turbo + Stimulus) + hand-written CSS | no JS framework, nothing transpiles |
+| Rich text | Action Text + [Lexxy](https://github.com/basecamp/lexxy) | Basecamp's editor, 2-second autosave |
+| Agent API | MCP server + OAuth 2.1 (Doorkeeper) | 13 tools, dynamic client registration |
+| Auth | hand-rolled sessions + `has_secure_password` | it's a one-author site |
+| Deploy | [Kamal](https://kamal-deploy.org) → one VPS behind Cloudflare | push to `main` → CI → ship, ~$6/mo |
+
+### The data model
+
+Everything you publish is one row in `posts`, discriminated by `type` — [single-table inheritance](https://guides.rubyonrails.org/association_basics.html#single-table-inheritance-sti). A post carries its own slug, status, schedule and SEO; its body lives in Action Text, its images in Active Storage.
+
+```mermaid
+erDiagram
+    posts {
+        string   type "Post | Page | HtmlPage"
+        string   slug
+        string   status "draft | published"
+        datetime published_at
+        text     raw_html "HtmlPage: the verbatim document"
+    }
+    tags {
+        string name
+        string slug
+    }
+    posts ||--o{ taggings : ""
+    tags  ||--o{ taggings : ""
+    posts ||--o| action_text_rich_texts : "rich-text body"
+    posts ||--o{ active_storage_attachments : "uploaded images"
+    users ||--o{ api_tokens : "mints for MCP"
+```
+
+| Table | Holds | Key columns |
+|---|---|---|
+| `posts` | every article, page and HTML page (STI on `type`) | `type`, `slug`, `status`, `published_at`, `raw_html` |
+| `tags` + `taggings` | tags, and the post↔tag join | `slug`, `name` |
+| `settings` | the single row that makes the site yours | `site_title`, `author_name`, `production_host`, `twitter_handle` |
+| `subscribers` | captured emails (RSS today, newsletter when you write it) | `email` |
+| `users` | the author(s) | `email_address`, `password_digest` |
+| `api_tokens` | bearer tokens for Claude Code over MCP | `token_digest`, `expires_at` |
+
+Behind those sit the framework-managed tables you rarely touch by hand: Action Text bodies, Active Storage blobs, the OAuth application/grant/token trio for MCP, and the MCP + web session rows.
+
+The gotchas that bit me — Ghost URL parity, scheduled-publish identity checks, the autosave contract, Lexxy styling — are written down under [Conventions and landmines](#conventions-and-landmines-read-before-changing-anything), paid for so you don't pay them twice.
 
 ## Is this for you?
 
-**Fork this if:** you run a coding agent as a matter of course; your writing and side projects are scattered across platforms you rent; you want a site your agent can operate *and* reshape; or you're leaving Ghost and want your archive, URLs, and SEO to arrive intact.
+**Fork this if:** you run a coding agent as a matter of course; your writing and side projects are scattered across platforms you only rent; you want a site your agent can operate *and* reshape; or you're leaving Ghost and want your archive, URLs, and SEO to arrive intact.
 
 **Don't fork this if:**
 
@@ -50,7 +122,7 @@ What's deliberately *not* in the box: comments, analytics, payments, memberships
 
 1. Fork the repo.
 2. Hand it to your coding agent: *"Read the README. Make this mine."*
-3. Answer its questions — your name, your domain, whether you have a Ghost export — then point your DNS at your box.
+3. Answer its questions — your name, your domain, whether you have a Ghost export — then point your DNS at your box, and publish.
 
 There is no installer. Your agent is the installer. Everything it needs is below.
 
