@@ -15,7 +15,9 @@
   </header>
 
   <% if @subscribers.empty? %>
-    <div class="dash-blank"><p>No subscribers yet. They appear here once someone signs up from the homepage.</p></div>
+    <%# The empty state describes the populated view below it, so "what will this look
+        like" is answered before the first subscriber arrives. %>
+    <div class="dash-blank"><p>No subscribers yet. When someone signs up from the homepage they appear here — email and the date they joined, newest first.</p></div>
   <% else %>
     <ul class="dash-list">
       <% @subscribers.each do |subscriber| %>
