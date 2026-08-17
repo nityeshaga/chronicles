@@ -33,6 +33,9 @@
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
+# The skill in .claude/skills/ is checked in; per-machine agent settings are not.
+/.claude/settings.local.json
+
 # Migrated Ghost image tree — content, not code. Re-mirror from the project's
 # data/images/ before running the importer (see lib/tasks/ghost_import.rake).
 /public/content/
