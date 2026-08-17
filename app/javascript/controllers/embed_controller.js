@@ -9,7 +9,9 @@ import { Controller } from "@hotwired/stimulus"
 // text/html content attachment the imported embeds already render as.
 //
 // Everything else — a URL dropped mid-sentence, a host Embed doesn't know, a server that
-// says no — is left exactly as Lexxy made it: a plain link, no alert.
+// never answers — is left exactly as Lexxy made it: a plain link, no alert.
+const BLOCKS = "p, h1, h2, h3, h4, h5, h6, li, blockquote, td, th"
+
 export default class extends Controller {
   static values = { url: String }
 
@@ -17,31 +19,45 @@ export default class extends Controller {
     if (!await this.#ownsItsLine(url)) return
 
     const html = await this.#embedHtml(url)
-    if (html) replaceLinkWith(html, { attachment: { contentType: "text/html" } })
+    // The fetch is long enough for the writer to have navigated away mid-flight.
+    if (html && this.element.isConnected) {
+      replaceLinkWith(html, { attachment: { contentType: "text/html" } })
+    }
   }
 
   // Lexxy announces the link a frame before Lexical paints it, so wait for the DOM to
-  // catch up. The newest anchor carrying the URL is the one just inserted, and it earns
-  // a card only when its block holds nothing but the URL.
+  // catch up. Lexical leaves the caret inside the link it just inserted, which is what
+  // names the block that link landed in — the URL earns a card only when it's the whole
+  // block. Asking the caret rather than matching on href keeps the answer about *this*
+  // paste, even when the same URL already appears elsewhere in the post.
   async #ownsItsLine(url) {
     await new Promise(requestAnimationFrame)
 
-    const anchors = [ ...this.element.querySelectorAll("lexxy-editor a") ]
-      .filter((anchor) => anchor.getAttribute("href") === url)
+    return this.#blockAtCaret()?.textContent.trim() === url
+  }
 
-    return anchors.at(-1)?.parentElement?.textContent.trim() === url
+  #blockAtCaret() {
+    const caret = document.getSelection()?.anchorNode
+    const element = caret?.nodeType === Node.TEXT_NODE ? caret.parentElement : caret
+    const block = element?.closest(BLOCKS)
+
+    return this.element.contains(block) ? block : null
   }
 
   async #embedHtml(url) {
-    const response = await fetch(this.urlValue, {
-      method: "POST",
-      headers: {
-        "X-CSRF-Token": document.querySelector("meta[name='csrf-token']")?.content,
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: new URLSearchParams({ url })
-    })
+    try {
+      const response = await fetch(this.urlValue, {
+        method: "POST",
+        headers: {
+          "X-CSRF-Token": document.querySelector("meta[name='csrf-token']")?.content,
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({ url })
+      })
 
-    return response.ok ? response.text() : null
+      return response.ok ? await response.text() : null
+    } catch {
+      return null
+    }
   }
 }
