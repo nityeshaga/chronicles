@@ -10,10 +10,24 @@
     <div class="dash-head__actions">
       <%= link_to "Tags", writing_tags_path, class: "w-btn w-btn--ghost" %>
       <%= link_to "Subscribers", writing_subscribers_path, class: "w-btn w-btn--ghost" %>
-      <%= link_to new_writing_post_path, class: "w-btn w-btn--primary" do %>
-        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-        New post
-      <% end %>
+      <%# One "New" control for three kinds of publication. A post is what gets written
+          almost every time, so it stays a single click; the two rare kinds hang off the
+          caret rather than trailing the tab row where nobody looked for them. %>
+      <div class="w-split">
+        <%= link_to new_writing_post_path, class: "w-btn w-btn--primary w-split__main" do %>
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          New post
+        <% end %>
+        <details class="w-split__more">
+          <summary class="w-btn w-btn--primary w-split__caret" aria-haspopup="menu" aria-label="Other kinds of page">
+            <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </summary>
+          <div class="w-menu">
+            <%= link_to "New page", new_writing_page_path %>
+            <%= link_to "New HTML page", new_writing_html_page_path %>
+          </div>
+        </details>
+      </div>
 
       <%# Account and whole-site actions, off the writing bar: signing out isn't a writing
           act and shouldn't sit a mis-click away from one. A native <details> is the whole
@@ -56,10 +70,6 @@
             data-status="html_page" data-dashboard-target="tab" data-action="dashboard#filter">
       HTML pages <span class="dash-tab__count"><%= @html_pages.size %></span>
     </button>
-    <span class="dash-tabs__spacer">
-      <%= link_to "New page", new_writing_page_path %>
-      <%= link_to "New HTML page", new_writing_html_page_path %>
-    </span>
   </nav>
 
   <% if total.zero? %>

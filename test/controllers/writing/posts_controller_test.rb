@@ -27,6 +27,18 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".dash-head__actions > form[action=?]", session_path, count: 0
   end
 
+  # Three "New …" controls became one: a post is a single click, its two rarer siblings
+  # drop out of the caret instead of trailing the tab row.
+  test "the New control keeps a post one click and hangs the other kinds off its caret" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+
+    assert_select ".w-split a.w-btn--primary[href=?]", new_writing_post_path, text: /New post/
+    assert_select ".w-split .w-menu a[href=?]", new_writing_page_path, text: "New page"
+    assert_select ".w-split .w-menu a[href=?]", new_writing_html_page_path, text: "New HTML page"
+    assert_select ".dash-tabs a", count: 0
+  end
+
   # HTML pages are Pages by STI but are edited nowhere near the Lexxy form, so the
   # Pages bucket scopes to the exact type — a row here would link straight into the
   # editor that overwrites their stored document.
