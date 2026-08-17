@@ -695,7 +695,7 @@ a:hover { opacity: .8; }
 }
 .field input:focus, .field textarea:focus,
 .stacked-form input:focus, .stacked-form textarea:focus,
-.schedule-form input:focus, .embed-bar input:focus {
+.schedule-form input:focus {
   outline: none; border-color: var(--w-accent); box-shadow: 0 0 0 3px rgba(180, 83, 9, .13);
 }
 .field textarea, .stacked-form textarea { resize: vertical; line-height: 1.5; }
@@ -911,13 +911,6 @@ a:hover { opacity: .8; }
 .editor-canvas__title:focus,
 .editor-canvas__subtitle:focus { outline: none; }
 
-/* A subdued "insert embed" row that lives BELOW the body, out of the title/body seam. */
-.embed-bar { display: flex; gap: .6rem; margin-top: 3.2rem; }
-.embed-bar input {
-  flex: 1; padding: .75rem 1rem; font-family: var(--font-sans); font-size: 1.35rem;
-  color: var(--w-ink); background: var(--w-panel); border: 1px solid var(--w-line); border-radius: 8px;
-}
-
 /* The Lexxy editor is the star: match the public serif body so the writer sees what
    readers will. Theme the gem via its own --lexxy-* tokens (transparent canvas, our ink
    and accent), drop the boxed card chrome, and zero its content padding so the text sits
@@ -936,6 +929,10 @@ a:hover { opacity: .8; }
   --lexxy-editor-padding: 0;
   border: 0; border-radius: 0; background: none;
 }
+/* The empty body's prompt — where the writer learns embeds exist. Lexxy paints it from
+   the `placeholder` attribute at two-thirds ink; tone it down to match the title and
+   subtitle placeholders so the three read as one hint. */
+.editor-canvas__body .lexxy-editor__content::before { color: rgba(0, 0, 0, .24); opacity: 1; }
 
 /* Lexxy draws the dropdown caret at .3ch square, which at our toolbar size renders as a
    dot — the text-style and highlight buttons stop reading as menus. One step above the

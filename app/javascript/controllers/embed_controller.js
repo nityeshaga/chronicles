@@ -1,19 +1,38 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Paste a URL, get a card. The controller invents no embed markup: it POSTs the URL
-// to the server (the Embed noun owns provider HTML) and drops whatever comes back
-// into Lexxy as a content attachment — the same figure the imported embeds render as.
+// Paste a tweet or YouTube URL on its own line and it becomes a card. Lexxy already
+// turns a pasted bare URL into a link and announces it with `lexxy:insert-link`, so we
+// ride that rather than intercepting `paste`: the link is a real edit before we touch
+// it, which is what keeps Cmd+Z honest — one undo puts the URL back. The controller
+// invents no embed markup and keeps no list of supported hosts; it asks the server (the
+// Embed noun owns both) and hands the answer to Lexxy, which wraps it in the same
+// text/html content attachment the imported embeds already render as.
+//
+// Everything else — a URL dropped mid-sentence, a host Embed doesn't know, a server that
+// says no — is left exactly as Lexxy made it: a plain link, no alert.
 export default class extends Controller {
-  static targets = ["url"]
   static values = { url: String }
 
-  async insert() {
-    const url = this.urlTarget.value.trim()
-    if (!url) return
+  async unfurl({ detail: { url, replaceLinkWith } }) {
+    if (!await this.#ownsItsLine(url)) return
 
-    const editor = this.element.querySelector("lexxy-editor")
-    if (!editor) return
+    const html = await this.#embedHtml(url)
+    if (html) replaceLinkWith(html, { attachment: { contentType: "text/html" } })
+  }
 
+  // Lexxy announces the link a frame before Lexical paints it, so wait for the DOM to
+  // catch up. The newest anchor carrying the URL is the one just inserted, and it earns
+  // a card only when its block holds nothing but the URL.
+  async #ownsItsLine(url) {
+    await new Promise(requestAnimationFrame)
+
+    const anchors = [ ...this.element.querySelectorAll("lexxy-editor a") ]
+      .filter((anchor) => anchor.getAttribute("href") === url)
+
+    return anchors.at(-1)?.parentElement?.textContent.trim() === url
+  }
+
+  async #embedHtml(url) {
     const response = await fetch(this.urlValue, {
       method: "POST",
       headers: {
@@ -23,22 +42,6 @@ export default class extends Controller {
       body: new URLSearchParams({ url })
     })
 
-    if (!response.ok) {
-      window.alert("That URL isn't a supported embed (tweets and YouTube only).")
-      return
-    }
-
-    const html = await response.text()
-    // Lexxy stores an HTML content attachment as <action-text-attachment
-    // content-type="text/html" content="…">, the same canonical Action Text node
-    // Trix produced — so it persists and renders publicly identically. Build the
-    // element through the DOM so the provider HTML is escaped into the attribute
-    // correctly, then hand its markup to the editor's insertHtml (Lexxy re-imports
-    // any node carrying a content attribute as that html content attachment).
-    const attachment = document.createElement("action-text-attachment")
-    attachment.setAttribute("content-type", "text/html")
-    attachment.setAttribute("content", html)
-    editor.contents.insertHtml(attachment.outerHTML)
-    this.urlTarget.value = ""
+    return response.ok ? response.text() : null
   }
 }

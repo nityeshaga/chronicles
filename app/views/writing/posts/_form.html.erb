@@ -58,7 +58,8 @@
       </ul>
     <% end %>
 
-    <div class="editor-canvas" data-controller="embed" data-embed-url-value="<%= writing_embeds_path %>">
+    <div class="editor-canvas" data-controller="embed" data-embed-url-value="<%= writing_embeds_path %>"
+         data-action="lexxy:insert-link->embed#unfurl">
       <%= form.label :title, class: "sr-only" %>
       <%# Blank, not "Untitled", on a draft that never got a title: the placeholder is the
           model's way of letting body-first writing persist, not a title the writer typed,
@@ -74,14 +75,11 @@
       <%= form.text_area :excerpt, rows: 1, class: "editor-canvas__subtitle", placeholder: "Add a subtitle…",
             data: { controller: "autogrow", action: "input->autogrow#grow" } %>
 
+      <%# The placeholder is where the writer learns embeds exist — one line, in the exact
+          spot the paste lands, instead of a permanent bar under the body. %>
       <div class="editor-canvas__body">
-        <%= form.rich_text_area :body %>
-      </div>
-
-      <div class="embed-bar">
-        <%= url_field_tag :embed_url, nil, placeholder: "Paste a tweet or YouTube URL to embed…",
-              data: { embed_target: "url" } %>
-        <button type="button" class="w-btn w-btn--ghost w-btn--sm" data-action="embed#insert">Embed</button>
+        <%= form.rich_text_area :body,
+              placeholder: "Start writing. Paste a tweet or YouTube link on its own line to embed it." %>
       </div>
     </div>
 
