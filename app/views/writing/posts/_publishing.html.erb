@@ -8,10 +8,11 @@
       <span class="status status--published">Live</span>
       Published <%= post.published_at.strftime("%-d %b %Y, %-l:%M %p") %>.
     </p>
+    <%# No View live here: the editor bar carries it, and one control per meaning. %>
     <div class="publish-actions">
-      <%= link_to "View live", public_post_path(post), class: "w-btn w-btn--ghost w-btn--sm" %>
       <%= button_to "Unpublish", [ :writing, post, :publishing ], method: :delete,
-            class: "w-btn w-btn--ghost w-btn--sm", form_class: "w-inline" %>
+            class: "w-btn w-btn--ghost w-btn--sm", form_class: "w-inline",
+            data: { action: "click->editor#commitThenSubmit" } %>
     </div>
 
     <%# Newsletter: a published post can be mailed to the list exactly once. After it
@@ -46,12 +47,22 @@
       Goes live <%= post.published_at.strftime("%-d %b %Y, %-l:%M %p") %>.
     </p>
     <%= button_to "Cancel schedule", [ :writing, post, :publishing ], method: :delete,
-          class: "w-btn w-btn--ghost w-btn--sm", form_class: "w-inline" %>
+          class: "w-btn w-btn--ghost w-btn--sm", form_class: "w-inline",
+          data: { action: "click->editor#commitThenSubmit" } %>
   <% else %>
+    <%# Every button here waits for a pending autosave before it submits: publishing
+        re-renders the canvas from the record, so a debounce still in flight would come
+        back as an older body — and then save itself over the newer one. %>
     <%= form_with url: [ :writing, post, :publishing ], method: :post, class: "schedule-form" do |form| %>
+      <%# An untitled post would go live at /untitled/ — a URL no rename takes back. The
+          model refuses it; this says so, and the title field re-enables the button live. %>
+      <%= tag.p class: "publish-note", hidden: !post.untitled?, data: { editor_target: "titleNote" } do %>
+        Give it a title first — right now it would go live at <%= Setting.current.production_host %>/<%= post.slug %>/.
+      <% end %>
       <%= label_tag :published_at do %>Publish time <span class="field__hint">— leave blank to go live now</span><% end %>
       <%= datetime_field_tag :published_at %>
-      <%= form.submit "Publish", class: "w-btn w-btn--primary" %>
+      <%= form.submit "Publish", class: "w-btn w-btn--primary", disabled: post.untitled?,
+            data: { editor_target: "publishSubmit", action: "click->editor#commitThenSubmit" } %>
     <% end %>
   <% end %>
 </div>

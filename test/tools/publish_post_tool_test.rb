@@ -76,6 +76,19 @@ class PublishPostToolTest < ActiveSupport::TestCase
     assert_equal ToolErrors::POST_NOT_FOUND, PublishPostTool.new.call(id_or_slug: "nope")
   end
 
+  # The UI refuses an untitled post; the API has to refuse it for the same reason, or the
+  # guard is one client away from being decorative. The sentence is the model's, not this
+  # tool's, so a new rule reaches the agent without anyone editing the tool.
+  test "refuses an untitled post, now or scheduled, in the model's own words" do
+    post = Post.create!(body: "<p>drafted by an agent, not yet named</p>")
+    reason = "Title is still the placeholder — name the post before it goes live"
+
+    assert_equal reason, PublishPostTool.new.call(id_or_slug: post.slug)[:error]
+    assert_equal reason, PublishPostTool.new.call(id_or_slug: post.slug, at: 1.day.from_now.iso8601)[:error]
+    assert post.reload.draft?
+    assert_nil post.published_at
+  end
+
   # HTML pages ride the same publishing verbs as everything else; the tools need no
   # branch for them, which is the whole argument for the kind being one STI subclass.
   test "publishes and unpublishes an html page like any other record" do

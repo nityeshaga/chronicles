@@ -17,11 +17,23 @@ class Writing::PagesController < Writing::BaseController
   def edit
   end
 
+  # Same mint contract as posts (see Writing::PostsController#create): a page is written
+  # on the same autosaving form, so it needs the same 201-plus-stream answer. Without it
+  # the autosave POST followed a redirect, never adopted a PATCH URL, and minted a fresh
+  # page every two seconds.
   def create
     @post = Page.new(page_params)
+    return head :unprocessable_entity if autosave_request? && !draft_content?(page_params)
+
     if @post.save
       adopt_feature_image_upload(@post)
-      redirect_to edit_writing_page_url(@post)
+      if autosave_request?
+        render_mint(@post)
+      else
+        redirect_to edit_writing_page_url(@post)
+      end
+    elsif autosave_request?
+      head :unprocessable_entity
     else
       render :new, status: :unprocessable_entity
     end
@@ -60,9 +72,5 @@ class Writing::PagesController < Writing::BaseController
 
     def page_params
       params.require(:page).permit(:title, :slug, :excerpt, :feature_image, :feature_image_caption, :meta_title, :meta_description, :body, :uploaded_feature_image)
-    end
-
-    def autosave_request?
-      request.headers["X-Autosave"].present?
     end
 end

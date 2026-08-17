@@ -8,21 +8,25 @@
 <%# Lexxy's editor CSS only belongs where the editor lives, so pull it in per-page rather
     than site-wide (public pages render stored bodies with gh-content). %>
 <% content_for :head do %><%= stylesheet_link_tag "lexxy" %><% end %>
-<% saving = post.persisted?
-   taggable = !post.is_a?(Page)
-   preview_label = post.is_a?(Page) ? "View page" : "View post" %>
+<% saving = post.persisted? %>
 
 <div class="editor-shell" data-controller="editor" data-editor-open-class="is-open"
+     data-editor-autosave-outlet=".editor-shell__form"
      data-action="keydown@window->editor#closeOnEscape">
   <div class="editor-shell__scrim" data-editor-target="backdrop" data-action="click->editor#close"></div>
 
-  <%# Autosave rides the form in both states. On a saved record it PATCHes silently; on a
-      new record it POSTs once to mint the draft the moment there's real content, then
-      swaps to the persisted PATCH URL in place — so an author never loses an untitled tab. %>
+  <%# Autosave rides the form in both states, and is the only save there is — no Save
+      button. On a saved record it PATCHes silently; on a new record it POSTs once to mint
+      the draft the moment there's real content, then swaps to the persisted PATCH URL in
+      place. Leaving is guarded rather than blocked: an in-app visit waits for the pending
+      save, a tab close gets the browser's own dialog while anything is unsaved. %>
   <%= form_with model: [ :writing, post ], class: "editor-shell__form", data: {
         controller: "slug autosave", autosave_persisted_value: saving,
+        autosave_saved_text_value: autosave_saved_text(post),
         action: "input->autosave#change lexxy:change->autosave#change " \
-                "turbo:submit-end->autosave#committed autosave:minted->slug#minted",
+                "turbo:submit-end->autosave#committed autosave:minted->slug#minted " \
+                "turbo:before-visit@window->autosave#guardVisit " \
+                "beforeunload@window->autosave#guardUnload",
         **slug_check_values(post) } do |form| %>
     <header class="editor-bar">
       <div class="editor-bar__side">
@@ -30,7 +34,7 @@
           <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span>Writing</span>
         <% end %>
-        <span class="autosave-status" data-autosave-target="status" aria-live="polite"></span>
+        <%= render "writing/posts/autosave_status", post: post %>
       </div>
 
       <div class="editor-bar__side editor-bar__side--end">
@@ -38,21 +42,17 @@
           <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="6" cy="4" r="2.2" fill="currentColor"/><circle cx="10" cy="8" r="2.2" fill="currentColor"/><circle cx="5" cy="12" r="2.2" fill="currentColor"/></svg>
           Settings
         </button>
-        <% if saving %>
-          <%= link_to preview_label, [ :writing, post ], class: "w-btn w-btn--ghost" %>
-          <button type="button" class="w-btn w-btn--primary editor-bar__publish" data-action="editor#togglePublish" aria-haspopup="dialog">
-            <% if post.published? %>Published<% elsif post.scheduled? %>Scheduled<% else %>Publish<% end %>
-            <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-        <% else %>
-          <%= form.submit "Save draft", class: "w-btn w-btn--primary" %>
-        <% end %>
+        <div id="editor-actions" class="editor-bar__actions"><%= render "writing/posts/editor_actions", post: post if saving %></div>
       </div>
     </header>
 
-    <% if post.errors.any? %>
+    <%# Everything that went wrong, whether it arrived on the record or through a redirect
+        (a refused publish comes back as a flash, since the record it refused is reloaded
+        clean). One list, so a writer never has to find out which kind of failure it was. %>
+    <% problems = Array(flash[:alert]) + post.errors.full_messages %>
+    <% if problems.any? %>
       <ul class="errors">
-        <% post.errors.full_messages.each do |message| %>
+        <% problems.each do |message| %>
           <li><%= message %></li>
         <% end %>
       </ul>
@@ -60,9 +60,13 @@
 
     <div class="editor-canvas" data-controller="embed" data-embed-url-value="<%= writing_embeds_path %>">
       <%= form.label :title, class: "sr-only" %>
+      <%# Blank, not "Untitled", on a draft that never got a title: the placeholder is the
+          model's way of letting body-first writing persist, not a title the writer typed,
+          and showing it back would make him delete a word he never wrote. %>
       <%= form.text_area :title, rows: 1, class: "editor-canvas__title", placeholder: "Title",
+            value: (post.title unless post.untitled?),
             autofocus: !saving, data: { controller: "autogrow", slug_target: "source",
-            action: "input->slug#suggest input->autogrow#grow" } %>
+            action: "input->slug#suggest input->autogrow#grow input->editor#retitle" } %>
 
       <%# The excerpt is the standfirst: edited inline as a subtitle here (Ghost-style), the
           same attribute the public <h1> subtitle and social cards read. %>
@@ -84,6 +88,7 @@
     <aside class="settings-panel" data-editor-target="settings" role="dialog" aria-label="Post settings">
       <header class="settings-panel__head">
         <h2>Post settings</h2>
+        <%= render "writing/posts/autosave_status", post: post %>
         <button type="button" class="panel-close" data-action="editor#close" aria-label="Close settings">
           <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         </button>
@@ -98,13 +103,13 @@
           <%= render "writing/slugs/status" %>
         </div>
 
-        <% if taggable %>
+        <% if post.taggable? %>
           <div class="field">
             <span class="field__label">Tags</span>
             <%= render "writing/posts/tags", post: post %>
-            <% if saving %>
-              <%= render "writing/posts/tag_mint", post: post %>
-            <% end %>
+            <%# An empty slot on a canvas with no record yet; the mint's turbo_stream
+                fills it, so a tag can be minted the moment the draft exists. %>
+            <div id="editor-tag-mint"><%= render "writing/posts/tag_mint", post: post if saving %></div>
           </div>
         <% end %>
 
@@ -142,47 +147,12 @@
           <%= form.text_area :meta_description, rows: 2 %>
         </div>
 
-        <% if saving %>
-          <%# Delete lives at the foot of settings (Ghost's convention), off the ship flow.
-              The button belongs to the sibling #delete-post form below — a button_to here
-              would nest a <form> inside the edit form, and the HTML parser strips the inner
-              tag, turning Delete into a submit button of the edit form (a silent PATCH). %>
-          <hr class="settings-panel__rule">
-          <div class="settings-panel__danger">
-            <%= button_tag "Delete #{post.model_name.human.downcase}", form: "delete-post",
-                  class: "w-btn w-btn--danger w-btn--sm",
-                  data: { turbo_confirm: "Delete this #{post.model_name.human.downcase} for good?" } %>
-          </div>
-        <% end %>
+        <div id="editor-delete"><%= render "writing/posts/editor_delete", post: post if saving %></div>
       </div>
     </aside>
   <% end %>
 
-  <% if saving %>
-    <div class="publish-popover" data-editor-target="publish" role="dialog" aria-label="Publishing">
-      <header class="publish-popover__head">
-        <h2>Publishing</h2>
-        <button type="button" class="panel-close" data-action="editor#close" aria-label="Close">
-          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        </button>
-      </header>
-      <%= render "writing/posts/publishing", post: post %>
-    </div>
-  <% end %>
-
-  <% if saving %>
-    <%# The delete <form>: a sibling of the autosaving form for the same reason as tag-mint —
-        nested forms get stripped by the parser. Its button sits in the settings panel above. %>
-    <%= form_with url: [ :writing, post ], method: :delete, id: "delete-post" do %><% end %>
-  <% end %>
-
-  <% if taggable && saving %>
-    <%# The tag-mint <form>: a deliberate sibling of the autosaving form (minting is an act,
-        not a byproduct). Its visible controls live in the settings panel, bound here by the
-        HTML `form` attribute so they never join the post's payload. POSTs to
-        Writing::TagsController#create, which streams the refreshed checkbox list back. %>
-    <%= form_with url: writing_tags_path, id: "new-tag-form" do %>
-      <%= hidden_field_tag :post_id, post.slug %>
-    <% end %>
-  <% end %>
+  <%# Outside the form on purpose (nested forms get stripped by the parser), and behind a
+      stable id so the mint can bring the whole persisted-post chrome in at once. %>
+  <div id="editor-overlays"><%= render "writing/posts/editor_overlays", post: post if saving %></div>
 </div>

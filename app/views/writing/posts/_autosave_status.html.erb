@@ -1,0 +1,9 @@
+<%# The save indicator, rendered twice — once in the editor bar, once in the settings panel
+    head — because a tag ticked with the slide-over open has to confirm itself where the
+    writer is looking. The autosave controller writes every status target.
+    It opens with the truth already in it: a saved post says so rather than sitting blank
+    until the first keystroke, and a live one says what the next save costs before a key
+    is pressed. %>
+<% state, text = autosave_idle_status(post) %>
+<span class="autosave-status" data-autosave-target="status"
+      data-state="<%= state %>" aria-live="polite"><%= text %></span>

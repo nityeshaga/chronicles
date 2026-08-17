@@ -70,6 +70,63 @@ class PostTest < ActiveSupport::TestCase
     assert post.published_at.future?
   end
 
+  # The placeholder title exists so body-first writing can autosave; it is not a title
+  # anyone chose, and shipping it would put nityesh.com/untitled/ on the site for good.
+  test "an untitled draft refuses to publish or schedule, and says why" do
+    post = Post.create!(body: "<p>a body, no title yet</p>")
+    assert post.untitled?
+
+    assert_not post.publish
+    assert_not post.publish(at: 1.day.from_now)
+    assert_equal [ "Title is still the placeholder — name the post before it goes live" ],
+      post.errors.full_messages
+    assert post.reload.draft?
+    assert_nil post.published_at
+  end
+
+  test "a titled draft is not untitled" do
+    assert_not posts(:draft).untitled?
+    assert posts(:draft).publish
+  end
+
+  # The refusal is a validation, not a guard inside #publish, so it holds for the verbs
+  # underneath too — the only reason it can be trusted on a path nobody is watching.
+  test "the publish verbs raise rather than write an untitled post live" do
+    post = Post.create!(body: "<p>no title</p>")
+
+    assert_raises(ActiveRecord::RecordInvalid) { post.publish_now }
+    assert_raises(ActiveRecord::RecordInvalid) { post.publish_at(1.day.from_now) }
+    assert post.reload.draft?
+  end
+
+  # The scenario the validation exists for: schedule a titled post, then clear the title.
+  # A draft would quietly re-fill the placeholder and the job would put /untitled/ live
+  # hours later, with nobody watching. A post with a schedule waiting to fire is already
+  # on its way to the public, so the title cannot be taken off it.
+  test "the title of a scheduled post cannot be cleared" do
+    post = posts(:draft)
+    at = 1.hour.from_now.floor
+    assert post.publish(at: at)
+
+    assert_not post.update(title: "")
+    assert_equal "A Draft Post", post.reload.title
+  end
+
+  # And if a row gets past that anyway — a direct write, a record older than the rule —
+  # the job still refuses it, because the refusal lives at the boundary rather than in
+  # the verb the job happens to call.
+  test "the scheduled job will not publish a post that is untitled by the time it fires" do
+    post = posts(:draft)
+    at = 1.hour.from_now.floor
+    assert post.publish(at: at)
+    post.update_column(:title, Post::PLACEHOLDER_TITLE)
+
+    post.reload.publish_if_due(at)
+
+    assert post.reload.draft?
+    assert_equal at, post.published_at
+  end
+
   test "publish_if_due only publishes a draft still stamped for that exact schedule" do
     # Floored, as a real job's argument always is (publish_at floors): a raw ns-precision
     # Time.now would lose sub-µs in SQLite and break the identity check on Linux.

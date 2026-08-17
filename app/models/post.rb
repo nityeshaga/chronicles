@@ -1,4 +1,8 @@
 class Post < ApplicationRecord
+  # The stand-in a title-less draft wears so body-first writing can autosave (see
+  # #fill_placeholder_title). Nothing wearing it is fit to publish.
+  PLACEHOLDER_TITLE = "Untitled"
+
   has_rich_text :body
   has_many :taggings, dependent: :destroy
   has_many :tags, through: :taggings
@@ -22,6 +26,12 @@ class Post < ApplicationRecord
 
   validates :title, presence: true
   validates :slug, presence: true, uniqueness: true
+  # Anything on its way to the public — live now, or a draft with a schedule waiting to
+  # fire — must carry a title someone chose. A validation rather than a guard inside the
+  # publish verbs, because the verbs are not the only way in: the scheduled job calls
+  # publish_now directly, hours after anyone was watching, and a title cleared in the
+  # meantime would put /untitled/ on the site at an address no rename takes back.
+  validate :real_title_before_going_live, if: -> { published? || scheduled? }
 
   # A draft may arrive title-less — body-first writing, where every autosave keeps
   # sending the still-empty title field — so re-fill the placeholder rather than fail
@@ -47,12 +57,22 @@ class Post < ApplicationRecord
 
   # --- Publishing verbs (the model owns the consequence; the controller calls one) ---
 
-  # Publish now, or — if handed a future time — schedule it: the post stays a
-  # hidden draft and a job flips it live when the clock catches up.
+  # The verb every caller reaches for: publish now, or — if handed a future time —
+  # schedule it (the post stays a hidden draft and a job flips it live when the clock
+  # catches up). Answers false and leaves the reason in #errors, so a controller or a
+  # tool can say why without knowing the rule. The verbs underneath raise instead, which
+  # is what stops any other path from writing a state the validations forbid.
   def publish(at: nil)
     at = parse_time(at)
     at&.future? ? publish_at(at) : publish_now
+    true
+  rescue ActiveRecord::RecordInvalid
+    false
   end
+
+  # Never given a title anyone chose — either blank, or still wearing the placeholder.
+  # What the editor asks before it offers to publish.
+  def untitled? = title.blank? || title == PLACEHOLDER_TITLE
 
   def publish_now
     update!(status: :published, published_at: Time.current)
@@ -83,7 +103,10 @@ class Post < ApplicationRecord
   # published_at, so a stale job no longer matches and no-ops. Without this a job
   # queued for Fri would republish a post the author explicitly unpublished on Thu.
   def publish_if_due(scheduled_for)
-    publish_now if draft? && published_at == scheduled_for
+    # The forgiving verb on purpose: a schedule set on a titled post whose title was
+    # cleared before the job fired is refused by the validation, and a job that raised
+    # there would retry that refusal forever. It stays a draft instead.
+    publish if draft? && published_at == scheduled_for
   end
 
   # A future publish stamp on a draft is a schedule waiting to fire.
@@ -136,6 +159,8 @@ class Post < ApplicationRecord
   # Only blog articles mail the list; Pages/HtmlPages share the publish popover but
   # have no newsletter route. Page overrides this to false.
   def newsletterable? = true
+  # Tags are the era shelves the blog feed is built from, so only articles carry them.
+  def taggable? = true
 
   # Which tab of the writing dashboard this record answers to. An article splits by its
   # own publish state; the page kinds are a bucket each whatever their state, because
@@ -156,8 +181,12 @@ class Post < ApplicationRecord
       text[0, 300].sub(/\s+\S*\z/, "")
     end
 
+    def real_title_before_going_live
+      errors.add(:title, "is still the placeholder — name the post before it goes live") if title == PLACEHOLDER_TITLE
+    end
+
     def fill_placeholder_title
-      self.title = "Untitled" if title.blank? && draft?
+      self.title = PLACEHOLDER_TITLE if title.blank? && draft?
     end
 
     # Slugs are unique, but titles aren't — two "Untitled" autosave drafts (or two posts

@@ -5,4 +5,5 @@ class Page < Post
   def show_title? = false
   def newsletterable? = false
   def dashboard_bucket = "page"
+  def taggable? = false
 end
