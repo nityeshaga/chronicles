@@ -88,7 +88,7 @@ class Writing::PagesControllerTest < ActionDispatch::IntegrationTest
     page = posts(:about)
     delete writing_page_publishing_url(page)
     assert page.reload.draft?
-    assert_redirected_to edit_writing_page_url(page)
+    assert_redirected_to edit_writing_page_url(page, publishing: "open")
   end
 
   test "destroy removes the page" do

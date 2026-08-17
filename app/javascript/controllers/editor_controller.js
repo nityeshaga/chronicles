@@ -14,6 +14,15 @@ export default class extends Controller {
   static classes = ["open"]
   static outlets = ["autosave"]
 
+  // Publishing lands back here with ?publishing=open on the address: the writer asked a
+  // publishing question a moment ago, so the answer — LIVE, SCHEDULED, or the refusal —
+  // is already showing instead of waiting behind a click he has to know to make.
+  connect() {
+    if (this.hasPublishTarget && new URLSearchParams(window.location.search).get("publishing") === "open") {
+      this.#show(this.publishTarget)
+    }
+  }
+
   toggleSettings(event) {
     event.preventDefault()
     this.#show(this.settingsTarget.classList.contains(this.openClass) ? null : this.settingsTarget)

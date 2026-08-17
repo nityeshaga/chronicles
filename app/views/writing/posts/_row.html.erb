@@ -14,7 +14,7 @@
     <span class="dash-row__meta">
       <span class="dash-row__url">/<%= record.slug %>/</span>
       <% if record.scheduled? %>
-        <span class="dash-row__when">· Goes live <%= record.published_at.strftime("%-d %b %Y, %-l:%M %p %Z") %></span>
+        <span class="dash-row__when">· Goes live <%= publish_stamp(record.published_at) %></span>
       <% elsif record.published? && record.published_at %>
         <span class="dash-row__when">· Published <%= record.published_at.strftime("%-d %b %Y") %></span>
       <% end %>

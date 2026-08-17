@@ -8,6 +8,8 @@ class HtmlPage < Page
   validate :looks_like_a_full_document
 
   def dashboard_bucket = "html_page"
+  # No editor bar here to hang a popover from; publishing is a panel below the form.
+  def publish_popover? = false
 
   private
     # A pasted fragment would publish as a broken white page — no doctype, no head,

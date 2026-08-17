@@ -62,9 +62,19 @@ class Post < ApplicationRecord
   # catches up). Answers false and leaves the reason in #errors, so a controller or a
   # tool can say why without knowing the rule. The verbs underneath raise instead, which
   # is what stops any other path from writing a state the validations forbid.
+  #
+  # A time already gone is refused, not silently published now. Someone typing 9am into
+  # the field at 10am meant tomorrow, and going live on the spot is the one outcome no
+  # unpublish takes back — the link is out. Only a time actually given is judged: no time
+  # at all still means now, which is what the scheduled job calls back with.
   def publish(at: nil)
     at = parse_time(at)
-    at&.future? ? publish_at(at) : publish_now
+    if at && !at.future?
+      errors.add(:base, "That time has already passed — pick a later one, or clear it to publish now.")
+      return false
+    end
+
+    at ? publish_at(at) : publish_now
     true
   rescue ActiveRecord::RecordInvalid
     false
@@ -159,6 +169,11 @@ class Post < ApplicationRecord
   # Only blog articles mail the list; Pages/HtmlPages share the publish popover but
   # have no newsletter route. Page overrides this to false.
   def newsletterable? = true
+  # The post editor keeps publishing in a popover the writer opens, so an action that
+  # changes publish state lands back with ?publishing=open on it. The HTML-page editor
+  # has no popover — its publishing panel is always on screen — so HtmlPage says no and
+  # the redirect stays a plain address rather than one that promises a panel to open.
+  def publish_popover? = true
   # Tags are the era shelves the blog feed is built from, so only articles carry them.
   def taggable? = true
 

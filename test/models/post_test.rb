@@ -70,6 +70,27 @@ class PostTest < ActiveSupport::TestCase
     assert post.published_at.future?
   end
 
+  # A time already gone used to mean "publish now", which turns a typo about yesterday
+  # into a live post nobody asked for. It is refused instead, and the reason comes back
+  # in the words the editor prints.
+  test "a publish time that has already passed is refused" do
+    post = posts(:draft)
+
+    assert_not post.publish(at: 1.hour.ago)
+    assert_equal [ "That time has already passed — pick a later one, or clear it to publish now." ],
+      post.errors.full_messages
+    assert post.reload.draft?
+    assert_nil post.published_at
+  end
+
+  # No time at all still means now — the scheduled job calls back through exactly this
+  # door once its own time is in the past.
+  test "publish with no time given still publishes now" do
+    post = posts(:draft)
+    assert post.publish
+    assert post.reload.published?
+  end
+
   # The placeholder title exists so body-first writing can autosave; it is not a title
   # anyone chose, and shipping it would put nityesh.com/untitled/ on the site for good.
   test "an untitled draft refuses to publish or schedule, and says why" do

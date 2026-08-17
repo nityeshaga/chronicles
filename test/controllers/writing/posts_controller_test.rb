@@ -307,13 +307,15 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_match %r{/rails/active_storage/blobs/.+/feature\.png}, draft.feature_image
   end
 
-  # --- Publishing resource: create = publish, destroy = unpublish/cancel. ---
+  # --- Publishing resource: create = publish, destroy = unpublish/cancel. Every one of
+  #     them lands back on the editor with the popover open, so the state the writer just
+  #     asked for is what he reads next. ---
   test "publishing a draft flips its status" do
     sign_in_as users(:nityesh)
     draft = posts(:draft)
     post writing_post_publishing_url(draft)
     assert draft.reload.published?
-    assert_redirected_to edit_writing_post_url(draft)
+    assert_redirected_to edit_writing_post_url(draft, publishing: "open")
   end
 
   test "publishing with a future time schedules the post" do
@@ -322,6 +324,24 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     post writing_post_publishing_url(draft), params: { published_at: 2.days.from_now.iso8601 }
     assert draft.reload.draft?
     assert draft.scheduled?
+    assert_redirected_to edit_writing_post_url(draft, publishing: "open")
+  end
+
+  # The mistake this exists for: typing this morning's time this afternoon. Publishing on
+  # the spot is not what was asked and not something an unpublish takes back, so it is
+  # refused and said so — in the popover, which the redirect reopens.
+  test "publishing at a time that has already passed is refused and says why" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+    post writing_post_publishing_url(draft), params: { published_at: 1.hour.ago.iso8601 }
+
+    assert draft.reload.draft?
+    assert_nil draft.published_at
+    assert_redirected_to edit_writing_post_url(draft, publishing: "open")
+    assert_equal "That time has already passed — pick a later one, or clear it to publish now.", flash[:publish_error]
+
+    follow_redirect!
+    assert_select ".publish-note--refused", text: /That time has already passed/
   end
 
   test "unpublishing sends a post back to draft" do
@@ -329,6 +349,30 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     published = posts(:published)
     delete writing_post_publishing_url(published)
     assert published.reload.draft?
+    assert_redirected_to edit_writing_post_url(published, publishing: "open")
+  end
+
+  # The field names its zone and refuses the past before the round trip, and the button
+  # says which of the two things it does — the labels ride in as data because the swap
+  # happens in the browser as the field is filled.
+  test "the publish form names its zone, floors the field at now, and carries both labels" do
+    sign_in_as users(:nityesh)
+    get edit_writing_post_url(posts(:draft))
+
+    assert_select "form.schedule-form[data-schedule-empty-value=Publish][data-schedule-filled-value=Schedule]"
+    assert_select "label[for=published_at]", text: "Publish time (IST, UTC+5:30) — leave blank to go live now"
+    assert_select "input[type=datetime-local][name=published_at][min=?]", Time.zone.now.strftime("%Y-%m-%dT%H:%M")
+    assert_select "input[type=submit][data-schedule-target=submit][value=Publish]"
+  end
+
+  # A time with no zone on it is a guess the writer has to make at the moment it matters.
+  test "the popover stamps every publish time with the zone" do
+    sign_in_as users(:nityesh)
+    get edit_writing_post_url(posts(:scheduled))
+    assert_select ".publish-state", text: /Goes live .+ IST\./
+
+    get edit_writing_post_url(posts(:published))
+    assert_select ".publish-state", text: /Published .+ IST\./
   end
 
   test "destroy removes the post" do
@@ -458,13 +502,14 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
       text: /Give it a title first — right now it would go live at #{Setting.current.production_host}\/untitled\//
     assert_select ".schedule-form input[type=submit][disabled]"
 
-    # And the server refuses it too, with the reason on the page rather than a silent
-    # bounce off the same button.
+    # And the server refuses it too — the stale-tab path, where the button was rendered
+    # before the title was cleared. The reason lands in the popover the redirect reopens,
+    # which is the only place the writer is looking after clicking Publish.
     post writing_post_publishing_url(untitled)
     assert untitled.reload.draft?
     assert_nil untitled.published_at
     follow_redirect!
-    assert_select "ul.errors li", text: /is still the placeholder/
+    assert_select ".publish-note--refused", text: /is still the placeholder/
   end
 
   test "a titled draft's popover publishes without a note" do

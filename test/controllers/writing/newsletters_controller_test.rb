@@ -13,7 +13,7 @@ class Writing::NewslettersControllerTest < ActionDispatch::IntegrationTest
     assert_enqueued_with(job: Post::NewsletterJob) do
       post writing_post_newsletter_url(posts(:published))
     end
-    assert_redirected_to edit_writing_post_url(posts(:published))
+    assert_redirected_to edit_writing_post_url(posts(:published), publishing: "open")
     assert posts(:published).reload.newsletter_sent?
   end
 
@@ -25,7 +25,7 @@ class Writing::NewslettersControllerTest < ActionDispatch::IntegrationTest
     assert_no_enqueued_jobs do
       post writing_post_newsletter_url(posts(:published))
     end
-    assert_redirected_to edit_writing_post_url(posts(:published))
+    assert_redirected_to edit_writing_post_url(posts(:published), publishing: "open")
     assert_nil posts(:published).reload.newsletter_sent_at
   end
 
@@ -34,6 +34,6 @@ class Writing::NewslettersControllerTest < ActionDispatch::IntegrationTest
     assert_no_enqueued_jobs do
       post writing_post_newsletter_url(posts(:draft))
     end
-    assert_redirected_to edit_writing_post_url(posts(:draft))
+    assert_redirected_to edit_writing_post_url(posts(:draft), publishing: "open")
   end
 end

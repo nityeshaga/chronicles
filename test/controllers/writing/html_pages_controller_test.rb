@@ -83,6 +83,8 @@ class Writing::HtmlPagesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_url
   end
 
+  # No ?publishing=open here: this editor has no popover to open, its publishing panel
+  # sits on the page already.
   test "publishing resource is nested under HTML pages" do
     sign_in_as users(:nityesh)
     page = posts(:html_page)
