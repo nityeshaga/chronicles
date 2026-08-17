@@ -51,6 +51,15 @@ export default class extends Controller {
     this.check()
   }
 
+  // What the server kept, after a save that touched the slug. While the field is still
+  // following the title it shows that answer rather than its own suggestion — a collision
+  // is kept as hello-2, and the canvas has to say hello-2. Once the writer has taken the
+  // field over it is his; a name that was taken stays on screen with the check calling it
+  // taken, which is the honest pair.
+  kept({ detail: { slug } }) {
+    if (this.auto) this.slugTarget.value = slug
+  }
+
   #ask() {
     const url = new URL(this.urlValue, location.origin)
     url.searchParams.set("slug", this.slugTarget.value.trim())

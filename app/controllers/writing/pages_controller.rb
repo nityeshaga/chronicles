@@ -40,12 +40,15 @@ class Writing::PagesController < Writing::BaseController
   end
 
   # Same autosave contract as posts (see Writing::PostsController#update): silent 204/422
-  # for the debounced fetch, a one-time redirect only when an explicit save renames the slug.
+  # for the debounced fetch — carrying the moved addresses when it renamed the slug — and
+  # a one-time redirect only when an explicit save renames it.
   def update
     slug_was = @post.slug
     if @post.update(page_params)
       adopt_feature_image_upload(@post)
-      if @post.slug == slug_was
+      if autosave_request?
+        render_autosave(@post, renamed: @post.slug != slug_was)
+      elsif @post.slug == slug_was
         head :no_content
       else
         redirect_to edit_writing_page_url(@post)

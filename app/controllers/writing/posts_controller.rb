@@ -56,18 +56,24 @@ class Writing::PostsController < Writing::BaseController
   end
 
   # Two ways in, one action. The debounced autosave hits this as a silent fetch (an
-  # X-Autosave header, slug omitted): on success it answers 204 so nothing repaints and
-  # the cursor never jumps; on a validation failure it answers a bodyless 422 so a bad
-  # keystroke can't repaint the page either — autosave stays as invisible as it is on
-  # success. An explicit save (committing an edited slug or feature image, the only two
-  # fields held out of the silent path) is a normal Turbo submit: a changed slug
-  # redirects once to the new edit URL, and a validation failure re-renders the form with
-  # its errors.
+  # X-Autosave header): on success it answers 204 so nothing repaints and the cursor never
+  # jumps; on a validation failure it answers a bodyless 422 so a bad keystroke can't
+  # repaint the page either — autosave stays as invisible as it is on success. The slug
+  # rides that path with everything else, so a rename answers 204 too, with the addresses
+  # it moved (see Writing::Autosaving). A slug someone else holds fails the uniqueness
+  # validation and lands in the same silent 422: the record keeps the URL it had, and the
+  # availability line under the field is what says why.
+  #
+  # An explicit save (the feature-image file, the only field left off the silent path) is
+  # a normal Turbo submit, which can't read headers — so a rename there still redirects
+  # once to the new edit URL, and a validation failure re-renders the form with its errors.
   def update
     slug_was = @post.slug
     if @post.update(post_params)
       adopt_feature_image_upload(@post)
-      if @post.slug == slug_was
+      if autosave_request?
+        render_autosave(@post, renamed: @post.slug != slug_was)
+      elsif @post.slug == slug_was
         head :no_content
       else
         redirect_to edit_writing_post_url(@post)

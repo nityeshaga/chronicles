@@ -1,8 +1,8 @@
 <%# The whole authoring surface: a distraction-free canvas (headline title + Lexxy body)
-    with everything else — slug, tags, feature image, SEO — tucked into a "Post settings"
+    with everything else — tags, feature image, SEO — tucked into a "Post settings"
     slide-over, and publishing into its own popover. One partial paints new + edit, posts +
     pages. On a saved record the form wears the autosave controller (silent debounced fetch;
-    slug + feature-image file commit only on blur); minting a tag is a deliberate act in its
+    the feature-image file commits on blur); minting a tag is a deliberate act in its
     own <form>, a sibling below, so it never rides autosave. The editor controller owns the
     two overlays and their shared backdrop. %>
 <%# Lexxy's editor CSS only belongs where the editor lives, so pull it in per-page rather
@@ -26,6 +26,7 @@
         autosave_saved_text_value: autosave_saved_text(post),
         action: "input->autosave#change lexxy:change->autosave#change " \
                 "turbo:submit-end->autosave#committed autosave:minted->slug#minted " \
+                "autosave:slugged->slug#kept " \
                 "turbo:before-visit@window->autosave#guardVisit " \
                 "beforeunload@window->autosave#guardUnload",
         **slug_check_values(post) } do |form| %>
@@ -74,6 +75,24 @@
       <%= form.text_area :excerpt, rows: 1, class: "editor-canvas__subtitle", placeholder: "Add a subtitle…",
             data: { controller: "autogrow", action: "input->autogrow#grow" } %>
 
+      <%# The post's public address, on the canvas because that is where it is decided —
+          the host and the trailing slash are the site's, the middle is the writer's. It
+          rides the same silent save as the prose (following the title while it is still
+          auto, committing on change once it has been hand-edited), so the line always
+          shows the URL the site actually serves rather than the one it was going to. %>
+      <div class="url-line">
+        <span class="url-line__url"><span class="url-line__host"><%= Setting.current.production_host %>/</span><%=
+          form.label :slug, "URL slug", class: "sr-only" %><%=
+          form.text_field :slug, class: "url-line__slug", title: "Edit the URL", placeholder: "your-url",
+            data: { slug_target: "slug", autosave_target: "slug",
+            action: "input->slug#edited input->slug#check input->autosave#holdSlug change->autosave#commitSlug" } %>/</span>
+        <%# Availability, answered by the server as the writer types. %>
+        <%= render "writing/slugs/status" %>
+        <% if post.published? || post.scheduled? %>
+          <p class="url-line__hint">Live URL — changing it breaks links people already have.</p>
+        <% end %>
+      </div>
+
       <%# The embed controller sits on the body because that's the only thing it touches:
           it hears Lexxy announce a pasted link and swaps the supported ones for a card.
           The placeholder is where the writer learns that exists — one line, in the exact
@@ -96,14 +115,6 @@
       </header>
 
       <div class="settings-panel__body">
-        <div class="field">
-          <%= form.label :slug, "URL slug" %>
-          <%= form.text_field :slug, data: { slug_target: "slug", autosave_target: "slug",
-                action: "input->slug#edited input->slug#check change->autosave#commit" } %>
-          <%# Availability, answered by the server as the writer types. %>
-          <%= render "writing/slugs/status" %>
-        </div>
-
         <% if post.taggable? %>
           <div class="field">
             <span class="field__label">Tags</span>
@@ -112,9 +123,9 @@
                 fills it, so a tag can be minted the moment the draft exists. %>
             <div id="editor-tag-mint"><%= render "writing/posts/tag_mint", post: post if saving %></div>
           </div>
-        <% end %>
 
-        <hr class="settings-panel__rule">
+          <hr class="settings-panel__rule">
+        <% end %>
 
         <div class="field">
           <%= form.label :feature_image, "Feature image URL" %>
@@ -135,10 +146,6 @@
 
         <hr class="settings-panel__rule">
 
-        <div class="field">
-          <span class="field__label">Excerpt / subtitle</span>
-          <small class="field__hint">Appears as the subtitle under your title, and on the home feed and social cards. Edit it right below the title.</small>
-        </div>
         <div class="field">
           <%= form.label :meta_title, "Meta title" %>
           <%= form.text_field :meta_title %>

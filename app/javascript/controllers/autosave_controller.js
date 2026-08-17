@@ -7,11 +7,16 @@ import { Turbo } from "@hotwired/turbo-rails"
 //
 // The save is a fetch, NOT a form submit: a plain PATCH the server answers with 204 on
 // success and a bodyless 422 on failure, so a mid-typing validation error can never
-// repaint the page — autosave is as invisible on failure as it is on success. Slug and
-// the feature-image file are held OUT of this silent path (see #payload): they change the
-// edit URL / upload bytes, so they commit only on an explicit blur (commit()), which is a
-// normal Turbo submit that's allowed to redirect. Status targets narrate state; there are
-// two (the editor bar and the settings panel head) and both get written.
+// repaint the page — autosave is as invisible on failure as it is on success. Only the
+// feature-image file is held out of it (see #payload): it uploads bytes, so it commits on
+// an explicit blur (commit()), a normal Turbo submit. Status targets narrate state; there
+// are two (the editor bar and the settings panel head) and both get written.
+//
+// The slug rides this path too, which is the only way the URL on the canvas and the URL
+// in the database can be the same string. A rename moves every address the editor is
+// holding, so the 204 that carried it out hands them all back (#adoptUrls) and the editor
+// re-points itself in place: form action, address bar, view button, and the field, which
+// shows the slug the server actually kept rather than the one it was asked for.
 //
 // A brand-new post rides the same controller: until it's persisted the first save POSTs
 // once to mint the draft (the instant there's real content — never on load), then adopts
@@ -41,7 +46,7 @@ const INTERVAL = 2000
 const AT_RISK = ["unsaved", "saving", "error", "refused", "signedout"]
 
 export default class extends Controller {
-  static targets = ["status", "slug", "file"]
+  static targets = ["status", "slug", "file", "viewLink"]
   // savedText is written by the server: what "saved" means depends on where the post
   // stands (a live post's save republished the page), and that copy is Ruby's to own.
   static values = { persisted: Boolean, savedText: String }
@@ -55,6 +60,10 @@ export default class extends Controller {
   // The save in flight, so callers that must not race it — Publish, an in-app exit —
   // can await the very same promise instead of guessing at a delay.
   #pending = Promise.resolve()
+  // Is the writer mid-edit in the URL field? Only he types there — auto mode writes the
+  // field programmatically — so an input event on it means the slug is half a thought,
+  // and half a thought is not a rename.
+  #slugHeld = false
 
   disconnect() {
     this.flush()
@@ -62,7 +71,8 @@ export default class extends Controller {
 
   // Both the plain fields and the <lexxy-editor> live inside this form; scope by
   // containment so an editor change and a plain input both count as one dirty bit. Slug
-  // keystrokes are ignored here — the slug only commits on its own blur (commit()).
+  // keystrokes skip the debounce: a URL lands when the writer is done with it, not two
+  // seconds into typing it (holdSlug / commitSlug).
   change(event) {
     if (!this.element.contains(event.target)) return
     // The tag-mint input sits inside this form's DOM but is reassociated to #new-tag-form
@@ -74,14 +84,32 @@ export default class extends Controller {
     if (!this.#dirty) this.#timer = setTimeout(() => this.#save(), INTERVAL)
   }
 
-  // Run any pending work now and hand back the promise for it, so a caller can wait.
+  // The URL is a decision, not a keystroke. While it's being typed it stays out of the
+  // payload; the moment the writer is done with it — a change event, so blur or Enter —
+  // it lands immediately rather than in two seconds, because the address bar and the view
+  // button move with it and they should move while he's still looking at them.
+  holdSlug() {
+    this.#slugHeld = true
+    this.#markUnsaved()
+  }
+
+  commitSlug() {
+    this.#slugHeld = false
+    this.#save()
+  }
+
+  // Run any pending work now and hand back the promise for it, so a caller can wait. A
+  // slug still being typed counts as pending work: the leave guards ask this question by
+  // flushing, and a URL held out of the payload would otherwise be unsaved work nothing
+  // could land, so the guard would refuse an exit it had no way to satisfy.
   flush() {
-    if (this.#dirty) this.#save()
+    if (this.#slugHeld) this.commitSlug()
+    else if (this.#dirty) this.#save()
     return this.#pending
   }
 
-  // An explicit save (slug/feature-image blur): a normal Turbo submit so a renamed slug
-  // can redirect to the new edit URL and a real error can show itself.
+  // An explicit save (the feature-image file): a normal Turbo submit, because bytes need
+  // one and a real error there should show itself.
   commit() {
     clearTimeout(this.#timer)
     this.#timer = null
@@ -144,6 +172,7 @@ export default class extends Controller {
         headers: { "X-Autosave": "true", "X-CSRF-Token": this.#csrfToken },
         body: this.#payload
       })
+      if (response.status === 204) this.#adoptUrls(response)
       this.#setStatus(this.#outcome(response))
     } catch {
       this.#setStatus("error")
@@ -164,12 +193,11 @@ export default class extends Controller {
         body: this.#payload
       })
       if (response.status === 201) {
-        this.#adoptPersistedUrl(response.headers.get("Location"))
+        this.#adoptUrls(response)
         // The draft now exists, so anything on this form that has to name the record can
         // stop guessing: announce the id the server just handed back (the slug check
         // listens, to stop counting the draft's own slug against it).
         this.dispatch("minted", { detail: { id: response.headers.get("X-Post-Id") } })
-        this.#adoptEditUrl(response.headers.get("X-Edit-Url"))
         Turbo.renderStreamMessage(await response.text())
         this.#setStatus("saved")
       } else {
@@ -180,6 +208,22 @@ export default class extends Controller {
     } finally {
       this.#creating = false
     }
+  }
+
+  // Where the record lives now, as the server just told it: the mint says so once, and a
+  // save that renamed the slug says so again. Both answers carry the same headers because
+  // the same four things move — the PATCH target, the address bar, the view button, and
+  // the slug itself, which the server may have kept differently (hello-2 on a collision,
+  // or the old one if the wanted name was taken). A bare 204 carries none of them and
+  // this is a no-op. Every URL arrives whole; none is assembled here out of a slug.
+  #adoptUrls(response) {
+    this.#adoptPersistedUrl(response.headers.get("Location"))
+    this.#adoptEditUrl(response.headers.get("X-Edit-Url"))
+
+    const slug = response.headers.get("X-Slug")
+    if (!slug) return
+    if (this.hasViewLinkTarget) this.viewLinkTarget.href = response.headers.get("X-View-Url")
+    this.dispatch("slugged", { detail: { slug } })
   }
 
   // Turn a freshly-minted draft's form into the persisted one: Location carries the
@@ -230,11 +274,15 @@ export default class extends Controller {
     return this.element.querySelector(`[name$='[${name}]']`)?.value || ""
   }
 
-  // Everything the form holds except the two fields that must not ride the silent path.
+  // Everything the form holds, minus what doesn't belong in this particular request. The
+  // feature image is bytes and rides its own Turbo submit. The slug rides along — that is
+  // how the canvas and the database keep the same URL — except while it's being typed,
+  // and except on the mint: a brand-new post lets the server invent its slug, so a title
+  // that collides comes back as hello-2 instead of failing a uniqueness validation.
   get #payload() {
     const data = new FormData(this.element)
-    if (this.hasSlugTarget) data.delete(this.slugTarget.name)
     if (this.hasFileTarget) data.delete(this.fileTarget.name)
+    if (this.hasSlugTarget && (this.#slugHeld || !this.persistedValue)) data.delete(this.slugTarget.name)
     return data
   }
 

@@ -1,10 +1,15 @@
 <%# The one control that opens the post as someone else would see it, labelled for what
     that actually is: on a draft or a scheduled post the only reader is the writer himself,
     signed in; once it's live there's a real page to send him to. Shared by the post editor
-    bar and the HTML-page editor's header, which differ only in button size. %>
+    bar and the HTML-page editor's header, which differ only in button size.
+
+    Both hrefs carry the slug, so both go stale the moment the URL line renames the post —
+    hence the autosave target: the save that renames hands back the new address and the
+    controller writes it here (inert in the HTML-page editor, which has no autosave). %>
 <% if post.published? %>
-  <%= link_to "View live", public_post_path(post), class: "w-btn w-btn--ghost #{size}" %>
+  <%= link_to "View live", public_post_path(post), class: "w-btn w-btn--ghost #{size}",
+        data: { autosave_target: "viewLink" } %>
 <% else %>
   <%= link_to "Preview", [ :writing, post ], class: "w-btn w-btn--ghost #{size}",
-        title: "Only you can see this — it needs your sign-in" %>
+        title: "Only you can see this — it needs your sign-in", data: { autosave_target: "viewLink" } %>
 <% end %>
