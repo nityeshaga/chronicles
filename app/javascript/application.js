@@ -3,3 +3,4 @@ import "@hotwired/turbo-rails"
 import "controllers"
 
 import "lexxy"
+import "lexxy_embed_frames"

@@ -695,7 +695,7 @@ a:hover { opacity: .8; }
 }
 .field input:focus, .field textarea:focus,
 .stacked-form input:focus, .stacked-form textarea:focus,
-.schedule-form input:focus, .embed-bar input:focus {
+.schedule-form input:focus {
   outline: none; border-color: var(--w-accent); box-shadow: 0 0 0 3px rgba(180, 83, 9, .13);
 }
 .field textarea, .stacked-form textarea { resize: vertical; line-height: 1.5; }
@@ -906,17 +906,14 @@ a:hover { opacity: .8; }
   margin-bottom: 2.8rem; font-size: clamp(1.7rem, .23vw + 1.61rem, 1.9rem);
   line-height: 1.45; letter-spacing: -.018em; color: var(--w-muted);
 }
+/* The three canvas placeholders read as one hint, so they share one colour. Lexxy paints
+   the body's from its `placeholder` attribute at two-thirds ink; opacity: 1 hands the
+   tone back to the colour (and undoes Firefox's own ::placeholder fade while it's here). */
 .editor-canvas__title::placeholder,
-.editor-canvas__subtitle::placeholder { color: rgba(0, 0, 0, .24); }
+.editor-canvas__subtitle::placeholder,
+.editor-canvas__body .lexxy-editor__content::before { color: rgba(0, 0, 0, .24); opacity: 1; }
 .editor-canvas__title:focus,
 .editor-canvas__subtitle:focus { outline: none; }
-
-/* A subdued "insert embed" row that lives BELOW the body, out of the title/body seam. */
-.embed-bar { display: flex; gap: .6rem; margin-top: 3.2rem; }
-.embed-bar input {
-  flex: 1; padding: .75rem 1rem; font-family: var(--font-sans); font-size: 1.35rem;
-  color: var(--w-ink); background: var(--w-panel); border: 1px solid var(--w-line); border-radius: 8px;
-}
 
 /* The Lexxy editor is the star: match the public serif body so the writer sees what
    readers will. Theme the gem via its own --lexxy-* tokens (transparent canvas, our ink
@@ -944,6 +941,25 @@ a:hover { opacity: .8; }
   /* The caret is a rotated corner, so growing it drops its visual centre — pull it back. */
   block-size: .65ch; inline-size: .65ch; margin-block-start: -.2ch;
 }
+
+/* Embeds, seen from the editor. A YouTube frame plays here exactly as it will on the
+   published page. A tweet can't: the live page swaps the blockquote for the real thing
+   once Twitter's widget script loads (tweets_controller), and no widget runs on the
+   writer's canvas. So dress the blockquote as a card that says what it is and where it
+   goes, rather than leaving it looking like a stray pull-quote. */
+.editor-canvas__body .kg-embed-card { margin: 2.4rem 0; }
+.editor-canvas__body .kg-embed-card iframe { max-width: 100%; border-radius: 8px; }
+.editor-canvas__body blockquote.twitter-tweet {
+  width: 100%; margin: 0; padding: 1.4rem 1.6rem; border: 1px solid var(--w-line-strong);
+  border-radius: 10px; background: var(--w-panel);
+  font-family: var(--font-sans); font-size: 1.45rem; line-height: 1.5; font-style: normal;
+}
+.editor-canvas__body blockquote.twitter-tweet::before {
+  content: "Tweet — renders on the published page"; display: block; margin-bottom: .6rem;
+  font-size: 1.15rem; font-weight: 600; font-style: normal;
+  letter-spacing: .07em; text-transform: uppercase; color: var(--w-muted);
+}
+.editor-canvas__body blockquote.twitter-tweet a { word-break: break-all; }
 
 /* ---- Overlays: shared scrim, settings slide-over, publish popover ---- */
 .editor-shell__scrim {

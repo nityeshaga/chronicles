@@ -475,6 +475,18 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".schedule-form input[type=submit][disabled]", count: 0
   end
 
+  # Pasting a link is the only way to embed one, so the empty body is the only place a
+  # writer learns embeds exist. The controller listens on the body, where the paste lands.
+  test "the editor teaches embeds through the body placeholder" do
+    sign_in_as users(:nityesh)
+    get new_writing_post_url
+
+    assert_select ".editor-canvas__body[data-controller=embed][data-action=?]",
+      "lexxy:insert-link->embed#unfurl"
+    assert_select "lexxy-editor[placeholder=?]",
+      "Start writing. Paste a tweet or YouTube link on its own line to embed it."
+  end
+
   test "preview renders the public post template behind auth" do
     sign_in_as users(:nityesh)
     get writing_post_url(posts(:draft))
