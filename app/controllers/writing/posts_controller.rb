@@ -8,17 +8,17 @@ class Writing::PostsController < Writing::BaseController
   before_action :set_post, only: %i[ show edit update destroy ]
 
   def index
-    # Scheduled posts are drafts with a future stamp; split them out so the dashboard can
-    # bucket Drafts / Scheduled / Published cleanly.
-    scheduled, drafts = Post.articles.draft.ordered.to_a.partition(&:scheduled?)
-    @scheduled = scheduled
-    @drafts = drafts
-    @published = Post.articles.published.ordered
-    # Exact type, not the STI subtree: an HtmlPage listed here would link into the
-    # Lexxy pages form, which writes an Action Text body over a raw-HTML record. They
-    # get their own bucket instead, linking into their own editor.
-    @pages = Page.where(type: "Page").ordered
-    @html_pages = HtmlPage.ordered
+    # One relation for the whole dashboard, last touched first. The tabs are a client-side
+    # filter over a single rendered list, so every tab has to share one sort — and what a
+    # writer coming back wants first is the thing he was last working on. Which tab a
+    # record answers to is its own business (Post#dashboard_bucket), and so is which
+    # editor it links to: the STI class picks the route helper.
+    #
+    # id breaks the tie because ties are the normal case, not the corner: the Ghost import
+    # wrote updated_at across hundreds of rows in one pass, so without it the order inside
+    # an imported batch is whatever SQLite feels like returning, and it can differ between
+    # two loads of the same page.
+    @records = Post.order(updated_at: :desc, id: :desc).includes(:tags)
   end
 
   def show

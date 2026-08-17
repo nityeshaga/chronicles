@@ -7,6 +7,8 @@ class HtmlPage < Page
   validates :raw_html, presence: true
   validate :looks_like_a_full_document
 
+  def dashboard_bucket = "html_page"
+
   private
     # A pasted fragment would publish as a broken white page — no doctype, no head,
     # none of the styling the document is supposed to carry — and nothing downstream

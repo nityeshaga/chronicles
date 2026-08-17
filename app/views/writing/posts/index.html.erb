@@ -1,5 +1,4 @@
 <% content_for :title, "Writing" %>
-<% total = @scheduled.size + @drafts.size + @published.size + @pages.size + @html_pages.size %>
 
 <div class="writing-dash" data-controller="dashboard">
   <header class="dash-head">
@@ -32,56 +31,40 @@
   </header>
 
   <nav class="dash-tabs" aria-label="Filter posts">
-    <button type="button" class="dash-tab is-active" role="tab" aria-selected="true"
-            data-status="all" data-dashboard-target="tab" data-action="dashboard#filter">
-      All <span class="dash-tab__count"><%= total %></span>
-    </button>
-    <button type="button" class="dash-tab" role="tab" aria-selected="false"
-            data-status="draft" data-dashboard-target="tab" data-action="dashboard#filter">
-      Drafts <span class="dash-tab__count"><%= @drafts.size %></span>
-    </button>
-    <button type="button" class="dash-tab" role="tab" aria-selected="false"
-            data-status="scheduled" data-dashboard-target="tab" data-action="dashboard#filter">
-      Scheduled <span class="dash-tab__count"><%= @scheduled.size %></span>
-    </button>
-    <button type="button" class="dash-tab" role="tab" aria-selected="false"
-            data-status="published" data-dashboard-target="tab" data-action="dashboard#filter">
-      Published <span class="dash-tab__count"><%= @published.size %></span>
-    </button>
-    <button type="button" class="dash-tab" role="tab" aria-selected="false"
-            data-status="page" data-dashboard-target="tab" data-action="dashboard#filter">
-      Pages <span class="dash-tab__count"><%= @pages.size %></span>
-    </button>
-    <button type="button" class="dash-tab" role="tab" aria-selected="false"
-            data-status="html_page" data-dashboard-target="tab" data-action="dashboard#filter">
-      HTML pages <span class="dash-tab__count"><%= @html_pages.size %></span>
-    </button>
+    <%# Toggle buttons, not ARIA tabs: there is one list under them all, and role="tab"
+        promises a tabpanel each and arrow-key navigation that don't exist here. Pressed
+        is the state, and it is the attribute — nothing shadows it in a class or in JS. %>
+    <% dashboard_tabs(@records).each_with_index do |tab, index| %>
+      <button type="button" class="dash-tab" aria-pressed="<%= index.zero? %>"
+              data-status="<%= tab[:bucket] %>" data-label="<%= tab[:label] %>"
+              data-sort="<%= tab[:sort] %>" data-direction="<%= tab[:direction] %>"
+              data-dashboard-target="tab" data-action="dashboard#select">
+        <%= tab[:label] %> <span class="dash-tab__count"><%= tab[:count] %></span>
+      </button>
+    <% end %>
   </nav>
 
-  <% if total.zero? %>
+  <% if @records.none? %>
     <div class="dash-blank">
       <p>Nothing written yet.</p>
       <%= link_to "Start your first post", new_writing_post_path, class: "w-btn w-btn--primary" %>
     </div>
   <% else %>
-    <ul class="dash-list">
-      <% @scheduled.each do |post| %>
-        <%= render "row", record: post, bucket: "scheduled", edit_path: edit_writing_post_path(post) %>
-      <% end %>
-      <% @drafts.each do |post| %>
-        <%= render "row", record: post, bucket: "draft", edit_path: edit_writing_post_path(post) %>
-      <% end %>
-      <% @published.each do |post| %>
-        <%= render "row", record: post, bucket: "published", edit_path: edit_writing_post_path(post) %>
-      <% end %>
-      <% @pages.each do |page| %>
-        <%= render "row", record: page, bucket: "page", edit_path: edit_writing_page_path(page) %>
-      <% end %>
-      <% @html_pages.each do |html_page| %>
-        <%= render "row", record: html_page, bucket: "html_page", edit_path: edit_writing_html_page_path(html_page) %>
-      <% end %>
+    <%# Filtering is finding, so it sits where the finding happens: full width above the
+        list it narrows, matching whatever is already on the row — title, URL or tag. %>
+    <div class="dash-filter">
+      <svg class="dash-filter__icon" viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><circle cx="7" cy="7" r="4.4" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="m10.4 10.4 3.6 3.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <%= search_field_tag :q, nil, class: "dash-filter__field", placeholder: "Filter by title, slug or tag",
+            autocomplete: "off", aria: { label: "Filter by title, slug or tag" },
+            data: { dashboard_target: "query", action: "input->dashboard#filter keydown.esc->dashboard#clear" } %>
+    </div>
+
+    <ul class="dash-list" data-dashboard-target="list">
+      <%= render partial: "row", collection: @records, as: :record %>
     </ul>
-    <p class="dash-empty" data-dashboard-target="empty" hidden>Nothing in this view.</p>
+    <%# Empty until the controller fills it: what it should say depends on which tab is
+        pressed and what is in the filter box, and neither is known here. %>
+    <p class="dash-empty" data-dashboard-target="empty" hidden></p>
   <% end %>
 
   <%# Account and whole-site actions, pinned to the bottom-left corner and out of the

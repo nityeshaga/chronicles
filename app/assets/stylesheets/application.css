@@ -763,9 +763,22 @@ a:hover { opacity: .8; }
   padding: .9rem 1.1rem; transition: color .15s ease, border-color .15s ease;
 }
 .dash-tab:hover { color: var(--w-ink); }
-.dash-tab.is-active { color: var(--w-ink); border-bottom-color: var(--w-accent); }
+.dash-tab[aria-pressed="true"] { color: var(--w-ink); border-bottom-color: var(--w-accent); }
 .dash-tab__count { font-size: 1.15rem; font-weight: 600; color: var(--w-faint); background: rgba(0, 0, 0, .05); border-radius: 20px; padding: .15rem .6rem; min-width: 2.1rem; text-align: center; }
-.dash-tab.is-active .dash-tab__count { color: var(--w-accent); background: rgba(180, 83, 9, .12); }
+.dash-tab[aria-pressed="true"] .dash-tab__count { color: var(--w-accent); background: rgba(180, 83, 9, .12); }
+
+/* Filter-as-you-type. Full width under the tabs, because the list it narrows is that
+   wide; borderless until focus so it reads as part of the list, not a form. */
+.dash-filter { position: relative; display: flex; align-items: center; }
+.dash-filter__icon { position: absolute; left: 1rem; color: var(--w-faint); pointer-events: none; }
+.dash-filter__field {
+  width: 100%; appearance: none; background: none; border: 0; border-radius: 0;
+  border-bottom: 1px solid transparent; padding: .9rem 1rem .9rem 3.3rem;
+  font-family: var(--font-sans); font-size: 1.45rem; color: var(--w-ink);
+}
+.dash-filter__field::placeholder { color: var(--w-faint); }
+.dash-filter__field:focus { outline: none; border-bottom-color: var(--w-line); }
+.dash-filter__field::-webkit-search-cancel-button { appearance: none; }
 
 .dash-list { list-style: none; padding: 0; margin: 0; }
 .dash-row { display: flex; align-items: center; justify-content: space-between; gap: 1.6rem; padding: 1.5rem .6rem; border-bottom: 1px solid var(--w-line); }
@@ -775,6 +788,11 @@ a:hover { opacity: .8; }
 .dash-row__title { font-family: var(--font-serif); font-size: 1.85rem; font-weight: 500; letter-spacing: -.005em; color: var(--w-ink); }
 .dash-row__link:hover .dash-row__title { color: var(--w-accent); }
 .dash-row__slug { font-size: 1.3rem; color: var(--w-faint); }
+/* The post row's second line — URL, then when it went (or goes) live, then the tags.
+   A full basis inside the link's existing wrap is what drops it onto its own line, so
+   the rows on Tags / Subscribers / Connect keep the single-line shape they share. */
+.dash-row__meta { flex-basis: 100%; display: flex; align-items: baseline; gap: .5rem .8rem; flex-wrap: wrap; }
+.dash-row__url, .dash-row__when { font-family: var(--font-mono); font-size: 1.2rem; color: var(--w-faint); }
 .dash-row__tags { display: inline-flex; gap: .5rem; flex-wrap: wrap; }
 .chip { font-size: 1.15rem; font-weight: 500; color: var(--w-muted); background: rgba(0, 0, 0, .055); border-radius: 20px; padding: .25rem .8rem; letter-spacing: .01em; }
 .dash-row__side { display: flex; align-items: center; gap: 1.4rem; flex-shrink: 0; }
@@ -1008,4 +1026,19 @@ a:hover { opacity: .8; }
   /* The corner gear floats over the page; give the dashboard a foot as tall as the
      control (button plus its inset) so it can never sit on the last row's actions. */
   .writing-dash { padding-bottom: 14rem; }
+}
+
+/* 600px, not the 640 above: it is the same threshold the dashboard controller uses to
+   decide whether focusing the filter box would pop a phone keyboard. Six wrapped tabs
+   cost three rows of a phone screen before the first post; one scrolling strip costs
+   one, and swiping it is the gesture the row of them already looks like. */
+@media (max-width: 600px) {
+  .dash-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .dash-tabs::-webkit-scrollbar { display: none; }
+  .dash-tab { flex: 0 0 auto; }
+
+  /* The pill and "Edited 16 Aug 2026" can't share 390px with a serif headline and a URL,
+     and the headline is what he is scanning for. Stack them: title, URL, then state. */
+  .writing-dash .dash-row { flex-direction: column; gap: .8rem; }
+  .writing-dash .dash-row__side { gap: 1rem; }
 }

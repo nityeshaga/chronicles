@@ -51,8 +51,9 @@ class WritingTest < ApplicationSystemTestCase
     assert published.reload.draft?
   end
 
-  test "the dashboard lists drafts before published posts" do
+  test "the dashboard puts the last thing touched first, whatever kind it is" do
     sign_in_as users(:nityesh)
+    posts(:published).touch
     visit writing_posts_url
 
     # Filter tabs replace the old stacked sections.
@@ -60,9 +61,11 @@ class WritingTest < ApplicationSystemTestCase
     assert_selector ".dash-tab", text: /Published/
     assert_link "A Draft Post"
 
-    # One list, drafts first (no scheduled posts in the fixtures).
+    # One list for every tab, so drafts and published interleave in true edit order: the
+    # post just touched leads, ahead of a draft that is otherwise newer.
     titles = all(".dash-row__title").map(&:text)
-    assert_operator titles.index("A Draft Post"), :<, titles.index("A Published Post")
+    assert_equal "A Published Post", titles.first
+    assert_operator titles.index("A Published Post"), :<, titles.index("A Draft Post")
   end
 
   test "reaching Connect from the dashboard and minting a token" do

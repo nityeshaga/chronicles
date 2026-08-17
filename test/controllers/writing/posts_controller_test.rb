@@ -62,6 +62,109 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
       edit_writing_html_page_path(posts(:html_page))
   end
 
+  # --- The dashboard: one list, last touched first. ---
+
+  # The tabs filter one rendered list, so the list has one sort — and what a writer
+  # coming back is looking for is the thing he was last working on, whatever kind it is.
+  test "the dashboard is one list ordered by what was touched last" do
+    sign_in_as users(:nityesh)
+    posts(:about).touch
+    get writing_posts_url
+
+    assert_equal Post.order(updated_at: :desc, id: :desc).map { |record| "/#{record.slug}/" },
+      css_select(".dash-row__url").map(&:text)
+    assert_equal "/about/", css_select(".dash-row__url").first.text
+  end
+
+  # Ties are the normal case, not the corner: the Ghost import stamped updated_at across
+  # every row it wrote in one pass. Flatten the stamps and the only thing left to order by
+  # is which row is newer — without the id tiebreaker SQLite hands them back oldest first.
+  test "posts sharing an updated_at come back newest first, not in whatever order the DB likes" do
+    sign_in_as users(:nityesh)
+    Post.update_all(updated_at: 1.year.ago)
+    get writing_posts_url
+
+    assert_equal Post.order(id: :desc).map { |record| "/#{record.slug}/" },
+      css_select(".dash-row__url").map(&:text)
+  end
+
+  # "Edited 23 Dec" reads identically in 2024 and 2025, and this stamp is the sort axis.
+  test "every row prints the year it was edited and stamps the sort keys it is sorted by" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+
+    Post.find_each do |record|
+      assert_select ".dash-row[data-edited=?] .dash-row__date", record.updated_at.utc.iso8601,
+        text: "Edited #{record.updated_at.strftime("%-d %b %Y")}"
+    end
+  end
+
+  # The go-live time is the Scheduled tab's sort axis, so the client reads it off the row
+  # rather than parsing the sentence next to it.
+  test "a scheduled row carries its go-live time as a sort key and says it in the app's zone" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+
+    scheduled = posts(:scheduled)
+    assert_select ".dash-row[data-status=scheduled][data-goes-live=?]", scheduled.published_at.utc.iso8601
+    assert_select ".dash-row__when",
+      text: "· Goes live #{scheduled.published_at.strftime("%-d %b %Y, %-l:%M %p %Z")}"
+    assert_select ".dash-row[data-status=draft][data-goes-live=?]", "", true
+  end
+
+  test "a published row shows its URL and the date it went live" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+
+    published = posts(:published)
+    assert_select ".dash-row[data-status=published] .dash-row__url", text: "/#{published.slug}/"
+    assert_select ".dash-row__when", text: "· Published #{published.published_at.strftime("%-d %b %Y")}"
+  end
+
+  # What the writer types is a title, a URL fragment or a tag; the row has to answer to
+  # all three, lowercased, because the filter never touches the server.
+  test "each row carries its title, slug and tag names for the filter to match" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+
+    search = css_select(".dash-row[data-status=published]").first["data-search"]
+    assert_includes search, "a published post"
+    assert_includes search, "a-published-post"
+    assert_includes search, "chronicles"
+  end
+
+  test "the filter box names what it matches" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+
+    assert_select ".dash-filter input[type=search][placeholder=?]", "Filter by title, slug or tag"
+  end
+
+  # The axis a tab reads down rides on the tab, so the JS sorts what it is told to and
+  # never has to know that "scheduled" is the one that reads forward in time.
+  test "each tab carries the axis it sorts by, and Scheduled is the one that differs" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+
+    assert_select ".dash-tab[data-status=all][data-sort=edited][data-direction='-1'][aria-pressed=true]"
+    assert_select ".dash-tab[data-status=published][data-sort=edited][data-direction='-1']"
+    assert_select ".dash-tab[data-status=scheduled][data-sort='goes-live'][data-direction='1']"
+    assert_select ".dash-tab[aria-pressed=true]", count: 1
+    assert_select ".dash-tab[role=tab]", count: 0
+  end
+
+  # Counts describe the buckets, so they are a tally of the one list on screen.
+  test "tab counts tally the rendered list" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+
+    assert_select ".dash-tab[data-status=all] .dash-tab__count", text: Post.count.to_s
+    Post.all.group_by(&:dashboard_bucket).each do |bucket, records|
+      assert_select ".dash-tab[data-status=?] .dash-tab__count", bucket, text: records.size.to_s
+      assert_select ".dash-row[data-status=?]", bucket, count: records.size
+    end
+  end
+
   test "creates a post when signed in" do
     sign_in_as users(:nityesh)
     assert_difference -> { Post.articles.count }, 1 do
