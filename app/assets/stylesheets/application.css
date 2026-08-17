@@ -780,6 +780,11 @@ a:hover { opacity: .8; }
 .dash-row__side { display: flex; align-items: center; gap: 1.4rem; flex-shrink: 0; }
 .dash-row__date { font-size: 1.3rem; color: var(--w-faint); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
+/* Tags: the row is one edit target, so hovering the Edit button lights the name too. */
+.dash-list--tags .dash-row:hover .dash-row__title { color: var(--w-accent); }
+
+.dash-note { margin-top: 1.6rem; font-size: 1.35rem; color: var(--w-faint); }
+
 .dash-empty, .dash-blank { text-align: center; color: var(--w-muted); padding: 6rem 2rem; }
 .dash-blank { display: flex; flex-direction: column; align-items: center; gap: 1.8rem; }
 .dash-blank p { font-size: 1.8rem; font-family: var(--font-serif); }

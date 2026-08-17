@@ -17,7 +17,10 @@
   <% if @tags.empty? %>
     <div class="dash-blank"><p>No tags yet. They appear here once a post is filed under one.</p></div>
   <% else %>
-    <ul class="dash-list">
+    <%# The whole row has always been a link to the edit page; nothing said so. The Edit
+        button is the label the row was missing — and the row hover lights the name from
+        anywhere on it, so the button and the row read as one target. %>
+    <ul class="dash-list dash-list--tags">
       <% @tags.each do |tag| %>
         <li class="dash-row">
           <%= link_to edit_writing_tag_path(tag), class: "dash-row__link" do %>
@@ -26,9 +29,11 @@
           <% end %>
           <span class="dash-row__side">
             <span class="dash-row__date"><%= pluralize tag.posts.count, "post" %></span>
+            <%= link_to "Edit", edit_writing_tag_path(tag), class: "w-btn w-btn--ghost w-btn--sm" %>
           </span>
         </li>
       <% end %>
     </ul>
+    <p class="dash-note">New tags are made from a post's Settings, so a tag never exists without a post.</p>
   <% end %>
 </div>

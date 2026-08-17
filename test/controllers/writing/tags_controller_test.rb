@@ -13,6 +13,17 @@ class Writing::TagsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".dash-row__title", text: "chronicles"
   end
 
+  # The row has always linked to the edit page; nothing on it said so. One Edit control per
+  # row says it, and the note below the list answers "where do tags come from" — there is
+  # no New tag button because a tag with no posts is an empty public archive page.
+  test "index gives every row an Edit control and says where tags come from" do
+    sign_in_as users(:nityesh)
+    get writing_tags_url
+    assert_select ".dash-row__side a[href=?]", edit_writing_tag_path(tags(:chronicles)), text: "Edit"
+    assert_select ".dash-row__side a", text: "Edit", count: Tag.count
+    assert_select ".dash-note", text: /New tags are made from a post's Settings/
+  end
+
   test "editing a tag's name and description without touching the slug" do
     sign_in_as users(:nityesh)
     tag = tags(:chronicles)
