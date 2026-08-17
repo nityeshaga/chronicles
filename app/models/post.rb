@@ -150,13 +150,14 @@ class Post < ApplicationRecord
 
     # Slugs are unique, but titles aren't — two "Untitled" autosave drafts (or two posts
     # honestly sharing a name) must both persist, so suffix a counter until the slug is free.
+    # Free means what it means to the editor's live check: Slug says, for both of us.
     def generate_slug
       return if slug.present?
 
       base = title.to_s.parameterize
       candidate = base
       n = 2
-      while Post.exists?(slug: candidate)
+      while Slug.new(candidate).taken?
         candidate = "#{base}-#{n}"
         n += 1
       end

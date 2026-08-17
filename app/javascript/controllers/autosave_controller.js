@@ -83,7 +83,8 @@ export default class extends Controller {
   }
 
   // First real keystroke on a new post: POST once to create the draft. The server answers
-  // 201 with the edit URL in Location; we adopt it so every later save is a PATCH in place.
+  // 201 with the edit URL in Location (adopted so every later save is a PATCH in place)
+  // and the record's id in X-Post-Id (announced to the rest of the form).
   async #createDraft() {
     this.#creating = true
     this.#setStatus("saving")
@@ -95,6 +96,10 @@ export default class extends Controller {
       })
       if (response.status === 201) {
         this.#adoptPersistedUrl(response.headers.get("Location"))
+        // The draft now exists, so anything on this form that has to name the record can
+        // stop guessing: announce the id the server just handed back (the slug check
+        // listens, to stop counting the draft's own slug against it).
+        this.dispatch("minted", { detail: { id: response.headers.get("X-Post-Id") } })
         this.#setStatus("saved")
       } else {
         this.#setStatus(this.#outcome(response))

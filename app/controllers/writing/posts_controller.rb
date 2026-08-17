@@ -36,9 +36,11 @@ class Writing::PostsController < Writing::BaseController
   # silent fetch (an X-Autosave header) the moment there's real content, so the draft
   # exists server-side and every later keystroke autosaves — the author can lose the
   # tab and keep their work. It answers 201 with the created resource in Location (the
-  # PATCH target; the JS adopts it verbatim). Guarded so blank drafts can't proliferate:
-  # an autosave create with neither title nor body is refused. A body-first draft (no
-  # title yet) persists anyway — the model fills an "Untitled" placeholder on drafts.
+  # PATCH target; the JS adopts it verbatim) and the record's id in X-Post-Id — what the
+  # rest of the editor needs to name a record that now exists, since a slug-shaped
+  # identity goes stale the next time the slug changes. Guarded so blank drafts can't
+  # proliferate: an autosave create with neither title nor body is refused. A body-first
+  # draft (no title yet) persists anyway — the model fills an "Untitled" placeholder.
   def create
     @post = Post.new(post_params)
     return head :unprocessable_entity if autosave_request? && !draft_content?
@@ -46,7 +48,7 @@ class Writing::PostsController < Writing::BaseController
     if @post.save
       adopt_feature_image_upload(@post)
       if autosave_request?
-        head :created, location: writing_post_url(@post)
+        head :created, location: writing_post_url(@post), x_post_id: @post.id
       else
         redirect_to edit_writing_post_url(@post)
       end

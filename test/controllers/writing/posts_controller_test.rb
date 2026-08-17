@@ -82,6 +82,8 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_response :created
     # Location is the created resource — the exact URL the JS will PATCH, adopted verbatim.
     assert_equal writing_post_url(Post.last), response.location
+    # The id rides alongside it: identity the editor can keep, unlike a slug.
+    assert_equal Post.last.id.to_s, response.headers["X-Post-Id"]
     assert_equal "Fresh Draft", Post.last.title
   end
 
