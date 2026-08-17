@@ -134,6 +134,15 @@ class Post < ApplicationRecord
   # have no newsletter route. Page overrides this to false.
   def newsletterable? = true
 
+  # Which tab of the writing dashboard this record answers to. An article splits by its
+  # own publish state; the page kinds are a bucket each whatever their state, because
+  # that is how the writer looks for them. Page and HtmlPage override.
+  def dashboard_bucket
+    return "scheduled" if scheduled?
+
+    published? ? "published" : "draft"
+  end
+
   private
     # Ghost's fallback: strip the HTML to plain text, collapse whitespace, and cut
     # at a word boundary near 300 chars (no ellipsis), matching its excerpt helper.

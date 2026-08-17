@@ -1,5 +1,10 @@
 <% content_for :title, "Writing" %>
-<% total = @scheduled.size + @drafts.size + @published.size + @pages.size + @html_pages.size %>
+<%# The tab counts are a tally of the one list on screen, never a second query that could
+    quietly disagree with it. They describe the buckets, so the filter never changes them. %>
+<% counts = @records.map(&:dashboard_bucket).tally %>
+<% tabs = [ [ "all", "All", @records.size ] ] +
+     { "draft" => "Drafts", "scheduled" => "Scheduled", "published" => "Published",
+       "page" => "Pages", "html_page" => "HTML pages" }.map { |bucket, label| [ bucket, label, counts[bucket].to_i ] } %>
 
 <div class="writing-dash" data-controller="dashboard">
   <header class="dash-head">
@@ -32,54 +37,23 @@
   </header>
 
   <nav class="dash-tabs" aria-label="Filter posts">
-    <button type="button" class="dash-tab is-active" role="tab" aria-selected="true"
-            data-status="all" data-dashboard-target="tab" data-action="dashboard#filter">
-      All <span class="dash-tab__count"><%= total %></span>
-    </button>
-    <button type="button" class="dash-tab" role="tab" aria-selected="false"
-            data-status="draft" data-dashboard-target="tab" data-action="dashboard#filter">
-      Drafts <span class="dash-tab__count"><%= @drafts.size %></span>
-    </button>
-    <button type="button" class="dash-tab" role="tab" aria-selected="false"
-            data-status="scheduled" data-dashboard-target="tab" data-action="dashboard#filter">
-      Scheduled <span class="dash-tab__count"><%= @scheduled.size %></span>
-    </button>
-    <button type="button" class="dash-tab" role="tab" aria-selected="false"
-            data-status="published" data-dashboard-target="tab" data-action="dashboard#filter">
-      Published <span class="dash-tab__count"><%= @published.size %></span>
-    </button>
-    <button type="button" class="dash-tab" role="tab" aria-selected="false"
-            data-status="page" data-dashboard-target="tab" data-action="dashboard#filter">
-      Pages <span class="dash-tab__count"><%= @pages.size %></span>
-    </button>
-    <button type="button" class="dash-tab" role="tab" aria-selected="false"
-            data-status="html_page" data-dashboard-target="tab" data-action="dashboard#filter">
-      HTML pages <span class="dash-tab__count"><%= @html_pages.size %></span>
-    </button>
+    <% tabs.each_with_index do |(bucket, label, count), index| %>
+      <button type="button" class="dash-tab<%= " is-active" if index.zero? %>" role="tab"
+              aria-selected="<%= index.zero? %>" data-status="<%= bucket %>"
+              data-dashboard-target="tab" data-action="dashboard#select">
+        <%= label %> <span class="dash-tab__count"><%= count %></span>
+      </button>
+    <% end %>
   </nav>
 
-  <% if total.zero? %>
+  <% if @records.none? %>
     <div class="dash-blank">
       <p>Nothing written yet.</p>
       <%= link_to "Start your first post", new_writing_post_path, class: "w-btn w-btn--primary" %>
     </div>
   <% else %>
-    <ul class="dash-list">
-      <% @scheduled.each do |post| %>
-        <%= render "row", record: post, bucket: "scheduled", edit_path: edit_writing_post_path(post) %>
-      <% end %>
-      <% @drafts.each do |post| %>
-        <%= render "row", record: post, bucket: "draft", edit_path: edit_writing_post_path(post) %>
-      <% end %>
-      <% @published.each do |post| %>
-        <%= render "row", record: post, bucket: "published", edit_path: edit_writing_post_path(post) %>
-      <% end %>
-      <% @pages.each do |page| %>
-        <%= render "row", record: page, bucket: "page", edit_path: edit_writing_page_path(page) %>
-      <% end %>
-      <% @html_pages.each do |html_page| %>
-        <%= render "row", record: html_page, bucket: "html_page", edit_path: edit_writing_html_page_path(html_page) %>
-      <% end %>
+    <ul class="dash-list" data-dashboard-target="list">
+      <%= render partial: "row", collection: @records, as: :record %>
     </ul>
     <p class="dash-empty" data-dashboard-target="empty" hidden>Nothing in this view.</p>
   <% end %>

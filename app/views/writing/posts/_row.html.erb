@@ -1,8 +1,11 @@
-<%# One row of the writing dashboard. `bucket` drives the filter tabs — posts fall into
-    draft/scheduled/published, pages sit in their own bucket — while the status pill and
-    date read the record's real state, so a published page still reads as published. %>
-<li class="dash-row" data-status="<%= bucket %>" data-dashboard-target="row">
-  <%= link_to edit_path, class: "dash-row__link" do %>
+<%# One row of the writing dashboard. The data-* stamps are what the dashboard controller
+    sorts and buckets on, so it never has to parse the text it is showing: data-status is
+    the tab, data-edited and data-goes-live are the two sort axes. The pill and the date
+    read the record's own state, so a published page still reads as published. %>
+<li class="dash-row" data-status="<%= record.dashboard_bucket %>" data-dashboard-target="row"
+    data-edited="<%= record.updated_at.iso8601 %>"
+    data-goes-live="<%= record.published_at.iso8601 if record.scheduled? %>">
+  <%= link_to edit_polymorphic_path([ :writing, record ]), class: "dash-row__link" do %>
     <span class="dash-row__title"><%= record.title.presence || "Untitled" %></span>
     <% if record.tags.any? %>
       <span class="dash-row__tags">
@@ -14,13 +17,13 @@
   <span class="dash-row__side">
     <% if record.scheduled? %>
       <span class="status status--scheduled">Scheduled</span>
-      <time class="dash-row__date"><%= record.published_at.strftime("%-d %b %Y") %></time>
     <% elsif record.published? %>
       <span class="status status--published">Published</span>
-      <time class="dash-row__date"><%= record.published_at&.strftime("%-d %b %Y") %></time>
     <% else %>
       <span class="status status--draft">Draft</span>
-      <time class="dash-row__date">Edited <%= record.updated_at.strftime("%-d %b") %></time>
     <% end %>
+    <%# The year is always here: "Edited 23 Dec" reads the same in 2024 and 2025, and the
+        list is sorted by exactly this stamp, so it has to be legible on its own. %>
+    <time class="dash-row__date" datetime="<%= record.updated_at.iso8601 %>">Edited <%= record.updated_at.strftime("%-d %b %Y") %></time>
   </span>
 </li>

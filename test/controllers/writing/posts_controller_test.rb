@@ -62,6 +62,54 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
       edit_writing_html_page_path(posts(:html_page))
   end
 
+  # --- The dashboard: one list, last touched first. ---
+
+  # The tabs filter one rendered list, so the list has one sort — and what a writer
+  # coming back is looking for is the thing he was last working on, whatever kind it is.
+  test "the dashboard is one list ordered by what was touched last" do
+    sign_in_as users(:nityesh)
+    posts(:about).touch
+    get writing_posts_url
+
+    assert_equal Post.order(updated_at: :desc).map(&:title),
+      css_select(".dash-row__title").map(&:text)
+    assert_equal "About", css_select(".dash-row__title").first.text
+  end
+
+  # "Edited 23 Dec" reads identically in 2024 and 2025, and this stamp is the sort axis.
+  test "every row prints the year it was edited and stamps the sort keys it is sorted by" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+
+    Post.find_each do |record|
+      assert_select ".dash-row[data-edited=?] .dash-row__date", record.updated_at.iso8601,
+        text: "Edited #{record.updated_at.strftime("%-d %b %Y")}"
+    end
+  end
+
+  # The go-live time is the Scheduled tab's sort axis, so the client reads it off the row
+  # rather than parsing the sentence next to it.
+  test "a scheduled row carries its go-live time as a sort key" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+
+    scheduled = posts(:scheduled)
+    assert_select ".dash-row[data-status=scheduled][data-goes-live=?]", scheduled.published_at.iso8601
+    assert_select ".dash-row[data-status=draft][data-goes-live=?]", "", true
+  end
+
+  # Counts describe the buckets, so they are a tally of the one list on screen.
+  test "tab counts tally the rendered list" do
+    sign_in_as users(:nityesh)
+    get writing_posts_url
+
+    assert_select ".dash-tab[data-status=all] .dash-tab__count", text: Post.count.to_s
+    Post.all.group_by(&:dashboard_bucket).each do |bucket, records|
+      assert_select ".dash-tab[data-status=?] .dash-tab__count", bucket, text: records.size.to_s
+      assert_select ".dash-row[data-status=?]", bucket, count: records.size
+    end
+  end
+
   test "creates a post when signed in" do
     sign_in_as users(:nityesh)
     assert_difference -> { Post.articles.count }, 1 do
