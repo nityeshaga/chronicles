@@ -1,6 +1,10 @@
 require "test_helper"
 
 class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
+  # The zone strings and stamp shape are the helper's, not this deployment's: a fork in
+  # another zone should stay green on an app that is behaving.
+  include Writing::PublishingHelper
+
   test "index requires authentication" do
     get writing_posts_url
     assert_redirected_to new_session_url
@@ -108,7 +112,7 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     scheduled = posts(:scheduled)
     assert_select ".dash-row[data-status=scheduled][data-goes-live=?]", scheduled.published_at.utc.iso8601
     assert_select ".dash-row__when",
-      text: "· Goes live #{scheduled.published_at.strftime("%-d %b %Y, %-l:%M %p %Z")}"
+      text: "· Goes live #{zoned_stamp(scheduled.published_at)}"
     assert_select ".dash-row[data-status=draft][data-goes-live=?]", "", true
   end
 
@@ -315,7 +319,8 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     draft = posts(:draft)
     post writing_post_publishing_url(draft)
     assert draft.reload.published?
-    assert_redirected_to edit_writing_post_url(draft, publishing: "open")
+    assert_redirected_to edit_writing_post_url(draft)
+    assert_equal "open", flash[:publishing]
   end
 
   test "publishing with a future time schedules the post" do
@@ -324,7 +329,7 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     post writing_post_publishing_url(draft), params: { published_at: 2.days.from_now.iso8601 }
     assert draft.reload.draft?
     assert draft.scheduled?
-    assert_redirected_to edit_writing_post_url(draft, publishing: "open")
+    assert_redirected_to edit_writing_post_url(draft)
   end
 
   # The mistake this exists for: typing this morning's time this afternoon. Publishing on
@@ -337,11 +342,25 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
 
     assert draft.reload.draft?
     assert_nil draft.published_at
-    assert_redirected_to edit_writing_post_url(draft, publishing: "open")
+    assert_redirected_to edit_writing_post_url(draft)
     assert_equal "That time has already passed — pick a later one, or clear it to publish now.", flash[:publish_error]
 
     follow_redirect!
-    assert_select ".publish-note--refused", text: /That time has already passed/
+    assert_select ".publish-popover .publish-note--refused", text: /That time has already passed/
+    assert_select ".editor-shell[data-editor-open-publish-value=true]"
+  end
+
+  # A refusal can land on a post that is already live or already scheduled — the popover
+  # shows a state, not a form, and the reason has to survive that. One line, one place,
+  # whichever of the three the post is in.
+  test "a refusal reaches the popover on a scheduled post too" do
+    sign_in_as users(:nityesh)
+    scheduled = posts(:scheduled)
+
+    post writing_post_publishing_url(scheduled), params: { published_at: 1.hour.ago.iso8601 }
+    follow_redirect!
+    assert_select ".publish-popover .status--scheduled"
+    assert_select ".publish-popover .publish-note--refused", text: /That time has already passed/
   end
 
   test "unpublishing sends a post back to draft" do
@@ -349,7 +368,7 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     published = posts(:published)
     delete writing_post_publishing_url(published)
     assert published.reload.draft?
-    assert_redirected_to edit_writing_post_url(published, publishing: "open")
+    assert_redirected_to edit_writing_post_url(published)
   end
 
   # The field names its zone and refuses the past before the round trip, and the button
@@ -359,20 +378,20 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:nityesh)
     get edit_writing_post_url(posts(:draft))
 
-    assert_select "form.schedule-form[data-schedule-empty-value=Publish][data-schedule-filled-value=Schedule]"
-    assert_select "label[for=published_at]", text: "Publish time (IST, UTC+5:30) — leave blank to go live now"
-    assert_select "input[type=datetime-local][name=published_at][min=?]", Time.zone.now.strftime("%Y-%m-%dT%H:%M")
-    assert_select "input[type=submit][data-schedule-target=submit][value=Publish]"
+    assert_select "form.schedule-form[data-label-swap-empty-value=Publish][data-label-swap-filled-value=Schedule]"
+    assert_select "label[for=published_at]", text: "Publish time (#{publish_zone_label}) — leave blank to go live now"
+    assert_select "input[type=datetime-local][name=published_at][min=?]", publish_time_floor
+    assert_select "input[type=submit][data-label-swap-target=submit][value=Publish]"
   end
 
   # A time with no zone on it is a guess the writer has to make at the moment it matters.
   test "the popover stamps every publish time with the zone" do
     sign_in_as users(:nityesh)
     get edit_writing_post_url(posts(:scheduled))
-    assert_select ".publish-state", text: /Goes live .+ IST\./
+    assert_select ".publish-state", text: "Scheduled Goes live #{zoned_stamp(posts(:scheduled).published_at)}."
 
     get edit_writing_post_url(posts(:published))
-    assert_select ".publish-state", text: /Published .+ IST\./
+    assert_select ".publish-state", text: "Live Published #{zoned_stamp(posts(:published).published_at)}."
   end
 
   test "destroy removes the post" do

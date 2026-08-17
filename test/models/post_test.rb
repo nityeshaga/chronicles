@@ -83,6 +83,16 @@ class PostTest < ActiveSupport::TestCase
     assert_nil post.published_at
   end
 
+  # The second door onto the same rule: #publish answers false, but publish_at is public
+  # and a past time there would enqueue a job whose wait_until has already elapsed — the
+  # queue would fire it at once and "schedule" would silently mean "publish now".
+  test "publish_at raises rather than schedule a time that has already passed" do
+    assert_raises(ArgumentError) { posts(:draft).publish_at(1.hour.ago) }
+    assert_no_enqueued_jobs only: Post::PublishJob
+    assert posts(:draft).reload.draft?
+    assert_nil posts(:draft).published_at
+  end
+
   # No time at all still means now — the scheduled job calls back through exactly this
   # door once its own time is in the past.
   test "publish with no time given still publishes now" do

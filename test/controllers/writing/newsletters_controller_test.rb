@@ -13,7 +13,7 @@ class Writing::NewslettersControllerTest < ActionDispatch::IntegrationTest
     assert_enqueued_with(job: Post::NewsletterJob) do
       post writing_post_newsletter_url(posts(:published))
     end
-    assert_redirected_to edit_writing_post_url(posts(:published), publishing: "open")
+    assert_redirected_to edit_writing_post_url(posts(:published))
     assert posts(:published).reload.newsletter_sent?
   end
 
@@ -25,8 +25,14 @@ class Writing::NewslettersControllerTest < ActionDispatch::IntegrationTest
     assert_no_enqueued_jobs do
       post writing_post_newsletter_url(posts(:published))
     end
-    assert_redirected_to edit_writing_post_url(posts(:published), publishing: "open")
+    assert_redirected_to edit_writing_post_url(posts(:published))
     assert_nil posts(:published).reload.newsletter_sent_at
+
+    # And the refusal is readable: with the backdrop up, the popover is the only thing
+    # the writer can see, so it goes there rather than behind it.
+    follow_redirect!
+    assert_select ".publish-popover .publish-note--refused", text: /can’t be sent/
+    assert_select "ul.errors", count: 0
   end
 
   test "a draft is refused" do
@@ -34,6 +40,6 @@ class Writing::NewslettersControllerTest < ActionDispatch::IntegrationTest
     assert_no_enqueued_jobs do
       post writing_post_newsletter_url(posts(:draft))
     end
-    assert_redirected_to edit_writing_post_url(posts(:draft), publishing: "open")
+    assert_redirected_to edit_writing_post_url(posts(:draft))
   end
 end

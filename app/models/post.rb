@@ -88,7 +88,13 @@ class Post < ApplicationRecord
     update!(status: :published, published_at: Time.current)
   end
 
+  # The scheduling door, and it is a door: a time already gone would enqueue a job whose
+  # wait_until has elapsed, so the queue would fire it at once and "schedule for last
+  # Tuesday" would mean "publish immediately". #publish answers false on the same
+  # condition; here it raises, because nothing but a mistake calls this directly.
   def publish_at(time)
+    raise ArgumentError, "publish_at needs a future time — #{time} has already passed" unless time.future?
+
     # Floor to a whole second so the stored stamp and the time the job carries
     # round-trip identically. SQLite truncates published_at to microseconds while
     # the job serializer keeps nanoseconds, so a sub-second stamp (what Time.now
@@ -169,11 +175,6 @@ class Post < ApplicationRecord
   # Only blog articles mail the list; Pages/HtmlPages share the publish popover but
   # have no newsletter route. Page overrides this to false.
   def newsletterable? = true
-  # The post editor keeps publishing in a popover the writer opens, so an action that
-  # changes publish state lands back with ?publishing=open on it. The HTML-page editor
-  # has no popover — its publishing panel is always on screen — so HtmlPage says no and
-  # the redirect stays a plain address rather than one that promises a panel to open.
-  def publish_popover? = true
   # Tags are the era shelves the blog feed is built from, so only articles carry them.
   def taggable? = true
 

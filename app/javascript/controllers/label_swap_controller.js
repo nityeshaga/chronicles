@@ -10,10 +10,10 @@ export default class extends Controller {
   // On connect too: a page restored from the Turbo cache or the browser's back button
   // hands back a field the server rendered the label for while it was still empty.
   connect() {
-    this.change()
+    this.swap()
   }
 
-  change() {
+  swap() {
     this.submitTarget.value = this.fieldTarget.value ? this.filledValue : this.emptyValue
   }
 }

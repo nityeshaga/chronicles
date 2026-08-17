@@ -2,17 +2,15 @@ class Writing::PublishingsController < Writing::BaseController
   before_action :set_post
 
   # The model answers false and says why, so a refusal comes back as the editor with the
-  # reason sitting under the field that caused it rather than a silent bounce off the
-  # same button. It travels as its own flash: the publish popover renders it, and the
-  # form's general problem list must not print it a second time.
+  # reason inside the popover rather than a silent bounce off the same button.
   def create
     flash[:publish_error] = @post.errors.full_messages.to_sentence unless @post.publish(at: params[:published_at])
-    redirect_to editor_url
+    redirect_to_editor
   end
 
   def destroy
     @post.unpublish
-    redirect_to editor_url
+    redirect_to_editor
   end
 
   private
@@ -25,8 +23,10 @@ class Writing::PublishingsController < Writing::BaseController
 
     # Back to the editor with the publish popover already open. The writer asked a
     # publishing question a second ago; the answer — LIVE, SCHEDULED, or the refusal —
-    # belongs on screen, not behind a click he has to know to make.
-    def editor_url
-      edit_polymorphic_url([ :writing, @post ], publishing: ("open" if @post.publish_popover?))
+    # belongs on screen, not behind a click he has to know to make. The HTML-page editor
+    # has no popover to open and ignores the flash.
+    def redirect_to_editor
+      flash[:publishing] = "open"
+      redirect_to edit_polymorphic_url([ :writing, @post ])
     end
 end

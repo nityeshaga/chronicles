@@ -13,14 +13,23 @@ export default class extends Controller {
   static targets = ["settings", "publish", "backdrop", "titleNote", "publishSubmit"]
   static classes = ["open"]
   static outlets = ["autosave"]
+  static values = { openPublish: Boolean }
 
-  // Publishing lands back here with ?publishing=open on the address: the writer asked a
-  // publishing question a moment ago, so the answer — LIVE, SCHEDULED, or the refusal —
-  // is already showing instead of waiting behind a click he has to know to make.
+  // The server decides this one: an arrival that came from a publishing action says so,
+  // and the answer — LIVE, SCHEDULED, or the refusal — is showing before the writer has
+  // to know there is a click that would show it. It rides a one-shot flash, so a Back or
+  // a Turbo restore lands on a page that no longer asks for it.
   connect() {
-    if (this.hasPublishTarget && new URLSearchParams(window.location.search).get("publishing") === "open") {
-      this.#show(this.publishTarget)
-    }
+    if (this.openPublishValue && this.hasPublishTarget) this.#show(this.publishTarget)
+  }
+
+  // Turbo caches the DOM as it stands and repaints that on a restore visit, so a panel
+  // left open would come back open on a Back the writer meant as "leave" — and the
+  // server's one-shot instruction would still be sitting in the snapshot to reopen it a
+  // second time. Both are transient state; neither belongs in the cache.
+  beforeCache() {
+    this.openPublishValue = false
+    this.close()
   }
 
   toggleSettings(event) {

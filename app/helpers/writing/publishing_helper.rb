@@ -5,10 +5,10 @@ module Writing::PublishingHelper
     "#{Time.zone.now.strftime("%Z")}, UTC#{Time.zone.formatted_offset.sub(/\A([+-])0/, '\1')}"
   end
 
-  # Every publish time the writer reads — in the popover and on the dashboard row —
-  # carries its zone, because a schedule without one is a guess he has to make at the
+  # Every time the writer reads on the publishing surfaces — the popover, the dashboard
+  # row — carries its zone, because a stamp without one is a guess he has to make at the
   # only moment it matters.
-  def publish_stamp(time)
+  def zoned_stamp(time)
     time.strftime("%-d %b %Y, %-l:%M %p %Z")
   end
 
@@ -18,4 +18,10 @@ module Writing::PublishingHelper
   def publish_time_floor
     Time.zone.now.strftime("%Y-%m-%dT%H:%M")
   end
+
+  # Whether this editor was arrived at from a publishing action, and so should open with
+  # the popover already up. A one-shot flash rather than a query param: the answer is
+  # true of this arrival only, and a param would make every Back and Turbo restore
+  # reopen a panel the writer already dismissed.
+  def publishing_open? = flash[:publishing] == "open"
 end
