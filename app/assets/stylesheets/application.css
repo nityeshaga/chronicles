@@ -786,7 +786,9 @@ a:hover { opacity: .8; }
 .dash-row:hover { background: rgba(0, 0, 0, .018); }
 .dash-row__link { display: flex; align-items: baseline; gap: 1rem 1.4rem; flex-wrap: wrap; flex: 1; min-width: 0; }
 .dash-row__title { font-family: var(--font-serif); font-size: 1.85rem; font-weight: 500; letter-spacing: -.005em; color: var(--w-ink); }
-.dash-row__link:hover .dash-row__title { color: var(--w-accent); }
+/* On tags the whole row is one edit target, so the Edit button lights the name too. */
+.dash-row__link:hover .dash-row__title,
+.dash-list--tags .dash-row:hover .dash-row__title { color: var(--w-accent); }
 .dash-row__slug { font-size: 1.3rem; color: var(--w-faint); }
 /* The post row's second line — URL, then when it went (or goes) live, then the tags.
    A full basis inside the link's existing wrap is what drops it onto its own line, so
@@ -797,6 +799,8 @@ a:hover { opacity: .8; }
 .chip { font-size: 1.15rem; font-weight: 500; color: var(--w-muted); background: rgba(0, 0, 0, .055); border-radius: 20px; padding: .25rem .8rem; letter-spacing: .01em; }
 .dash-row__side { display: flex; align-items: center; gap: 1.4rem; flex-shrink: 0; }
 .dash-row__date { font-size: 1.3rem; color: var(--w-faint); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.dash-note { margin-top: 1.6rem; font-size: 1.35rem; color: var(--w-faint); }
 
 .dash-empty, .dash-blank { text-align: center; color: var(--w-muted); padding: 6rem 2rem; }
 .dash-blank { display: flex; flex-direction: column; align-items: center; gap: 1.8rem; }
@@ -918,6 +922,14 @@ a:hover { opacity: .8; }
   --lexxy-color-selected: rgba(180, 83, 9, .13);
   --lexxy-editor-padding: 0;
   border: 0; border-radius: 0; background: none;
+}
+
+/* Lexxy draws the dropdown caret at .3ch square, which at our toolbar size renders as a
+   dot — the text-style and highlight buttons stop reading as menus. One step above the
+   gem's own rule, so it wins on specificity rather than on load order. No !important. */
+.editor-canvas__body lexxy-editor .lexxy-editor__toolbar-button--chevron:after {
+  /* The caret is a rotated corner, so growing it drops its visual centre — pull it back. */
+  block-size: .65ch; inline-size: .65ch; margin-block-start: -.2ch;
 }
 
 /* ---- Overlays: shared scrim, settings slide-over, publish popover ---- */

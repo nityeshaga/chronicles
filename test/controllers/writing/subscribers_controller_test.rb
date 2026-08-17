@@ -6,6 +6,16 @@ class Writing::SubscribersControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_url
   end
 
+  # The empty state describes the populated view, so "what will this look like" is answered
+  # before the first subscriber arrives.
+  test "the empty state describes the list that will appear" do
+    Subscriber.delete_all
+    sign_in_as users(:nityesh)
+    get writing_subscribers_url
+    # The load-bearing half is the description of the list, not the whole sentence.
+    assert_select ".dash-blank p", text: /email and the date they joined, newest first/
+  end
+
   test "index lists subscribers newest-first when signed in" do
     sign_in_as users(:nityesh)
     get writing_subscribers_url

@@ -33,6 +33,18 @@ class PostNewsletterTest < ActiveSupport::TestCase
     end
   end
 
+  # The send is one-shot. An empty list must be a refusal, not a stamped no-op, or a
+  # stale tab burns the post's only send on nobody and records "mailed to 0".
+  test "a post with no subscribers can't be mailed, and keeps its send" do
+    Subscriber.delete_all
+    post = posts(:published)
+
+    assert_no_enqueued_jobs do
+      assert_not post.deliver_newsletter
+    end
+    assert_nil post.reload.newsletter_sent_at
+  end
+
   test "the fan-out job mails every subscriber once" do
     assert_enqueued_emails Subscriber.count do
       Post::NewsletterJob.perform_now(posts(:published))
