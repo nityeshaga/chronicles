@@ -907,6 +907,14 @@ a:hover { opacity: .8; }
   border: 0; border-radius: 0; background: none;
 }
 
+/* Lexxy draws the dropdown caret at .3ch square, which at our toolbar size renders as a
+   dot — the text-style and highlight buttons stop reading as menus. Same specificity as
+   the gem's own rule (two classes + a pseudo-element) and later in the cascade, since the
+   writing layout loads lexxy.css from :head before the app stylesheet. No !important. */
+.editor-canvas__body .lexxy-editor__toolbar-button--chevron:after {
+  block-size: .65ch; inline-size: .65ch; margin-block-start: -.2ch;
+}
+
 /* ---- Overlays: shared scrim, settings slide-over, publish popover ---- */
 .editor-shell__scrim {
   position: fixed; inset: 0; z-index: 40; background: rgba(20, 18, 14, .3);
