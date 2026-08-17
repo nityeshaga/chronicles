@@ -13,7 +13,12 @@ class Writing::PostsController < Writing::BaseController
     # writer coming back wants first is the thing he was last working on. Which tab a
     # record answers to is its own business (Post#dashboard_bucket), and so is which
     # editor it links to: the STI class picks the route helper.
-    @records = Post.order(updated_at: :desc).includes(:tags)
+    #
+    # id breaks the tie because ties are the normal case, not the corner: the Ghost import
+    # wrote updated_at across hundreds of rows in one pass, so without it the order inside
+    # an imported batch is whatever SQLite feels like returning, and it can differ between
+    # two loads of the same page.
+    @records = Post.order(updated_at: :desc, id: :desc).includes(:tags)
   end
 
   def show

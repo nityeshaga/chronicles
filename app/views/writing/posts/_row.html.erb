@@ -1,12 +1,14 @@
 <%# One row of the writing dashboard. The data-* stamps are what the dashboard controller
     filters and sorts on, so it never has to parse the text it is showing: data-status is
     the tab bucket, data-search is everything the filter box matches against, data-edited
-    and data-goes-live are the two sort axes. The pill and the dates read the record's own
-    state, so a published page still reads as published. %>
+    and data-goes-live are the two sort axes — stamped in UTC, because the client compares
+    them as strings and an offset would sort ahead of the instant it belongs to. The pill
+    and the dates read the record's own state, so a published page still reads as
+    published. %>
 <li class="dash-row" data-status="<%= record.dashboard_bucket %>" data-dashboard-target="row"
     data-search="<%= [ record.title, record.slug, *record.tags.map(&:name) ].join(" ").downcase %>"
-    data-edited="<%= record.updated_at.iso8601 %>"
-    data-goes-live="<%= record.published_at.iso8601 if record.scheduled? %>">
+    data-edited="<%= record.updated_at.utc.iso8601 %>"
+    data-goes-live="<%= record.published_at.utc.iso8601 if record.scheduled? %>">
   <%= link_to edit_polymorphic_path([ :writing, record ]), class: "dash-row__link" do %>
     <span class="dash-row__title"><%= record.title.presence || "Untitled" %></span>
     <span class="dash-row__meta">
@@ -30,6 +32,6 @@
     <% end %>
     <%# The year is always here: "Edited 23 Dec" reads the same in 2024 and 2025, and the
         list is sorted by exactly this stamp, so it has to be legible on its own. %>
-    <time class="dash-row__date" datetime="<%= record.updated_at.iso8601 %>">Edited <%= record.updated_at.strftime("%-d %b %Y") %></time>
+    <time class="dash-row__date" datetime="<%= record.updated_at.utc.iso8601 %>">Edited <%= record.updated_at.strftime("%-d %b %Y") %></time>
   </span>
 </li>

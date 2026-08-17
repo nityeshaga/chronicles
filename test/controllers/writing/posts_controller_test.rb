@@ -71,9 +71,21 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     posts(:about).touch
     get writing_posts_url
 
-    assert_equal Post.order(updated_at: :desc).map { |record| "/#{record.slug}/" },
+    assert_equal Post.order(updated_at: :desc, id: :desc).map { |record| "/#{record.slug}/" },
       css_select(".dash-row__url").map(&:text)
     assert_equal "/about/", css_select(".dash-row__url").first.text
+  end
+
+  # Ties are the normal case, not the corner: the Ghost import stamped updated_at across
+  # every row it wrote in one pass. Flatten the stamps and the only thing left to order by
+  # is which row is newer — without the id tiebreaker SQLite hands them back oldest first.
+  test "posts sharing an updated_at come back newest first, not in whatever order the DB likes" do
+    sign_in_as users(:nityesh)
+    Post.update_all(updated_at: 1.year.ago)
+    get writing_posts_url
+
+    assert_equal Post.order(id: :desc).map { |record| "/#{record.slug}/" },
+      css_select(".dash-row__url").map(&:text)
   end
 
   # "Edited 23 Dec" reads identically in 2024 and 2025, and this stamp is the sort axis.
@@ -82,7 +94,7 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     get writing_posts_url
 
     Post.find_each do |record|
-      assert_select ".dash-row[data-edited=?] .dash-row__date", record.updated_at.iso8601,
+      assert_select ".dash-row[data-edited=?] .dash-row__date", record.updated_at.utc.iso8601,
         text: "Edited #{record.updated_at.strftime("%-d %b %Y")}"
     end
   end
@@ -94,7 +106,7 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     get writing_posts_url
 
     scheduled = posts(:scheduled)
-    assert_select ".dash-row[data-status=scheduled][data-goes-live=?]", scheduled.published_at.iso8601
+    assert_select ".dash-row[data-status=scheduled][data-goes-live=?]", scheduled.published_at.utc.iso8601
     assert_select ".dash-row__when",
       text: "· Goes live #{scheduled.published_at.strftime("%-d %b %Y, %-l:%M %p %Z")}"
     assert_select ".dash-row[data-status=draft][data-goes-live=?]", "", true
