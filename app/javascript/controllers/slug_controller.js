@@ -11,10 +11,14 @@ import { Controller } from "@hotwired/stimulus"
 // does not serve, which is the lie this line exists to end. The writer's first keystroke
 // ends auto mode for good, and the field is his from then on.
 //
-// Auto mode lives on the field as data-auto, stamped by the server (a new post, or a
-// draft still wearing the placeholder title), because autosave has to read it too — it
+// Auto mode lives on the field as data-auto, because autosave has to read it too — it
 // decides whether the slug rides the payload — and one attribute both can see beats two
-// flags that agree until they don't.
+// flags that agree until they don't. It means "this URL is still the editor's invention".
+// The server seeds it off the record (a new post, or one still wearing the placeholder
+// title: no title anyone chose, so no URL anyone chose) and the writer's first keystroke
+// here ends it. A reload is not memory, so it asks the record again and errs towards
+// leaving an existing URL alone — the imported archive is full of hand-curated slugs that
+// no retitle should quietly rewrite.
 //
 // The record excludes itself from the answer by id, which arrives with the page — or, on
 // a brand-new post, from autosave the moment it mints the draft (minted()).
@@ -47,16 +51,25 @@ export default class extends Controller {
     this.check()
   }
 
-  // What the server kept, from a save that settled the slug. In auto mode that is the
-  // field's only source: a title that collides comes back suffixed, and hello-2 is what
-  // the canvas must say. Once the writer owns the field it is left alone — a name he
-  // typed that is taken stays on screen with the frame calling it taken, which is the
-  // honest pair.
+  // What the server kept, from a save that moved the slug — and it only says so when the
+  // slug moved, so this is never the answer to a refusal. The server is the truth about
+  // the URL whoever asked: a title that collides comes back suffixed, and so does a name
+  // the writer typed on a post too new to have one to keep. A refused rename sends
+  // nothing here, which is what leaves the name he typed on screen with the frame calling
+  // it taken — the honest pair.
   kept({ detail: { slug } }) {
-    if (this.slugTarget.dataset.auto !== "true" || this.slugTarget.value === slug) return
+    if (!slug || this.slugTarget.value === slug) return
 
-    this.slugTarget.value = slug
+    this.slugTarget.value = this.slugTarget.defaultValue = slug
     this.check()
+  }
+
+  // An empty URL is not a name the writer chose, it is the absence of one, and the post
+  // still answers to the one the server last confirmed — which is what the field's own
+  // default value is, kept in step by kept(). Put it back rather than commit a blank and
+  // leave the line reading as though the post had no address.
+  restore() {
+    if (this.slugTarget.value.trim() === "") this.slugTarget.value = this.slugTarget.defaultValue
   }
 
   #ask() {

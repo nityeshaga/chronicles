@@ -29,8 +29,10 @@ class Post < ApplicationRecord
   # Public posts live at the site root, so a slug the router already answers for — writing,
   # rss, sitemap.xml — is not a URL this post can have: the post would save and then be
   # unreachable at its own address. Slug owns the question; this is the same one the
-  # editor's availability line asks, so the two can't drift.
-  validate :slug_must_not_be_reserved
+  # editor's availability line asks, so the two can't drift. Asked only of a slug that is
+  # moving: what the router answers for changes with routes.rb, and an old post holding a
+  # name that has since been claimed must still be publishable, unpublishable and mailable.
+  validate :slug_must_not_be_reserved, if: :will_save_change_to_slug?
   # Anything on its way to the public — live now, or a draft with a schedule waiting to
   # fire — must carry a title someone chose. A validation rather than a guard inside the
   # publish verbs, because the verbs are not the only way in: the scheduled job calls
@@ -95,16 +97,26 @@ class Post < ApplicationRecord
   # hand edit moves it after this, and the editor warns before it does.
   def addressed? = published? || scheduled?
 
-  # The editor's save, and the reason a keystroke is never refused over a URL. A name
-  # that isn't free — someone else holds it, or the router does — leaves the slug where it
-  # was and lets everything else land; the availability line beside the field is already
-  # saying why, and a writer mid-sentence can't read a validation error. A blank slug is
-  # the editor saying the URL is still the title's to invent, so it falls through to
-  # generate_slug. Every other caller (the MCP tools, the console) still gets the
-  # refusal — they can read one.
-  def autosave(attributes = {})
+  # The editor's save, and the reason a keystroke is never refused over a URL. A name the
+  # record can't have — someone else holds it, the router does, or the writer emptied the
+  # field — leaves the slug where it was and lets everything else land; the availability
+  # line beside the field is already saying why, and a writer mid-sentence can't read a
+  # validation error. Every other caller (the MCP tools, the console) still gets the
+  # refusal, because they can read one.
+  #
+  # derive_slug is the one intent a slug value can't express: invent the URL from the
+  # title. It has to arrive out of band — a blank slug means the writer cleared the field,
+  # which is not a request to rename a live post, and reading the two as one thing is how
+  # an empty field once moved a published URL.
+  def save_keeping_url(attributes = {}, derive_slug: false)
     assign_attributes(attributes)
-    self.slug = slug_was if slug.present? && slug_changed? && !Slug.new(slug, except: id).available?
+
+    if derive_slug
+      self.slug = nil
+    elsif slug_changed? && !Slug.new(slug, except: id).available?
+      self.slug = slug_was
+    end
+
     save
   end
 

@@ -32,28 +32,48 @@ class PostTest < ActiveSupport::TestCase
     assert_equal "writing-2", Post.create!(title: "Writing").slug
   end
 
-  # The editor's save. A blank slug means the URL is still the title's to invent, so it
-  # follows a retitle instead of freezing at whatever the first two seconds derived.
-  test "autosave re-derives a blank slug from the title" do
+  # The editor's save. Asked to derive, the URL follows the title instead of freezing at
+  # whatever the first two seconds of typing it produced.
+  test "the editor's save re-derives the URL from the title when asked to" do
     post = Post.create!(title: "Why I Mov")
     assert_equal "why-i-mov", post.slug
 
-    post.autosave(title: "Why I Moved My Blog", slug: nil)
+    post.save_keeping_url({ title: "Why I Moved My Blog" }, derive_slug: true)
     assert_equal "why-i-moved-my-blog", post.reload.slug
   end
 
   # A keystroke is never refused over a URL: the name that isn't free is dropped, the
   # prose it arrived with is not.
-  test "autosave keeps the slug it had when the one asked for isn't free" do
+  test "the editor's save keeps the slug it had when the one asked for isn't free" do
     Post.create!(title: "One", slug: "spoken-for")
     post = Post.create!(title: "Two", slug: "mine")
 
-    assert post.autosave(slug: "spoken-for", title: "Two, Revised")
+    assert post.save_keeping_url({ slug: "spoken-for", title: "Two, Revised" })
     assert_equal "mine", post.reload.slug
     assert_equal "Two, Revised", post.title
 
-    assert post.autosave(slug: "writing")
+    assert post.save_keeping_url({ slug: "writing" })
     assert_equal "mine", post.reload.slug
+  end
+
+  # An emptied field is a name the post can't have, not a request to invent a new one —
+  # reading the two as one thing is how a cleared field once moved a published URL.
+  test "the editor's save keeps the slug it had when the field arrives empty" do
+    post = Post.create!(title: "Live One", slug: "live-one", status: :published)
+
+    assert post.save_keeping_url({ slug: "", excerpt: "still edited" })
+    assert_equal "live-one", post.reload.slug
+    assert_equal "still edited", post.excerpt
+  end
+
+  # An old post holding a name the router has since claimed must still be publishable:
+  # what is reserved changes with routes.rb, and only a slug that is moving is asked.
+  test "a reserved name is only refused of a slug that is moving" do
+    post = Post.create!(title: "Legacy", slug: "legacy")
+    post.update_column(:slug, "writing")
+
+    assert post.reload.publish
+    assert post.published?
   end
 
   # Every other caller can read an error, so every other caller still gets one.

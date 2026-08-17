@@ -17,40 +17,35 @@ module Writing::Autosaving
     end
 
     # Two ways in, one action, and both editors answer it identically because they answer
-    # the same form. The silent fetch saves the editor's way — never refused over a URL —
-    # and stays silent either way: a bodyless 422 on a real failure, so a bad keystroke
-    # can't repaint the page mid-sentence.
+    # the same form. Every save here is the editor's (Post#save_keeping_url), so neither
+    # path is ever refused over a URL. The silent fetch stays silent — a bodyless 422 on a
+    # real failure, so a bad keystroke can't repaint the page mid-sentence — while an
+    # explicit Turbo submit (the feature-image file, the only field left off the silent
+    # path) can't read a header, so a rename it made is announced the one way a browser
+    # will follow: a single redirect to the new edit URL.
+    #
+    # No slug in the request is the editor saying the URL is still the title's to invent.
+    # Absence, not a blank value: a writer who empties the field has typed a name the post
+    # can't have, which is a refusal, not a rename.
     def update_from_editor(record, attributes)
-      if autosave_request?
-        record.autosave(editor_attributes(record, attributes)) ? render_saved(record) : head(:unprocessable_entity)
-      elsif record.update(attributes)
-        # An explicit Turbo submit (the feature-image file, the only field left off the
-        # silent path) can't read a header, so a rename it made is announced the one way a
-        # browser will follow: a single redirect to the new edit URL.
+      derive = !attributes.key?(:slug) && !record.addressed?
+
+      if record.save_keeping_url(attributes, derive_slug: derive)
         renamed = record.saved_change_to_slug?
         adopt_feature_image_upload(record)
-        renamed ? redirect_to([ :edit, :writing, record ]) : head(:no_content)
+
+        if !renamed
+          head :no_content
+        elsif autosave_request?
+          render_editor_chrome(record, status: :ok)
+        else
+          redirect_to [ :edit, :writing, record ]
+        end
+      elsif autosave_request?
+        head :unprocessable_entity
       else
         render :edit, status: :unprocessable_entity
       end
-    end
-
-    # What the editor sent, as the model reads it. A slug arrives only once the writer has
-    # taken the field over; while it still follows the title the URL is the model's to
-    # invent, and a blank slug is how you ask for that. An addressed post is the exception
-    # — its URL is a promise to whoever holds the link, and only a hand edit breaks one.
-    def editor_attributes(record, attributes)
-      return attributes if attributes.key?(:slug) || record.addressed?
-
-      attributes.merge(slug: nil)
-    end
-
-    # 204 for an ordinary keystroke: nothing repaints and the cursor never jumps. A save
-    # that moved the slug answers with the chrome instead, because that chrome is now wrong.
-    def render_saved(record)
-      renamed = record.saved_change_to_slug?
-      adopt_feature_image_upload(record)
-      renamed ? render_editor_chrome(record, status: :ok) : head(:no_content)
     end
 
     def render_mint(record)
@@ -73,6 +68,6 @@ module Writing::Autosaving
       response.headers["X-Slug"] = record.slug
       response.headers["X-Edit-Url"] = url_for([ :edit, :writing, record ])
       render template: "writing/posts/create", formats: :turbo_stream,
-        status: status, location: url_for([ :writing, record ])
+        status: status, location: url_for([ :writing, record ]), locals: { post: record }
     end
 end

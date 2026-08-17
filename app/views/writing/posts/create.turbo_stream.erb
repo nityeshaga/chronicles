@@ -5,18 +5,30 @@
     addresses the record, so a slug that moved leaves all of them pointing at a URL that
     no longer exists. Every action is an update into a slot the form already rendered
     empty, so each of these partials is the only place its markup exists. Shared with
-    Writing::PagesController, which writes through the same form. %>
-<%= turbo_stream.update "editor-actions" do %>
-  <%= render "writing/posts/editor_actions", post: @post %>
+    Writing::PagesController, which writes through the same form.
+
+    Morphed, not replaced: on a new post this lands every couple of seconds while the
+    title is still being typed, and rebuilding the nodes would drop the writer out of
+    whatever he had open on top of them. Morphing keeps the nodes; it still reconciles
+    away state the server can't know about, which is why autosave holds the open state
+    across the render and why the two slots below are sent only by the mint. %>
+<%= turbo_stream.update "editor-actions", method: :morph do %>
+  <%= render "writing/posts/editor_actions", post: post %>
 <% end %>
-<%= turbo_stream.update "editor-overlays" do %>
-  <%= render "writing/posts/editor_overlays", post: @post %>
+<%= turbo_stream.update "editor-overlays", method: :morph do %>
+  <%= render "writing/posts/editor_overlays", post: post %>
 <% end %>
-<%= turbo_stream.update "editor-delete" do %>
-  <%= render "writing/posts/editor_delete", post: @post %>
-<% end %>
-<% if @post.taggable? %>
-  <%= turbo_stream.update "editor-tag-mint" do %>
-    <%= render "writing/posts/tag_mint", post: @post %>
+<%# Only the mint has anything to say to these two: the Delete button reaches its form by
+    the HTML form attribute and the tag mint names the post by id, so neither carries a URL
+    a rename could stale. Sending them anyway would retype the writer's half-written tag
+    name into an empty box every couple of seconds. %>
+<% if post.previously_new_record? %>
+  <%= turbo_stream.update "editor-delete" do %>
+    <%= render "writing/posts/editor_delete", post: post %>
+  <% end %>
+  <% if post.taggable? %>
+    <%= turbo_stream.update "editor-tag-mint" do %>
+      <%= render "writing/posts/tag_mint", post: post %>
+    <% end %>
   <% end %>
 <% end %>

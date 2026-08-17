@@ -65,10 +65,6 @@ export default class extends Controller {
   // The save in flight, so callers that must not race it — Publish, an in-app exit —
   // can await the very same promise instead of guessing at a delay.
   #pending = Promise.resolve()
-  // Is the writer mid-edit in the URL field? A half-typed URL is not a rename, so it
-  // stays out of the payload until he is done with it (change). Abandoning one is the
-  // natural answer to abandoning a URL: nothing here calls it unsaved work.
-  #slugHeld = false
 
   disconnect() {
     this.flush()
@@ -89,16 +85,14 @@ export default class extends Controller {
     if (!this.#dirty) this.#timer = setTimeout(() => this.#save(), INTERVAL)
   }
 
-  // The URL is a decision, not a keystroke. While it's being typed it stays out of the
-  // payload; the moment the writer is done with it — a change event, so blur or Enter —
-  // it lands immediately rather than in two seconds, because the address bar moves with
-  // it and it should move while he's still looking at it.
-  holdSlug() {
-    this.#slugHeld = true
-  }
-
+  // The URL is a decision, not a keystroke: while it's being typed it stays out of the
+  // payload, and the moment the writer is done with it — a change event — it lands
+  // immediately rather than in two seconds, because the address bar moves with it and it
+  // should move while he's still looking at it. The blur is for the Enter key, which
+  // announces the change without giving the field up; without it the field would still
+  // read as held and the save it just asked for would go out without it.
   commitSlug() {
-    this.#slugHeld = false
+    this.slugTarget.blur()
     this.#save()
   }
 
@@ -114,6 +108,17 @@ export default class extends Controller {
     clearTimeout(this.#timer)
     this.#timer = null
     this.element.requestSubmit()
+  }
+
+  // The chrome the server sends is stateless: it cannot know the writer has the publish
+  // popover open on top of it, and a morph would reconcile that class away and leave him
+  // with a greyed page and nothing on it. So a panel that is open keeps its class list;
+  // every other attribute on every other element morphs as usual. The class is read off
+  // the markup rather than named here — it stays the editor controller's to choose.
+  keepPanelOpen(event) {
+    const openClass = this.element.closest("[data-editor-open-class]")?.dataset.editorOpenClass
+    if (!openClass || event.detail.attributeName !== "class") return
+    if (event.target.classList.contains(openClass)) event.preventDefault()
   }
 
   // Turbo tells us how the explicit submit resolved; mirror it in the indicator.
@@ -209,8 +214,8 @@ export default class extends Controller {
 
   // Where the record lives now, as the server just told it. The mint says so once and a
   // rename says so again, in the same answer: the PATCH target (Location), the address
-  // bar (X-Edit-Url), the slug actually kept (X-Slug — hello-2 on a collision, or the old
-  // name if the one typed was taken), and a Turbo Stream carrying the chrome that
+  // bar (X-Edit-Url), the slug actually kept (X-Slug — hello-2 where hello was taken),
+  // and a Turbo Stream carrying the chrome that
   // addresses this record — Publish, its popover, Delete, the tag mint — re-stamped from
   // the one place each of them is written. An ordinary keystroke save is a bare 204 and
   // none of this runs. Every URL arrives whole; none is assembled here out of a slug.
@@ -283,8 +288,17 @@ export default class extends Controller {
     return data
   }
 
+  // Who owns the URL right now. Auto: the editor is still inventing it, so it is the
+  // server's to derive and nothing here may send one. Held: it is under the caret, and
+  // half a thought is not a rename — the DOM knows both, so nothing here has to remember
+  // (a flag once stuck held after a writer typed an edit and undid it, and quietly took
+  // the URL back off every save for the rest of the session).
   get #slugAuto() {
     return this.slugTarget.dataset.auto === "true"
+  }
+
+  get #slugHeld() {
+    return document.activeElement === this.slugTarget
   }
 
   get #dirty() {

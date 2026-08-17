@@ -546,7 +546,31 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
       # next rename whether or not this stream reaches it.
       assert_select "input[name=post_id][value=?]", draft.id.to_s
     end
+  end
+
+  # And re-stamps nothing else. The Delete button reaches its form by the HTML form
+  # attribute and the tag mint names the post by id, so a rename has nothing to say to
+  # either — sending them would retype a half-written tag name into an empty box every
+  # couple of seconds while the title is still being typed.
+  test "a rename leaves alone the controls that carry no URL" do
+    sign_in_as users(:nityesh)
+
+    patch writing_post_url(posts(:draft)), headers: { "X-Autosave" => "true" },
+      params: { post: { slug: "re-stamped" } }
+
+    assert_select "turbo-stream[target=editor-delete]", count: 0
+    assert_select "turbo-stream[target=editor-tag-mint]", count: 0
+  end
+
+  # The mint is the moment they arrive, so it does send them.
+  test "the mint installs the controls only a saved post can carry" do
+    sign_in_as users(:nityesh)
+
+    post writing_posts_url, headers: { "X-Autosave" => "true" },
+      params: { post: { title: "Freshly Minted", body: "<p>hi</p>" } }
+
     assert_select "turbo-stream[target=editor-delete]"
+    assert_select "turbo-stream[target=editor-tag-mint]"
   end
 
   # Nothing moved, nothing to adopt: the ordinary keystroke save stays a bare 204.
@@ -575,6 +599,21 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "a-draft-post", draft.reload.slug
     assert_equal "Renamed Too", draft.title
     assert_includes draft.body.to_s, "kept"
+  end
+
+  # Emptying the field is a name the post can't have, not a request to invent a new one.
+  # Read as one thing — the model's blank slug means "derive" — an empty field walked a
+  # published post to a new URL and 404'd the one people were holding.
+  test "a cleared URL field never moves a live post" do
+    sign_in_as users(:nityesh)
+    published = posts(:published)
+
+    patch writing_post_url(published), headers: { "X-Autosave" => "true" },
+      params: { post: { slug: "", excerpt: "still edited" } }
+
+    assert_response :no_content
+    assert_equal "a-published-post", published.reload.slug
+    assert_equal "still edited", published.excerpt
   end
 
   # Same for a name the router already answers for: /writing is the dashboard, so no post

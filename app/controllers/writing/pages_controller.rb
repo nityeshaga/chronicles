@@ -25,7 +25,7 @@ class Writing::PagesController < Writing::BaseController
     @post = Page.new(page_params)
     return head :unprocessable_entity if autosave_request? && !draft_content?(page_params)
 
-    if autosave_request? ? @post.autosave : @post.save
+    if autosave_request? ? @post.save_keeping_url : @post.save
       adopt_feature_image_upload(@post)
       if autosave_request?
         render_mint(@post)

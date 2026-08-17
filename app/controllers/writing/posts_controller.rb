@@ -41,9 +41,10 @@ class Writing::PostsController < Writing::BaseController
     @post = Post.new(post_params)
     return head :unprocessable_entity if autosave_request? && !draft_content?(post_params)
 
-    # The editor's save never refuses a keystroke over a URL (Post#autosave); every other
-    # way in still gets the validations.
-    if autosave_request? ? @post.autosave : @post.save
+    # The editor's save never refuses a keystroke over a URL (Post#save_keeping_url) — a
+    # name that is taken is invented past rather than lost with the draft; every other way
+    # in still gets the validations.
+    if autosave_request? ? @post.save_keeping_url : @post.save
       adopt_feature_image_upload(@post)
       if autosave_request?
         render_mint(@post)
