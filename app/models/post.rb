@@ -62,9 +62,19 @@ class Post < ApplicationRecord
   # catches up). Answers false and leaves the reason in #errors, so a controller or a
   # tool can say why without knowing the rule. The verbs underneath raise instead, which
   # is what stops any other path from writing a state the validations forbid.
+  #
+  # A time already gone is refused, not silently published now. Someone typing 9am into
+  # the field at 10am meant tomorrow, and going live on the spot is the one outcome no
+  # unpublish takes back — the link is out. Only a time actually given is judged: no time
+  # at all still means now, which is what the scheduled job calls back with.
   def publish(at: nil)
     at = parse_time(at)
-    at&.future? ? publish_at(at) : publish_now
+    if at && !at.future?
+      errors.add(:base, "That time has already passed — pick a later one, or clear it to publish now.")
+      return false
+    end
+
+    at ? publish_at(at) : publish_now
     true
   rescue ActiveRecord::RecordInvalid
     false
@@ -78,7 +88,13 @@ class Post < ApplicationRecord
     update!(status: :published, published_at: Time.current)
   end
 
+  # The scheduling door, and it is a door: a time already gone would enqueue a job whose
+  # wait_until has elapsed, so the queue would fire it at once and "schedule for last
+  # Tuesday" would mean "publish immediately". #publish answers false on the same
+  # condition; here it raises, because nothing but a mistake calls this directly.
   def publish_at(time)
+    raise ArgumentError, "publish_at needs a future time — #{time} has already passed" unless time.future?
+
     # Floor to a whole second so the stored stamp and the time the job carries
     # round-trip identically. SQLite truncates published_at to microseconds while
     # the job serializer keeps nanoseconds, so a sub-second stamp (what Time.now

@@ -1007,6 +1007,8 @@ a:hover { opacity: .8; }
 /* The one thing standing between a reflex click and nityesh.com/untitled/. No display of
    its own, so the hidden attribute stays the last word on whether it shows. */
 .publish-note { font-size: 1.35rem; line-height: 1.45; color: var(--w-accent-ink); }
+/* A refused publish time. Same line, said in the colour of a no. */
+.publish-note--refused { color: var(--w-danger); }
 
 /* ---- Tags (existing checkboxes + the deliberate mint control) ---- */
 .tag-checkboxes { display: flex; flex-wrap: wrap; gap: .6rem; }

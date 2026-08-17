@@ -3,10 +3,18 @@
     Shared by post and page editors — the paths are polymorphic, so the same partial drives
     both. Pages publish exactly like posts (the publishing resource is nested under both). %>
 <div class="publish-popover__body">
+  <%# Why the last publishing click did nothing, in the one place the writer is looking
+      after making it. Above the branch because a refusal can arrive on any of the three
+      states — a stale Publish, a newsletter that can no longer go out — and it is the
+      same message either way. %>
+  <% if flash[:publish_error].present? %>
+    <p class="publish-note publish-note--refused"><%= flash[:publish_error] %></p>
+  <% end %>
+
   <% if post.published? %>
     <p class="publish-state">
       <span class="status status--published">Live</span>
-      Published <%= post.published_at.strftime("%-d %b %Y, %-l:%M %p") %>.
+      Published <%= zoned_stamp(post.published_at) %>.
     </p>
     <%# No View live here: the editor bar carries it, and one control per meaning. %>
     <div class="publish-actions">
@@ -27,7 +35,7 @@
         <p class="publish-state">
           <span class="status status--published">Sent</span>
           Mailed to <%= link_to post.newsletter_recipients_count ? pluralize(post.newsletter_recipients_count, "subscriber") : "subscribers", writing_subscribers_path %>
-          <%= post.newsletter_sent_at.strftime("%-d %b %Y, %-l:%M %p") %>.
+          <%= zoned_stamp(post.newsletter_sent_at) %>.
         </p>
       <% elsif post.newsletter_ready? %>
         <% count = Subscriber.count %>
@@ -44,7 +52,7 @@
   <% elsif post.scheduled? %>
     <p class="publish-state">
       <span class="status status--scheduled">Scheduled</span>
-      Goes live <%= post.published_at.strftime("%-d %b %Y, %-l:%M %p") %>.
+      Goes live <%= zoned_stamp(post.published_at) %>.
     </p>
     <%= button_to "Cancel schedule", [ :writing, post, :publishing ], method: :delete,
           class: "w-btn w-btn--ghost w-btn--sm", form_class: "w-inline",
@@ -53,16 +61,23 @@
     <%# Every button here waits for a pending autosave before it submits: publishing
         re-renders the canvas from the record, so a debounce still in flight would come
         back as an older body — and then save itself over the newer one. %>
-    <%= form_with url: [ :writing, post, :publishing ], method: :post, class: "schedule-form" do |form| %>
+    <%= form_with url: [ :writing, post, :publishing ], method: :post, class: "schedule-form",
+          data: { controller: "label-swap", label_swap_empty_value: "Publish", label_swap_filled_value: "Schedule" } do |form| %>
       <%# An untitled post would go live at /untitled/ — a URL no rename takes back. The
           model refuses it; this says so, and the title field re-enables the button live. %>
       <%= tag.p class: "publish-note", hidden: !post.untitled?, data: { editor_target: "titleNote" } do %>
         Give it a title first — right now it would go live at <%= Setting.current.production_host %>/<%= post.slug %>/.
       <% end %>
-      <%= label_tag :published_at do %>Publish time <span class="field__hint">— leave blank to go live now</span><% end %>
-      <%= datetime_field_tag :published_at %>
+      <%= label_tag :published_at do %>Publish time <span class="field__hint">(<%= publish_zone_label %>) — leave blank to go live now</span><% end %>
+      <%# The floor is server-rendered so the control refuses a past time in the same zone
+          the label names, before the round trip the model would refuse it on. %>
+      <%= datetime_field_tag :published_at, nil, min: publish_time_floor,
+            data: { label_swap_target: "field", action: "input->label-swap#swap" } %>
+      <%# The button says which of the two things this does — the field is the only
+          difference between them, so the label follows the field. %>
       <%= form.submit "Publish", class: "w-btn w-btn--primary", disabled: post.untitled?,
-            data: { editor_target: "publishSubmit", action: "click->editor#commitThenSubmit" } %>
+            data: { editor_target: "publishSubmit", label_swap_target: "submit",
+                    action: "click->editor#commitThenSubmit" } %>
     <% end %>
   <% end %>
 </div>

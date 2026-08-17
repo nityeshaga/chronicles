@@ -61,9 +61,10 @@ class PublishPostToolTest < ActiveSupport::TestCase
     assert post.reload.published?
   end
 
+  # The refusal is the model's, in the model's words — the tool only parses the string.
   test "rejects an at in the past" do
     result = PublishPostTool.new.call(id_or_slug: "a-draft-post", at: 1.day.ago.iso8601)
-    assert_includes result[:error], "past"
+    assert_includes result[:error], "already passed"
     assert posts(:draft).reload.draft?
   end
 

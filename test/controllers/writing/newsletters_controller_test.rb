@@ -27,6 +27,12 @@ class Writing::NewslettersControllerTest < ActionDispatch::IntegrationTest
     end
     assert_redirected_to edit_writing_post_url(posts(:published))
     assert_nil posts(:published).reload.newsletter_sent_at
+
+    # And the refusal is readable: with the backdrop up, the popover is the only thing
+    # the writer can see, so it goes there rather than behind it.
+    follow_redirect!
+    assert_select ".publish-popover .publish-note--refused", text: /can’t be sent/
+    assert_select "ul.errors", count: 0
   end
 
   test "a draft is refused" do
