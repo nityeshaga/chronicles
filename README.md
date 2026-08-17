@@ -26,7 +26,7 @@ Owning the source only matters if changing it is cheap. It is — because the sa
 
 1. **It writes with you.** An MCP server at `/mcp` with 13 tools — your agent lists, drafts, tags, schedules, publishes, unpublishes, uploads images, embeds YouTube and X, and edits with surgical body patches, never wholesale rewrites of your prose. claude.ai connects from a pasted URL; Claude Code connects with a token minted at `/writing/connect`.
 2. **It ships pages, not just posts.** Agents are unreasonably good at writing beautiful HTML — so here a complete hand-authored document is a first-class publication, not an attachment. `create_html_page` serves it byte-for-byte at a root slug: no blog chrome, in your sitemap, canonical injected, screened on the way in so it can't ship without a `<title>` or with asset paths that 404. All the SEO of a regular post, none of the template. Live proof: the [landing page](https://nityesh.com/chronicles/) for this repo and [nityesh.com/hands-on-deck](https://nityesh.com/hands-on-deck/) were both published this way, byte-identical to their hand-crafted source.
-3. **It rewrites the platform.** Want comments? A second author? A different homepage entirely? Those aren't features you're missing — they're features you haven't asked for yet. You hold the complete source in the simplest full-stack framework ever made for one person.
+3. **It rewrites the platform.** Want comments? A second author? A different homepage entirely? Those aren't features you're missing — they're features you haven't asked for yet. You hold the complete source in the simplest full-stack framework ever made for one person. And you don't hold it alone: batteries included, and one of the batteries is a Rails expert. [`.claude/skills/beautiful-rails-like-dhh`](.claude/skills/beautiful-rails-like-dhh/SKILL.md) ships in the repo with the 37signals conventions this codebase was written under — Hotwire, no SPA, small files, the way Basecamp, HEY, Campfire and Fizzy are built. Claude Code loads it the moment it opens the repo, so *"make this mine"* comes back in the house style instead of a React-flavoured fork.
 
 ## A product manages you. A codebase answers to you.
 
@@ -48,6 +48,7 @@ This ran a real publication before it was open-sourced. The port from Ghost was 
 - **The reader experience**: designed homepage, tag pages, RSS at `/rss`, a Ghost-shaped sitemap index, full SEO/OG/Twitter/JSON-LD head tags, and 301s that keep old links alive forever.
 - **A Ghost importer** (`lib/ghost/`): posts, drafts, pages, tags, images, embeds — mobiledoc in, Action Text out. One-time and additive; re-importing wants a fresh database.
 - **MCP + OAuth for agents**, as above. Dynamic client registration included, so an agent can onboard itself from a pasted URL.
+- **A Rails expert, included** ([`.claude/skills/beautiful-rails-like-dhh`](.claude/skills/beautiful-rails-like-dhh/SKILL.md)): the operating manual this app was built under, backend and Hotwire frontend, in 16 reference chapters — worked features and a review checklist among them. Claude Code auto-loads it from the repo; other agents can read `SKILL.md` directly.
 - **Site identity in one database row** (`Setting`): title, author, logo, domain, social handles. Rebrand the whole site without touching Ruby.
 - **Email capture**: a subscribe form that stores addresses (list at `/writing/subscribers`). Full honesty: it *collects* subscribers; it does not yet *send* them anything. RSS delivers today; your subscribers wait patiently in a table. Sending is a chapter I haven't written — your agent may write yours sooner.
 - **Kamal deploy** to one cheap VPS. Push to `main`, tests pass, site ships. SQLite for everything (database, jobs, cache, cable), no build step, no node_modules. Runs comfortably on a $6 droplet.
@@ -169,6 +170,7 @@ Pushing/merging to `main` auto-deploys: the `deploy` job in `.github/workflows/c
 | `app/views/shared/_meta.html.erb` | All SEO/OG/Twitter head tags, shaped for Ghost parity |
 | `app/javascript/controllers/` | Stimulus: autosave, autogrow, slug, embed, editor, dashboard… |
 | `app/assets/stylesheets/application.css` | The whole design, hand-written. Public typography + editor canvas share selector lists |
+| `.claude/skills/` | The Rails expert that ships with the repo: 37signals conventions, auto-loaded by Claude Code |
 
 ## Conventions and landmines (read before changing anything)
 
@@ -196,7 +198,7 @@ Pushing/merging to `main` auto-deploys: the `deploy` job in `.github/workflows/c
 
 ## For agents
 
-Everything above applies to you, plus: run `bin/rails test && bin/rubocop` before declaring anything done; keep diffs surgical; PRs need a review-pack body (what/why/verification) and are **never self-merged** — a human merges. If you're setting this up for a new owner: interview them, fill the `Setting` row, run the Ghost import if they have an export, deploy with Kamal. Measure the writing experience against Ghost's editor and the codebase against 37signals' taste. When in doubt, underdo.
+Read [`.claude/skills/beautiful-rails-like-dhh/SKILL.md`](.claude/skills/beautiful-rails-like-dhh/SKILL.md) before you write or review any code here — it's the taste the reviewers hold you to. Everything above applies to you, plus: run `bin/rails test && bin/rubocop` before declaring anything done; keep diffs surgical; PRs need a review-pack body (what/why/verification) and are **never self-merged** — a human merges. If you're setting this up for a new owner: interview them, fill the `Setting` row, run the Ghost import if they have an export, deploy with Kamal. Measure the writing experience against Ghost's editor and the codebase against 37signals' taste. When in doubt, underdo.
 
 ## License
 
