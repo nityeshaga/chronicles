@@ -139,11 +139,17 @@ export default class extends Controller {
   }
 
   // Is there anything worth minting a draft for? Title or body — matches the server guard.
+  // Found by field suffix rather than a literal `post[title]`: this same form is the page
+  // editor too, where every field is named `page[…]`, and naming one of them meant a new
+  // page never autosaved at all.
   get #hasContent() {
-    const data = new FormData(this.element)
-    const title = (data.get("post[title]") || "").trim()
-    const body = (data.get("post[body]") || "").replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim()
+    const title = this.#field("title").trim()
+    const body = this.#field("body").replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim()
     return title.length > 0 || body.length > 0
+  }
+
+  #field(name) {
+    return this.element.querySelector(`[name$='[${name}]']`)?.value || ""
   }
 
   // Everything the form holds except the two fields that must not ride the silent path.
