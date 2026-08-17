@@ -19,7 +19,7 @@
           New post
         <% end %>
         <details class="w-split__more">
-          <summary class="w-btn w-btn--primary w-split__caret" aria-haspopup="menu" aria-label="Other kinds of page">
+          <summary class="w-btn w-btn--primary w-split__caret" aria-haspopup="true" aria-label="Other kinds of page">
             <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </summary>
           <div class="w-menu">
@@ -90,13 +90,13 @@
       is the whole menu — open/closed is the element's own state, so there's nothing to
       script; its panel opens upward because there's nothing below it. %>
   <details class="dash-menu">
-    <summary class="w-btn w-btn--ghost dash-menu__button" aria-haspopup="menu" aria-label="Account">
+    <summary class="w-btn w-btn--ghost dash-menu__button" aria-haspopup="true" aria-label="Account">
       <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><circle cx="8" cy="8" r="2.4" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 1.4v1.7M8 12.9v1.7M2.4 8H.7M15.3 8h-1.7M3.9 3.9l1.2 1.2M10.9 10.9l1.2 1.2M12.1 3.9l-1.2 1.2M5.1 10.9l-1.2 1.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
     </summary>
     <div class="w-menu">
       <%= link_to "View site", root_path %>
       <%= link_to "Connect", writing_connect_path %>
-      <%= button_to "Sign out", session_path, method: :delete %>
+      <%= button_to "Sign out", session_path, method: :delete, form_class: "w-inline" %>
     </div>
   </details>
 </div>

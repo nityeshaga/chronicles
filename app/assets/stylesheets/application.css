@@ -657,7 +657,6 @@ a:hover { opacity: .8; }
 }
 .w-menu a:hover,
 .w-menu button:hover { background: rgba(0, 0, 0, .06); color: var(--w-ink); opacity: 1; }
-.w-menu form { margin: 0; }
 
 /* ---- Split button: one primary action fused to a caret that drops its rarer siblings.
    Same primary fill throughout, a hairline of the button's own border between them. ---- */
