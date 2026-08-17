@@ -17,11 +17,26 @@ class Writing::PagesController < Writing::BaseController
   def edit
   end
 
+  # Two ways in, the same two posts have (see Writing::PostsController#create). A page is
+  # written on the same autosaving form, so it can arrive here as a silent fetch — and
+  # this action never answered one: the POST followed a redirect, which the client reads
+  # as a dead session, so it never adopted the PATCH URL and would mint a fresh page every
+  # two seconds. It now answers 201 with the created resource in Location and the id in
+  # X-Post-Id, and it keeps the silent path silent on failure too, where a rendered form
+  # went down a wire that only understands a bodyless 422.
   def create
     @post = Page.new(page_params)
+    return head :unprocessable_entity if autosave_request? && !draft_content?
+
     if @post.save
       adopt_feature_image_upload(@post)
-      redirect_to edit_writing_page_url(@post)
+      if autosave_request?
+        head :created, location: writing_page_url(@post), x_post_id: @post.id
+      else
+        redirect_to edit_writing_page_url(@post)
+      end
+    elsif autosave_request?
+      head :unprocessable_entity
     else
       render :new, status: :unprocessable_entity
     end
@@ -64,5 +79,11 @@ class Writing::PagesController < Writing::BaseController
 
     def autosave_request?
       request.headers["X-Autosave"].present?
+    end
+
+    # A page is only worth minting once the author has typed something; keeps blank
+    # records from piling up if the create endpoint is hit with an empty form.
+    def draft_content?
+      page_params[:title].present? || page_params[:body].present?
     end
 end
