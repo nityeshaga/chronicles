@@ -70,6 +70,7 @@ Rails.application.routes.draw do
     end
     resources :tags, only: %i[ index edit update create ]
     resources :embeds, only: %i[ create ]
+    resources :html_cards, only: %i[ create ]
     resources :uploads, only: %i[ create ]
     # "Is this URL still free?", asked from the editor as the writer types. Singular, and
     # the slug rides in the query: it's what the question is about, not where to ask it.

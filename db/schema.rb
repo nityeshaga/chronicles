@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_10_190531) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_25_060000) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.text "body"
     t.datetime "created_at", null: false
@@ -59,6 +59,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_10_190531) do
     t.integer "user_id", null: false
     t.index ["token_digest"], name: "index_api_tokens_on_token_digest", unique: true
     t.index ["user_id"], name: "index_api_tokens_on_user_id"
+  end
+
+  create_table "html_cards", force: :cascade do |t|
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "mcp_sessions", id: :string, force: :cascade do |t|

@@ -16,7 +16,7 @@ class CreatePostTool < ActionTool::Base
   arguments do
     required(:title).filled(:string).description("The post title.")
     optional(:kind).filled(:string).description("'article' (a blog post, the default) or 'page' (a standalone page like About). A whole-document HTML page is not a kind here — it has its own tool, create_html_page.")
-    optional(:body).filled(:string).description("Body HTML. For images/embeds use Ghost-parity kg-* card markup — call upload_image/create_embed rather than hand-writing it.")
+    optional(:body).filled(:string).description("Body HTML. For images/embeds use Ghost-parity kg-* card markup — call upload_image/create_embed rather than hand-writing it. Markup that must be served exactly as written (a CSS grid, a chart that draws itself) is an HTML card: call create_html_card and paste the attachment element it returns, because a <style> or <script> written into the body itself is sanitized away. A real <table> needs no card — tables are ordinary prose here and render natively in Gmail.")
     optional(:excerpt).filled(:string).description("The standfirst shown under the title, on the home feed, and in social cards.")
     optional(:slug).filled(:string).description("Explicit URL slug. Omit to auto-generate from the title.")
     optional(:tags).array(:string).description("Tag NAMES. Existing tags are reused; unknown names are created (auto-slugged).")

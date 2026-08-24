@@ -780,8 +780,8 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:nityesh)
     get new_writing_post_url
 
-    assert_select ".editor-canvas__body[data-controller=embed][data-action=?]",
-      "lexxy:insert-link->embed#unfurl"
+    assert_select ".editor-canvas__body[data-controller=?][data-action=?]",
+      "embed html-card", "lexxy:insert-link->embed#unfurl"
     assert_select "lexxy-editor[placeholder=?]",
       "Start writing. Paste a tweet or YouTube link on its own line to embed it."
   end

@@ -50,6 +50,9 @@ class GetPostTool < ActionTool::Base
       created_at: post.created_at&.iso8601,
       updated_at: post.updated_at&.iso8601,
       url: (public_url(post) if post.published?),
+      # The body carries an sgid, which is nothing an agent can hand to update_html_card.
+      # Without this, a card written a session ago can only be replaced, never revised.
+      html_card_ids: post.try(:body)&.body&.attachables.to_a.grep(HtmlCard).map(&:id).presence,
       body: body_slice,
       body_offset: body_offset,
       body_total_length: body_html.length,
