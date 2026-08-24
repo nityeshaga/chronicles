@@ -11,7 +11,10 @@
   line-height: 1.5;
   overflow-wrap: break-word;
   word-break: break-word; }
-  .trix-content * {
+  /* :where() zeroes this rule's specificity. It was (0,1,0), which beat every bare-element
+     rule an HtmlCard carries — a card's own `td { padding: 7px }` lost its padding to a
+     reset it never asked for. At (0,0,0) the card wins and prose is unchanged. */
+  :where(.trix-content *) {
     box-sizing: border-box;
     margin: 0;
     padding: 0; }

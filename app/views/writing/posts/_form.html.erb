@@ -96,15 +96,34 @@
         <% end %>
       </div>
 
-      <%# The embed controller sits on the body because that's the only thing it touches:
-          it hears Lexxy announce a pasted link and swaps the supported ones for a card.
-          The placeholder is where the writer learns that exists — one line, in the exact
-          spot the paste lands, instead of a permanent bar under the body. %>
-      <div class="editor-canvas__body" data-controller="embed"
+      <%# Both controllers sit on the body because the body is all either one touches: embed
+          hears Lexxy announce a pasted link and swaps the supported ones for provider
+          markup, and html-card writes a fragment of the writer's own into the same editor.
+          Both ask the server for what they insert. The placeholder is where the writer
+          learns the paste exists — one line, in the exact spot the paste lands, instead of
+          a permanent bar under the body. %>
+      <div class="editor-canvas__body" data-controller="embed html-card"
            data-embed-url-value="<%= writing_embeds_path %>"
+           data-html-card-url-value="<%= writing_html_cards_path %>"
            data-action="lexxy:insert-link->embed#unfurl">
-        <%= form.rich_text_area :body,
+        <%= form.rich_text_area :body, data: { html_card_target: "editor" },
               placeholder: "Start writing. Paste a tweet or YouTube link on its own line to embed it." %>
+
+        <%# Writing a card is a rare, deliberate act — markup that will be served exactly as
+            typed — so it stays folded away rather than sitting under the prose all day. The
+            textarea has no name on purpose: what's in it isn't the post until the writer
+            presses Insert, and a control without a name is one the form can't submit. %>
+        <details class="card-composer" data-html-card-target="disclosure">
+          <summary class="card-composer__summary">HTML card</summary>
+          <textarea class="card-composer__source" rows="8" spellcheck="false"
+                    placeholder="&lt;style&gt;…&lt;/style&gt;&lt;div&gt;…&lt;/div&gt;"
+                    data-html-card-target="source"
+                    data-action="input->html-card#keepOutOfAutosave"></textarea>
+          <div class="card-composer__foot">
+            <button type="button" class="w-btn w-btn--ghost w-btn--sm" data-action="html-card#insert">Insert HTML</button>
+            <p class="card-composer__hint">A card can't be edited here — delete it and insert it again, or change its markup with the update_html_card tool.</p>
+          </div>
+        </details>
       </div>
     </div>
 

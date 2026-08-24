@@ -8,6 +8,11 @@
 # single tag the app knows better than the author (the canonical, built from the URL the
 # page is about to be served at).
 #
+# An HtmlCard is the same bargain a paragraph at a time — bytes that skip the sanitizer,
+# with nothing downstream to catch a mistake in them — so it gets the second screening
+# here, in the same voice. That one only ever warns: a card is the author's own markup, and
+# refusing it would be refusing the point.
+#
 # Only the MCP tools include this. A human pasting a document into the writing textarea is
 # looking at their own markup and doesn't need a chaperone — and injecting a tag into a
 # document someone is actively editing would fight their next save.
@@ -23,6 +28,27 @@ module HtmlIngestGate
   # somewhere other than this blog's routing table.
   ABSOLUTE_REFERENCE = %r{\A(?://|[a-z][a-z0-9+.\-]*:)}i
   SAMPLED_REFERENCES = 5
+  STYLE_ELEMENT = %r{<style\b[^>]*>(.*?)</style>}mi
+  # The text before each `{` in a stylesheet — a selector list, unless it runs into an `@`
+  # or a `;`, which is how at-rule preludes and declarations stay out of it.
+  SELECTOR_LIST = /(?:\A|[{}])\s*([^{}@;]+?)\s*\{/m
+  # A selector whose first token is an element name and nothing else. `td.chart` and
+  # `td[data-x]` narrow to markup only the card has, so they aren't leaks; `td:hover` is.
+  BARE_ELEMENT_SELECTOR = /\A[a-z][a-z0-9]*(?![\w\-.#\[])/i
+  KEYFRAME_STOPS = %w[ from to ].freeze
+  SCOPE_AT_RULE = "@scope"
+  CARD_PEEK_LENGTH = 140
+  # Three ways a card works the first time and not the second. Turbo keeps the JavaScript
+  # runtime across navigations, and a restoration visit — the back button — paints a cached
+  # snapshot without executing anything in it.
+  CARD_SCRIPT_HAZARDS = {
+    /\bdocument\.write\b/ =>
+      "document.write blanks the post on any Turbo visit: running after the document has loaded implicitly reopens it. Draw into an element the card owns instead.",
+    /<script\b[^>]*\bsrc\s*=/i =>
+      "An external <script src=…> doesn't run on a back-button restore, and nothing orders its load against the card's own code. Inline what the card needs.",
+    /\bcustomElements\.define\b/ =>
+      "customElements.define throws on the second visit to the post — the registry outlives the navigation, so the name is already taken. Ask customElements.get first, or drop the custom element."
+  }.freeze
 
   private
     # Returns { error: } when the document can't be published as it stands, otherwise
@@ -104,6 +130,68 @@ module HtmlIngestGate
         warnings << "Site-absolute references (#{sampled(site_absolute)}) resolve against this blog rather than the document's original home — fine if that's what you meant."
       end
       warnings
+    end
+
+    # An array, where screen_html_document returns a hash: that one also rewrites the
+    # document and can reject it, so it has three things to say and the caller has to look
+    # at which. This one only ever has warnings, and wrapping them in a one-key hash would
+    # promise a decision that isn't there. Empty is the normal answer — describe_html_card
+    # is what always has something to say, and it says it somewhere else for that reason.
+    def screen_html_card(html)
+      html = html.to_s
+
+      [ card_reference_warning(html), card_style_warning(html), *card_script_warnings(html) ].compact
+    end
+
+    # What landed, said for every card — the line that catches the mistake no rule can name
+    # in advance: an agent that meant to store a chart and stored an empty div reads its own
+    # byte count and sees it. The peek is the card's static form, literally what a subscriber
+    # gets, so markup that arrived escaped shows up here as its own source code rather than
+    # as prose. It rides its own response key: a warning that fires every time is one an
+    # agent learns to skim past, and takes the real warnings with it.
+    def describe_html_card(html)
+      text = card_peek(html)
+      return "Stored #{html.bytesize} bytes with no text outside its script and style. Email, feeds and the excerpt will show an empty card — right for a chart that draws itself, a mistake for anything meant to be read." if text.blank?
+
+      "Stored #{html.bytesize} bytes. With script and style pruned the card reads as: #{text} — that's what email, feeds and search descriptions get."
+    end
+
+    def card_peek(html)
+      ActionText::Fragment.wrap(HtmlCard.new(content: html).static_html).to_plain_text.squish.truncate(CARD_PEEK_LENGTH)
+    end
+
+    # A document's failure one level in: the post is served at /<slug>/, so a card's
+    # "img/chart.png" is looked for underneath it and 404s. Site-absolute paths get no note
+    # here — unlike a lifted document, a card is written for this blog, so "/x.png" is meant.
+    def card_reference_warning(html)
+      relative = html.scan(ASSET_REFERENCE).flatten.reject do |value|
+        value.blank? || value.start_with?("#", "/") || value.match?(ABSOLUTE_REFERENCE)
+      end
+      return if relative.empty?
+
+      "Relative references won't resolve — the post is served at /<slug>/, so #{sampled(relative)} is looked for underneath it and 404s. Use absolute URLs; upload_image returns one."
+    end
+
+    # A card's <style> is served into the article, not into a shadow root, so "td { … }"
+    # restyles every table in the post. This reads the CSS by eye rather than parsing it,
+    # and a style block that mentions @scope is taken at its word — which is the reason it
+    # warns rather than refuses.
+    def card_style_warning(html)
+      bare = html.scan(STYLE_ELEMENT).flatten.reject { |css| css.include?(SCOPE_AT_RULE) }.flat_map { |css| bare_element_selectors(css) }
+      return if bare.empty?
+
+      "Bare element selectors in the card's <style> (#{sampled(bare)}) style the whole article, not just the card — a heuristic read of the CSS, so check it. Put the rules inside @scope { … }, or give every selector a class the card owns."
+    end
+
+    def bare_element_selectors(css)
+      css.scan(SELECTOR_LIST).flatten.flat_map { |list| list.split(",") }.filter_map do |selector|
+        selector = selector.strip
+        selector if selector.match?(BARE_ELEMENT_SELECTOR) && !KEYFRAME_STOPS.include?(selector.downcase)
+      end
+    end
+
+    def card_script_warnings(html)
+      CARD_SCRIPT_HAZARDS.filter_map { |hazard, warning| warning if html.match?(hazard) }
     end
 
     def sampled(values)

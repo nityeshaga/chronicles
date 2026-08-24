@@ -22,6 +22,12 @@ MCP_SERVER_INSTRUCTIONS = -> do
   from create_embed, then paste the figure_html they return. A cover image is the post's
   feature_image (a plain URL); an in-body image is a figure spliced into the body.
 
+  Markup that has to reach the reader exactly as written — a CSS grid, a chart that draws
+  itself — is an HTML card: create_html_card stores the bytes and returns the attachment
+  element to splice into the body, and update_html_card revises them without touching any
+  post. A <style> or <script> written straight into a body is sanitized away. A real
+  <table> is ordinary prose here and renders in a mail client, so it never wants a card.
+
   Edit long posts with update_post body_patches ({old,new} find/replace) instead of
   resending the whole body — each `old` anchor must match exactly once, so include enough
   surrounding context. title and excerpt are single-line (the excerpt is the standfirst).
@@ -81,6 +87,11 @@ Rails.application.config.after_initialize do
     # Image + embed tools (stage 4)
     server.register_tool(UploadImageTool)
     server.register_tool(CreateEmbedTool)
+
+    # HTML cards mint markup for a body the way embeds do, but the bytes stay in a record of
+    # their own — so unlike an embed, a card is still addressable after it lands in a post.
+    server.register_tool(CreateHtmlCardTool)
+    server.register_tool(UpdateHtmlCardTool)
 
     Rails.logger.info "MCP Server: Registered #{server.tools.keys.size} tools: #{server.tools.keys.join(', ')}"
   end

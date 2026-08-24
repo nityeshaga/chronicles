@@ -51,6 +51,10 @@ class Post < ApplicationRecord
 
   def to_param = slug
 
+  # The HtmlCards this body attaches. They are content the post renders but does not own,
+  # so anything caching a rendered post has to key on them too.
+  def html_cards = body&.body&.attachables.to_a.grep(HtmlCard)
+
   # The image the site renders. The feature_image URL column is the source of truth —
   # Ghost's legacy /content/images paths and external URLs live there and stay
   # first-class. A native upload is adopted INTO that column on save, so this resolver

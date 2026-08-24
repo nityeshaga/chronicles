@@ -6,6 +6,16 @@
   <p style="font-family: Georgia, serif; font-size: 17px; color: #555; margin: 0 0 24px;"><%= @post.excerpt %></p>
 <% end %>
 
+<%# A card renders as its static skeleton here, because the attachment partial is what a
+    mail gets and only the public post expands one. A piece that loses a chart that way says
+    so before the reader meets the gap rather than after. %>
+<% if HtmlCard.interactive_in?(@post.body) %>
+  <p style="font-family: Georgia, serif; font-style: italic; font-size: 15px; color: #777; margin: 0 0 24px;">
+    Some of the charts in this piece only run in a browser.
+    <%= link_to "Read it on the web", post_url(@post, trailing_slash: true), style: "color: #c4622d;" %> to see them.
+  </p>
+<% end %>
+
 <div style="font-family: Georgia, 'Times New Roman', serif; font-size: 17px; line-height: 1.7; color: #1a1a1a;">
   <%= @post.body %>
 </div>

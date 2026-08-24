@@ -1,0 +1,11 @@
+<%# What a card looks like everywhere its script can't run: email, feeds, the writer's
+    plain-text excerpt, an RSS reader. Rendering it here is what spares every one of those
+    from having to know cards exist.
+
+    The modifier class is load-bearing, not decoration. Lexxy inserts a card inline, so the
+    editor leaves it inside a <p> — and a <div> inside a <p> is not something an HTML parser
+    will keep there. Re-parsing the rendered body hoists this wrapper out of the paragraph
+    and out of the attachment it belongs to, which left HtmlCard.expand replacing an
+    attachment that no longer owned its own skeleton, and the post showed the card twice.
+    expand clears these first for that reason. %>
+<div class="kg-card kg-html-card kg-html-card--static"><%= html_card.static_html %></div>
