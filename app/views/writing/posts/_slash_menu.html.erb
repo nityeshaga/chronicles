@@ -1,0 +1,75 @@
+<%# Type "/" on an empty line and every block the editor can make is one word away. The
+    rows carry no markup and no commands of their own: `data-for` names the toolbar
+    button that already owns the block, and the controller clicks it — so the toolbar
+    stays the one place a block is made, and a tool added there is a row away from being
+    here. The two rows that aren't toolbar commands say so with `data-dispatch`: the
+    canvas wires those events to the controller that owns the job (an embed needs the URL
+    typed after the word; a card needs its composer).
+
+    `data-keywords` is the entire filter — everything the writer may type after the "/"
+    to reach a row, aliases included, which is how /youtube and /twitter find Embed.
+    Labels and descriptions are copy, so they live here rather than in JavaScript. %>
+<ul class="slash-menu" role="listbox" aria-label="Insert a block" hidden
+    data-slash-menu-target="menu"
+    data-action="mousedown->slash-menu#keepSelection click->slash-menu#pick">
+  <li class="slash-menu__item" role="option" aria-selected="false" data-slash-menu-target="item"
+      data-for="h2" data-keywords="heading h2 title large section">
+    <span class="slash-menu__label">Heading 2</span>
+    <span class="slash-menu__hint">The main section break</span>
+  </li>
+  <li class="slash-menu__item" role="option" aria-selected="false" data-slash-menu-target="item"
+      data-for="h3" data-keywords="heading h3 subheading medium">
+    <span class="slash-menu__label">Heading 3</span>
+    <span class="slash-menu__hint">A step under Heading 2</span>
+  </li>
+  <li class="slash-menu__item" role="option" aria-selected="false" data-slash-menu-target="item"
+      data-for="h4" data-keywords="heading h4 small">
+    <span class="slash-menu__label">Heading 4</span>
+    <span class="slash-menu__hint">The smallest heading</span>
+  </li>
+  <li class="slash-menu__item" role="option" aria-selected="false" data-slash-menu-target="item"
+      data-for="unordered-list" data-keywords="bullet list unordered bulleted ul">
+    <span class="slash-menu__label">Bullet list</span>
+    <span class="slash-menu__hint">Points in no particular order</span>
+  </li>
+  <li class="slash-menu__item" role="option" aria-selected="false" data-slash-menu-target="item"
+      data-for="ordered-list" data-keywords="numbered list ordered number ol">
+    <span class="slash-menu__label">Numbered list</span>
+    <span class="slash-menu__hint">Steps, in order</span>
+  </li>
+  <li class="slash-menu__item" role="option" aria-selected="false" data-slash-menu-target="item"
+      data-for="quote" data-keywords="quote blockquote pullquote">
+    <span class="slash-menu__label">Quote</span>
+    <span class="slash-menu__hint">Set a passage apart</span>
+  </li>
+  <li class="slash-menu__item" role="option" aria-selected="false" data-slash-menu-target="item"
+      data-for="code-block" data-keywords="code block pre snippet fence">
+    <span class="slash-menu__label">Code block</span>
+    <span class="slash-menu__hint">Plain until you name a language</span>
+  </li>
+  <li class="slash-menu__item" role="option" aria-selected="false" data-slash-menu-target="item"
+      data-for="divider" data-keywords="divider rule separator hr break">
+    <span class="slash-menu__label">Divider</span>
+    <span class="slash-menu__hint">A break between sections</span>
+  </li>
+  <li class="slash-menu__item" role="option" aria-selected="false" data-slash-menu-target="item"
+      data-for="image" data-keywords="image picture photo upload figure">
+    <span class="slash-menu__label">Image</span>
+    <span class="slash-menu__hint">Upload one from this machine</span>
+  </li>
+  <li class="slash-menu__item" role="option" aria-selected="false" data-slash-menu-target="item"
+      data-for="table" data-keywords="table grid rows columns">
+    <span class="slash-menu__label">Table</span>
+    <span class="slash-menu__hint">Rows and columns</span>
+  </li>
+  <li class="slash-menu__item" role="option" aria-selected="false" data-slash-menu-target="item"
+      data-dispatch="embed" data-keywords="embed youtube video twitter x tweet link">
+    <span class="slash-menu__label">Embed</span>
+    <span class="slash-menu__hint">Type /embed and a YouTube or X link</span>
+  </li>
+  <li class="slash-menu__item" role="option" aria-selected="false" data-slash-menu-target="item"
+      data-dispatch="card" data-keywords="html card markup raw">
+    <span class="slash-menu__label">HTML card</span>
+    <span class="slash-menu__hint">Markup served exactly as written</span>
+  </li>
+</ul>

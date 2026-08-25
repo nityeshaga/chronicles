@@ -1115,6 +1115,9 @@ html.preview-phone .preview-frame {
    rules it shares with .gh-content (above); this wrapper carries the same measure so the
    toolbar, which inherits from it, is sized against the body type. */
 .editor-canvas__body {
+  /* Positioned so the slash menu can be placed against the paragraph it belongs to
+     without leaving the canvas — it is the only absolute child. */
+  position: relative;
   font-family: var(--font-serif); font-size: 2rem; line-height: 1.55;
   letter-spacing: -.01em; color: var(--ink);
   /* The box the selection bubbles are positioned inside, so they scroll with the words
@@ -1305,6 +1308,26 @@ html.preview-phone .preview-frame {
   background: none; font: inherit; font-weight: 500; color: inherit; cursor: pointer;
 }
 .selection-bubble__action:hover { background: rgba(0, 0, 0, .05); }
+/* The slash menu. It is the toolbar's panels in another place — the same opaque paper,
+   border, shadow and UI sans — because it is the same set of tools, offered at the point
+   in the prose where the block will land. Placed by the controller against the
+   paragraph's own rect; the canvas body is what it is placed inside. The selected row is
+   the editor's own selection colour, so keyboard and mouse agree with the prose. */
+.slash-menu {
+  position: absolute; z-index: 30; margin: 0; padding: .5rem; list-style: none;
+  inline-size: min(30rem, calc(100vw - 4rem)); max-block-size: 32rem; overflow-y: auto;
+  background: var(--w-panel); border: 1px solid var(--w-line-strong); border-radius: 8px;
+  box-shadow: var(--w-shadow);
+  font-family: var(--font-sans); font-size: 1.4rem; line-height: 1.35;
+  letter-spacing: 0; color: var(--w-ink);
+}
+.slash-menu[hidden] { display: none; }
+.slash-menu__item { padding: .6rem .8rem; border-radius: 6px; cursor: pointer; }
+.slash-menu__item[hidden] { display: none; }
+.slash-menu__item:hover { background: rgba(0, 0, 0, .05); }
+.slash-menu__item[aria-selected="true"] { background: rgba(180, 83, 9, .13); }
+.slash-menu__label { display: block; font-weight: 500; }
+.slash-menu__hint { display: block; margin-block-start: .1rem; font-size: 1.2rem; color: var(--w-muted); }
 
 /* Embeds, seen from the editor. A YouTube frame plays here exactly as it will on the
    published page, in the same .kg-embed-card figure under the same rules. A tweet can't:
