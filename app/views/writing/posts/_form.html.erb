@@ -120,22 +120,33 @@
 
       <%# selection-bubble sits here too because the bubbles are about the body and nothing
           else: the caret, the toolbar they proxy to, and the box they position inside are
-          all within this element. %>
-      <div class="editor-canvas__body" data-controller="embed html-card selection-bubble"
+          all within this element. slash-menu is the fourth: it makes nothing itself — it
+          clicks the toolbar for the blocks, and hands its two other rows to the controllers
+          that own them, which is why those two arrive here as events rather than as calls. %>
+      <div class="editor-canvas__body" data-controller="embed html-card selection-bubble slash-menu"
            data-embed-url-value="<%= writing_embeds_path %>"
            data-html-card-url-value="<%= writing_html_cards_path %>"
            data-action="lexxy:insert-link->embed#unfurl
                         selectionchange@document->selection-bubble#follow
                         lexxy:blur->selection-bubble#dismiss
                         keydown@window->selection-bubble#dismissOnEscape
-                        turbo:before-cache@window->selection-bubble#dismiss">
+                        turbo:before-cache@window->selection-bubble#dismiss
+                        keydown->slash-menu#navigate:capture
+                        lexxy:change->slash-menu#sync
+                        lexxy:blur->slash-menu#close
+                        selectionchange@document->slash-menu#sync
+                        slash-menu:embed->embed#insert
+                        slash-menu:card->html-card#open">
         <%# The URL a card's frame loads, with a hole where the sgid goes: the canvas fills
             it from the attachment and never builds an address of its own. %>
-        <%= form.rich_text_area :body, data: { html_card_target: "editor", local_save_target: "input",
+        <%= form.rich_text_area :body, data: { html_card_target: "editor", embed_target: "editor",
+              slash_menu_target: "editor", local_save_target: "input",
               html_card_url_template: writing_html_card_path("__sgid__") },
-              placeholder: "Start writing. Paste a tweet or YouTube link on its own line to embed it." do %>
+              placeholder: "Start writing. Type / for blocks, ## for a heading, or paste a link on its own line to embed it." do %>
           <%= render "writing/posts/toolbar" %>
         <% end %>
+
+        <%= render "writing/posts/slash_menu" %>
 
         <%# Writing a card is a rare, deliberate act — markup that will be served exactly as
             typed — so it stays folded away rather than sitting under the prose all day. The
