@@ -1181,6 +1181,8 @@ html.preview-phone .preview-frame {
    and colour buttons stop reading as menus. The caret is a rotated corner, so growing it
    drops its visual centre; pull it back up. */
 .editor-canvas__body lexxy-toolbar .lexxy-editor__toolbar-button--chevron:after {
+  block-size: .65ch; inline-size: .65ch; margin-block-start: -.2ch;
+}
 
 /* The canvas's code block reads as the published one: same paper-deep box, and Prism's
    token variables pointed at the Rouge palette above. */
