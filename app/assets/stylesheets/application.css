@@ -2,8 +2,7 @@
    Paper #f6efe0, ink #2b2620, terracotta accents. Fraunces for display headings,
    Newsreader for reading body, IBM Plex Mono for labels. The homepage + site chrome
    and the interior reader pages all share this one voice. (The author-only writing
-   surface further down keeps its own --font-sans/EB-Garamond tokens, loaded by its
-   own bare layout.) */
+   surface further down shares the reading typography and adds Inter for its chrome.) */
 
 :root {
   /* --- "Chronicles" print-house palette, ported from the homepage redesign mockup.
@@ -27,6 +26,28 @@
   --body: "Newsreader", Georgia, serif;
   --mono: "IBM Plex Mono", monospace;
 
+  /* Highlight swatches. The editor writes a pick inline as `color: var(--highlight-N)` or
+     `background-color: var(--highlight-bg-N)` and the page renders that same variable, so
+     both surfaces must read one definition: Lexxy's nine slots, filled from the palette. */
+  --highlight-1: var(--terracotta);
+  --highlight-2: var(--terracotta-deep);
+  --highlight-3: var(--spool-red);
+  --highlight-4: var(--wood);
+  --highlight-5: var(--wood-deep);
+  --highlight-6: var(--tms-green);
+  --highlight-7: var(--tms-green-deep);
+  --highlight-8: var(--ink-soft);
+  --highlight-9: var(--ink);
+  --highlight-bg-1: var(--gold);
+  --highlight-bg-2: rgba(176, 92, 52, .18);
+  --highlight-bg-3: rgba(208, 64, 42, .16);
+  --highlight-bg-4: rgba(122, 82, 48, .18);
+  --highlight-bg-5: rgba(44, 69, 58, .16);
+  --highlight-bg-6: var(--paper-deep);
+  --highlight-bg-7: var(--line);
+  --highlight-bg-8: rgba(150, 73, 31, .14);
+  --highlight-bg-9: rgba(43, 38, 32, .08);
+
   --background-color: var(--paper);
   --accent-color: var(--terracotta-deep);
 
@@ -36,9 +57,8 @@
   --color-border: var(--line);
 
   --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  /* Newsreader is loaded on public pages; the writing layout only loads EB Garamond,
-     so it falls through to that. Both surfaces land on a real serif either way. */
-  --font-serif: "Newsreader", "EB Garamond", Georgia, Times, serif;
+  /* Newsreader and Fraunces load on both layouts (layouts/_fonts); Georgia is the fallback. */
+  --font-serif: "Newsreader", Georgia, Times, serif;
   --font-mono: "IBM Plex Mono", "JetBrains Mono", Menlo, Consolas, Monaco, "Liberation Mono", monospace;
 
   --container-width: 1320px;
@@ -83,11 +103,9 @@ p { overflow-wrap: break-word; }
 a { color: var(--color-primary-text); text-decoration: none; }
 a:hover { opacity: .8; }
 
-/* Public reader headings speak in Fraunces (the display face) at the homepage's weight;
-   the author editor canvas stays on --font-serif — it lives on the bare writing layout
-   that never loads Fraunces, so pointing it here would only fall back to Georgia. */
+/* Titles speak in Fraunces (the display face) at the homepage's weight. Body headings get
+   the same face in the content typography below, shared with the editor canvas. */
 .has-serif-title .is-title { font-family: var(--serif); font-weight: 600; }
-.has-serif-title .gh-content > :is(h1, h2, h3, h4, h5, h6) { font-family: var(--serif); font-weight: 600; }
 
 /* ---- Layout scaffolding ---- */
 .gh-viewport { display: flex; flex-direction: column; min-height: 100vh; }
@@ -145,12 +163,18 @@ a:hover { opacity: .8; }
 }
 .gh-article-tag::after { content: ""; height: 1px; width: 54px; background: var(--terracotta); opacity: .5; }
 .gh-article-tag:hover { color: var(--terracotta-deep); opacity: 1; }
-.gh-article-title {
+/* The title and standfirst are shared with the canvas's title and subtitle fields: the
+   writer types into the same type the reader gets. The editor side carries its parent so
+   it outranks the fields' own box rules further down. */
+.gh-article-title,
+.editor-canvas .editor-canvas__title {
+  font-family: var(--serif); font-weight: 600; color: var(--ink);
   font-size: clamp(3.4rem, 1.36vw + 2.85rem, 4.6rem);
   letter-spacing: -.02em;
   line-height: 1.06;
 }
-.gh-article-excerpt {
+.gh-article-excerpt,
+.editor-canvas .editor-canvas__subtitle {
   font-size: clamp(1.8rem, .3vw + 1.7rem, 2.1rem);
   line-height: 1.45;
   margin-top: 16px;
@@ -177,34 +201,57 @@ a:hover { opacity: .8; }
 .gh-article-image img { width: 100%; border-radius: 6px; border: 6px solid #fffdf6; box-shadow: 0 14px 34px rgba(43, 38, 32, .16), 0 2px 6px rgba(43, 38, 32, .10); }
 .gh-article-image figcaption { text-align: center; font-family: var(--body); font-style: italic; font-size: 1.5rem; color: var(--ink-soft); margin-top: 1.4rem; }
 
-/* ---- Content typography (rich-text body) ---- */
+/* ---- Content typography (rich-text body) ----
+   Every block rule here is shared by the published body (.gh-content) and the editor
+   canvas (the .lexxy-editor__content inside .editor-canvas__body): change one, you change
+   both, which is how the canvas stays the page. The editor side is two classes deep so it
+   beats Lexxy's zero-specificity :where(.lexxy-content) rules on specificity alone — never
+   on load order, never with !important. Both bodies render at 2rem, so em-based sizes
+   compute identically. Rhythm is margin-top on siblings; Lexxy's margin-bottom is retired
+   through its --lexxy-content-margin token in the editor block further down. */
 .gh-content { font-size: 1.7rem; letter-spacing: -.01em; margin-top: 4rem; }
-.has-serif-body .gh-content { font-family: var(--font-serif); font-size: 2rem; line-height: 1.55; }
-.gh-content > * + * { margin-top: 2.8rem; }
-/* Heading + link typography is shared by the published body (.gh-content) and the
-   editor canvas (.editor-canvas__body) so the two surfaces can't drift. Both bodies
-   render at 2rem, so the em-based sizes compute identically; the descendant editor
-   selectors (specificity 0,1,1) beat Lexxy's zero-specificity :where(.lexxy-content). */
+.has-serif-body .gh-content,
+.editor-canvas__body .lexxy-editor__content { font-family: var(--font-serif); font-size: 2rem; line-height: 1.55; letter-spacing: -.01em; color: var(--ink); }
+.gh-content > * + *,
+.editor-canvas__body .lexxy-editor__content > * + * { margin-top: 2.8rem; }
+/* Lexxy parks a hidden half-line paragraph ahead of a leading image so the caret has
+   somewhere to land; it must not push the first real block down. */
+.editor-canvas__body .lexxy-editor__content > .provisional-paragraph.hidden + * { margin-top: 0; }
 .gh-content > :is(h1, h2, h3, h4, h5, h6),
-.editor-canvas__body :is(h1, h2, h3, h4, h5, h6) { margin-top: 5.6rem; font-family: var(--font-serif); line-height: 1.2; }
-.gh-content h1, .editor-canvas__body h1 { font-size: 2.2em; letter-spacing: -.02em; }
-.gh-content h2, .editor-canvas__body h2 { font-size: 1.6em; letter-spacing: -.02em; }
-.gh-content h3, .editor-canvas__body h3 { font-size: 1.3em; letter-spacing: -.017em; }
-.gh-content h4, .editor-canvas__body h4 { font-size: 1.15em; letter-spacing: -.01em; }
-.gh-content a, .editor-canvas__body a { color: var(--accent-color); text-decoration: underline; }
-.gh-content a:hover, .editor-canvas__body a:hover { opacity: .8; }
-.gh-content :is(ul, ol) { padding-left: 2.8rem; }
-.gh-content :is(li + li, li :is(ul, ol)) { margin-top: .8rem; }
+.editor-canvas__body .lexxy-editor__content :is(h1, h2, h3, h4, h5, h6) {
+  margin-top: 5.6rem; font-family: var(--serif); font-weight: 600; line-height: 1.2;
+  hyphens: manual; text-wrap: wrap;
+}
+.gh-content h1, .editor-canvas__body .lexxy-editor__content h1 { font-size: 2.2em; letter-spacing: -.02em; }
+.gh-content h2, .editor-canvas__body .lexxy-editor__content h2 { font-size: 1.6em; letter-spacing: -.02em; }
+.gh-content h3, .editor-canvas__body .lexxy-editor__content h3 { font-size: 1.3em; letter-spacing: -.017em; }
+.gh-content h4, .editor-canvas__body .lexxy-editor__content h4 { font-size: 1.15em; letter-spacing: -.01em; }
+/* Only imports carry h5/h6 (the body's headings are h2–h4); body size keeps them legible. */
+.gh-content :is(h5, h6), .editor-canvas__body .lexxy-editor__content :is(h5, h6) { font-size: 1em; }
+.gh-content a, .editor-canvas__body .lexxy-editor__content a { color: var(--accent-color); text-decoration: underline; }
+.gh-content a:hover, .editor-canvas__body .lexxy-editor__content a:hover { opacity: .8; }
+.gh-content :is(ul, ol), .editor-canvas__body .lexxy-editor__content :is(ul, ol) { padding-left: 2.8rem; }
+/* The 1em is Trix's legacy `.trix-content li` indent (actiontext.css), which the published
+   body has always worn; stated here so the canvas wears it too. */
+.gh-content li, .editor-canvas__body .lexxy-editor__content li { margin-left: 1em; }
+.gh-content :is(li + li, li :is(ul, ol)),
+.editor-canvas__body .lexxy-editor__content :is(li + li, li :is(ul, ol)) { margin-top: .8rem; }
 .gh-content blockquote,
-.editor-canvas__body blockquote {
+.editor-canvas__body .lexxy-editor__content blockquote {
   border-left: 3px solid var(--terracotta);
-  padding-left: 2.4rem;
+  padding: 0 0 0 2.4rem;
   font-style: italic;
   color: var(--ink-soft);
 }
-.gh-content img { margin-left: auto; margin-right: auto; border-radius: 4px; }
-.gh-content figure { margin-top: 4rem; margin-bottom: 4rem; }
-.gh-content figcaption {
+/* A highlight is the colour the writer picked, carried inline as a --highlight-* variable
+   (defined in :root); a <mark> without one is just text — no browser yellow. */
+.gh-content mark, .editor-canvas__body .lexxy-editor__content mark { background-color: transparent; color: inherit; }
+.gh-content img,
+.editor-canvas__body .lexxy-editor__content img { margin-left: auto; margin-right: auto; border-radius: 4px; max-block-size: none; }
+.gh-content figure,
+.editor-canvas__body .lexxy-editor__content figure { margin-top: 4rem; margin-bottom: 4rem; }
+.gh-content figcaption,
+.editor-canvas__body .lexxy-editor__content figcaption {
   text-align: center;
   font-size: 1.5rem;
   font-family: var(--body);
@@ -212,34 +259,56 @@ a:hover { opacity: .8; }
   color: var(--ink-soft);
   margin-top: 1.2rem;
 }
-/* A fleuron instead of a bare rule — the print detail that runs through the masthead & footer. */
-.gh-content hr {
-  border: 0; height: auto; margin: 5.2rem 0; text-align: center;
+/* The canvas paints an image as Lexxy's .attachment figure with a textarea for the caption.
+   Strip the gem's padding so the figure is the figure, and let the caption's field inherit
+   the caption's look. */
+.editor-canvas__body .lexxy-editor__content :is(.attachment, .attachment__caption) { padding: 0; border-radius: 0; }
+.editor-canvas__body .lexxy-editor__content .attachment__caption textarea { padding: 0; text-align: inherit; font-style: inherit; }
+/* A fleuron instead of a bare rule — the print detail that runs through the masthead & footer.
+   In the canvas the rule sits inside Lexxy's .horizontal-divider figure, which takes the
+   margins so the rule can't collapse them twice. */
+.gh-content hr,
+.editor-canvas__body .lexxy-editor__content .horizontal-divider { margin: 5.2rem 0; padding: 0; }
+.gh-content hr,
+.editor-canvas__body .lexxy-editor__content hr {
+  border: 0; height: auto; width: auto; text-align: center;
   font-family: var(--serif); color: var(--terracotta); line-height: 1;
 }
-.gh-content hr::before { content: "❦"; font-size: 1.7rem; }
+.editor-canvas__body .lexxy-editor__content .horizontal-divider hr { margin: 0; }
+.gh-content hr::before, .editor-canvas__body .lexxy-editor__content hr::before { content: "❦"; font-size: 1.7rem; }
 
 /* ---- Tables ---- */
 /* Numbers are why a table is in a post at all, so they get the alignment and the tabular
    figures; the hairline rules are the Ghost content rhythm, not a grid. A table wider than
    the measure scrolls rather than squeezing its columns — the wrapper is the browser's, on
-   the table itself, so no card or markup has to arrange it. */
-.gh-content table {
-  display: block; overflow-x: auto; width: 100%;
-  border-collapse: collapse; margin: 3.2rem 0;
+   the table itself, so no card or markup has to arrange it. Lexxy already wraps its table
+   in a scrolling div, so on the canvas that div is the scrolling box and the table inside
+   is just the table. */
+.gh-content table,
+.editor-canvas__body .lexxy-editor__content .lexxy-content__table-wrapper { display: block; overflow-x: auto; margin: 3.2rem 0; }
+.gh-content table,
+.editor-canvas__body .lexxy-editor__content table {
+  width: 100%; border-collapse: collapse;
   font-size: .82em; line-height: 1.45;
 }
-.gh-content th, .gh-content td {
+.editor-canvas__body .lexxy-editor__content table { margin: 0; }
+.gh-content th, .gh-content td,
+.editor-canvas__body .lexxy-editor__content th, .editor-canvas__body .lexxy-editor__content td {
   padding: .7em 1.1em; text-align: left; vertical-align: top;
-  border-bottom: 1px solid var(--line);
+  border: 0; border-bottom: 1px solid var(--line);
+  min-width: 0; max-width: none;
 }
-.gh-content th {
-  font-weight: 600; white-space: nowrap;
+.gh-content th,
+.editor-canvas__body .lexxy-editor__content th {
+  font-weight: 600; white-space: nowrap; background: none;
   border-bottom-width: 2px; color: var(--ink-soft);
 }
-.gh-content td + td, .gh-content th + th { text-align: right; font-variant-numeric: tabular-nums; }
-.gh-content tbody tr:last-child td { border-bottom: 0; }
-.gh-content caption { caption-side: bottom; padding-top: 1rem; font-size: .95em; color: var(--ink-soft); text-align: left; }
+.gh-content :is(td + td, th + th),
+.editor-canvas__body .lexxy-editor__content :is(td + td, th + th) { text-align: right; font-variant-numeric: tabular-nums; }
+.gh-content tr:last-child td,
+.editor-canvas__body .lexxy-editor__content tr:last-child td { border-bottom: 0; }
+.gh-content caption,
+.editor-canvas__body .lexxy-editor__content caption { caption-side: bottom; padding-top: 1rem; font-size: .95em; color: var(--ink-soft); text-align: left; }
 
 /* ---- Koenig cards ---- */
 .kg-card { margin-top: 4rem; margin-bottom: 4rem; }
@@ -310,8 +379,11 @@ a:hover { opacity: .8; }
 .kg-toggle-card[data-kg-toggle-state="close"] .kg-toggle-content { display: none; }
 .kg-toggle-card[data-kg-toggle-state="open"] .kg-toggle-card-icon svg { transform: rotate(180deg); }
 
-/* code */
-.gh-content pre {
+/* code — the box only; colouring is its own concern. The canvas paints a block as a bare
+   <code data-language> and stores it as the <pre><code> the page shows, so the two
+   selectors name the same thing. */
+.gh-content pre,
+.editor-canvas__body .lexxy-editor__content code[data-language] {
   background: var(--paper-deep);
   color: var(--color-primary-text);
   border: 1px solid var(--line);
@@ -323,12 +395,14 @@ a:hover { opacity: .8; }
   padding: 16px 20px;
 }
 .gh-content pre code { background: none; padding: 0; font-size: inherit; color: inherit; }
-.gh-content :not(pre) > code {
+.gh-content :not(pre) > code,
+.editor-canvas__body .lexxy-editor__content code:not([data-language]) {
   background: rgba(0, 0, 0, .05);
   border-radius: .25em;
   font-family: var(--font-mono);
   font-size: .85em;
   padding: .15em .4em;
+  color: inherit;
 }
 
 /* embeds */
@@ -353,7 +427,8 @@ a:hover { opacity: .8; }
   .post-image { flex: none; width: 100%; }
   .post-image img { width: 100%; height: 200px; }
   .tag-archive__lede { font-size: 1.8rem; }
-  .has-serif-body .gh-content { font-size: 1.8rem; }
+  .has-serif-body .gh-content,
+  .editor-canvas__body .lexxy-editor__content { font-size: 1.8rem; }
 }
 
 /* =========================================================================
@@ -933,20 +1008,14 @@ a:hover { opacity: .8; }
    tall screens. Lexxy's own content padding is zeroed below so text starts at the title's
    left edge and the wrapper width IS the writing measure. */
 .editor-canvas { max-width: 76rem; margin: 0 auto; padding: 5rem clamp(20px, 4vw, 40px) 12rem; }
+/* Type and colour come from the public title/standfirst rules they share (see
+   .gh-article-title); only the box is decided here. */
 .editor-canvas__title,
 .editor-canvas__subtitle {
   display: block; width: 100%; border: 0; background: none; padding: 0;
   resize: none; overflow: hidden; white-space: pre-wrap;
-  font-family: var(--font-serif); color: var(--w-ink);
 }
-.editor-canvas__title {
-  margin-bottom: 1.2rem; font-size: clamp(3.4rem, 4.6vw, 4.6rem); font-weight: 600;
-  line-height: 1.1; letter-spacing: -.022em;
-}
-.editor-canvas__subtitle {
-  margin-bottom: 1.4rem; font-size: clamp(1.7rem, .23vw + 1.61rem, 1.9rem);
-  line-height: 1.45; letter-spacing: -.018em; color: var(--w-muted);
-}
+.editor-canvas__subtitle { margin-bottom: 1.4rem; }
 
 /* The URL, under the subtitle: quiet enough to ignore while writing, legible enough to
    check. The dotted underline is the whole affordance — it says "this part is yours"
@@ -981,21 +1050,46 @@ a:hover { opacity: .8; }
 .editor-canvas__title:focus,
 .editor-canvas__subtitle:focus { outline: none; }
 
-/* The Lexxy editor is the star: match the public serif body so the writer sees what
-   readers will. Theme the gem via its own --lexxy-* tokens (transparent canvas, our ink
-   and accent), drop the boxed card chrome, and zero its content padding so the text sits
-   directly on the cream page at the published measure. */
+/* The Lexxy editor is the star. The prose itself is styled by the content typography
+   rules it shares with .gh-content (above); this wrapper carries the same measure so the
+   toolbar, which inherits from it, is sized against the body type. */
 .editor-canvas__body {
   font-family: var(--font-serif); font-size: 2rem; line-height: 1.55;
-  letter-spacing: -.01em; color: var(--w-ink);
+  letter-spacing: -.01em; color: var(--ink);
 }
+/* The gem is themed through its own --lexxy-* tokens, in one block, from the site palette —
+   nothing reaches into its stylesheet. The canvas stays transparent on the paper. The
+   content-margin token is retired (zero), not retuned: Lexxy's naked rems compute small at
+   html{font-size:62.5%}, and the shared rules own the block rhythm with margin-top. */
 .editor-canvas__body lexxy-editor {
   display: block; min-height: 46vh;
   --lexxy-color-canvas: transparent;
-  --lexxy-color-ink: var(--w-ink);
-  --lexxy-color-link: var(--accent-color);
+  --lexxy-color-ink: var(--ink);
+  --lexxy-color-ink-medium: var(--ink-soft);
+  --lexxy-color-ink-light: #a3947c;
+  --lexxy-color-ink-lighter: var(--line);
+  --lexxy-color-ink-lightest: var(--paper-deep);
+  --lexxy-color-ink-inverted: var(--paper);
   --lexxy-color-accent-dark: var(--accent-color);
+  --lexxy-color-accent-medium: var(--terracotta);
+  --lexxy-color-accent-light: var(--gold);
+  --lexxy-color-accent-lightest: rgba(180, 83, 9, .13);
+  --lexxy-color-text: var(--ink);
+  --lexxy-color-text-subtle: var(--ink-soft);
+  --lexxy-color-link: var(--accent-color);
   --lexxy-color-selected: rgba(180, 83, 9, .13);
+  --lexxy-color-selected-hover: rgba(180, 83, 9, .22);
+  --lexxy-color-selected-dark: var(--terracotta);
+  --lexxy-color-code-bg: var(--paper-deep);
+  --lexxy-color-table-header-bg: transparent;
+  --lexxy-color-table-cell-border: var(--line);
+  --lexxy-font-base: var(--font-sans);
+  --lexxy-font-mono: var(--font-mono);
+  --lexxy-text-small: 1.3rem;
+  --lexxy-content-margin: 0;
+  --lexxy-focus-ring-color: var(--terracotta);
+  --lexxy-radius: 6px;
+  --lexxy-shadow: var(--w-shadow);
   --lexxy-editor-padding: 0;
   border: 0; border-radius: 0; background: none;
 }
@@ -1009,23 +1103,22 @@ a:hover { opacity: .8; }
 }
 
 /* Embeds, seen from the editor. A YouTube frame plays here exactly as it will on the
-   published page. A tweet can't: the live page swaps the blockquote for the real thing
-   once Twitter's widget script loads (tweets_controller), and no widget runs on the
-   writer's canvas. So dress the blockquote as a card that says what it is and where it
-   goes, rather than leaving it looking like a stray pull-quote. */
-.editor-canvas__body .kg-embed-card { margin: 2.4rem 0; }
-.editor-canvas__body .kg-embed-card iframe { max-width: 100%; border-radius: 8px; }
-.editor-canvas__body blockquote.twitter-tweet {
+   published page, in the same .kg-embed-card figure under the same rules. A tweet can't:
+   the live page swaps the blockquote for the real thing once Twitter's widget script
+   loads (tweets_controller), and no widget runs on the writer's canvas. So dress the
+   blockquote as a card that says what it is and where it goes, rather than leaving it
+   looking like a stray pull-quote. */
+.editor-canvas__body .lexxy-editor__content blockquote.twitter-tweet {
   width: 100%; margin: 0; padding: 1.4rem 1.6rem; border: 1px solid var(--w-line-strong);
   border-radius: 10px; background: var(--w-panel);
   font-family: var(--font-sans); font-size: 1.45rem; line-height: 1.5; font-style: normal;
 }
-.editor-canvas__body blockquote.twitter-tweet::before {
+.editor-canvas__body .lexxy-editor__content blockquote.twitter-tweet::before {
   content: "Tweet — renders on the published page"; display: block; margin-bottom: .6rem;
   font-size: 1.15rem; font-weight: 600; font-style: normal;
   letter-spacing: .07em; text-transform: uppercase; color: var(--w-muted);
 }
-.editor-canvas__body blockquote.twitter-tweet a { word-break: break-all; }
+.editor-canvas__body .lexxy-editor__content blockquote.twitter-tweet a { word-break: break-all; }
 
 /* The card composer: tooling, not page, so it steps out of the canvas serif and stays
    quiet — a folded line under the prose that only becomes a form when it's wanted. */
