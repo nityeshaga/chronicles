@@ -15,6 +15,10 @@ import CodeBlocks from "lexxy_code_blocks"
 // call stack drains, so configuring here — right after the import — lands in time.
 configure({ global: { extensions: [ EmbedFrames, KgCards, BodyHeadings, InlineCode, HtmlCards, CodeBlocks ] } })
 
+import { application } from "controllers/application"
+import { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"
+eagerLoadControllersFrom("writing", application)
+
 // Custom elements upgrade parent before child, and a Turbo visit inserts the new body as a
 // single subtree — so <lexxy-editor> runs its connectedCallback and hands itself to a
 // <lexxy-toolbar> that is still an unknown element, throws on setEditor, and leaves Lexical
@@ -36,7 +40,3 @@ addEventListener("turbo:before-render", ({ detail: { newBody } }) => {
   document.adoptNode(newBody)
   newBody.querySelectorAll("lexxy-toolbar").forEach((toolbar) => customElements.upgrade(toolbar))
 })
-
-import { application } from "controllers/application"
-import { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"
-eagerLoadControllersFrom("writing", application)
