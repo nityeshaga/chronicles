@@ -21,16 +21,24 @@
       the draft the moment there's real content, then swaps to the persisted PATCH URL in
       place. Leaving is guarded rather than blocked: an in-app visit waits for the pending
       save, a tab close gets the browser's own dialog while anything is unsaved. %>
+  <%# local-save keeps the browser's own copy of the body while a save is still owed, keyed
+      by record so two open posts can't trade drafts, and cleared only when autosave says
+      the save landed — an event chain, so neither controller knows the other exists. %>
   <%= form_with model: [ :writing, post ], class: "editor-shell__form", data: {
-        controller: "slug autosave", autosave_persisted_value: saving,
-        autosave_saved_text_value: autosave_saved_text(post),
+        controller: "slug autosave local-save", autosave_persisted_value: saving,
+        autosave_saved_text_value: autosave_saved_text(post), local_save_key_value: dom_id(post),
         action: "input->autosave#change lexxy:change->autosave#change " \
+                "input->local-save#save lexxy:change->local-save#save autosave:saved->local-save#saved " \
                 "turbo:submit-end->autosave#committed autosave:minted->slug#minted " \
                 "autosave:slugged->slug#kept " \
                 "turbo:before-morph-attribute@document->autosave#keepPanelOpen " \
                 "turbo:before-visit@window->autosave#guardVisit " \
                 "beforeunload@window->autosave#guardUnload",
         **slug_check_values(post) } do |form| %>
+    <%# Which version of the record this tab is editing. A save from a tab that fell behind
+        another is refused (409) rather than quietly winning; every save that lands hands
+        the new version back and autosave writes it here. %>
+    <%= form.hidden_field :lock_version, data: { autosave_target: "lock" } %>
     <header class="editor-bar">
       <div class="editor-bar__side">
         <%= link_to writing_posts_path, class: "editor-bar__back", title: "Back to all writing" do %>
@@ -102,11 +110,20 @@
           Both ask the server for what they insert. The placeholder is where the writer
           learns the paste exists — one line, in the exact spot the paste lands, instead of
           a permanent bar under the body. %>
+      <%# The body the browser kept when a save didn't land — a crash, a dead session, a
+          tab closed past the warning. Offered, not forced: the controller reveals this
+          only when the copy differs from what the server has, and the writer decides. %>
+      <p class="draft-notice" hidden data-local-save-target="notice">
+        Unsaved draft from <span data-local-save-target="age"></span> found —
+        <button type="button" class="draft-notice__action" data-action="local-save#restore">Restore</button> ·
+        <button type="button" class="draft-notice__action" data-action="local-save#discard">Discard</button>
+      </p>
+
       <div class="editor-canvas__body" data-controller="embed html-card"
            data-embed-url-value="<%= writing_embeds_path %>"
            data-html-card-url-value="<%= writing_html_cards_path %>"
            data-action="lexxy:insert-link->embed#unfurl">
-        <%= form.rich_text_area :body, data: { html_card_target: "editor" },
+        <%= form.rich_text_area :body, data: { html_card_target: "editor", local_save_target: "input" },
               placeholder: "Start writing. Paste a tweet or YouTube link on its own line to embed it." %>
 
         <%# Writing a card is a rare, deliberate act — markup that will be served exactly as

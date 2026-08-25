@@ -58,6 +58,6 @@ class Writing::PagesController < Writing::BaseController
     end
 
     def page_params
-      params.require(:page).permit(:title, :slug, :excerpt, :feature_image, :feature_image_caption, :meta_title, :meta_description, :body, :uploaded_feature_image)
+      params.require(:page).permit(:title, :slug, :excerpt, :feature_image, :feature_image_caption, :meta_title, :meta_description, :body, :uploaded_feature_image, :lock_version)
     end
 end

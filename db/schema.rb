@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_25_060000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_25_130000) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.text "body"
     t.datetime "created_at", null: false
@@ -130,6 +130,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_060000) do
     t.string "feature_image"
     t.string "feature_image_caption"
     t.string "ghost_id"
+    t.integer "lock_version", default: 0, null: false
     t.string "meta_description"
     t.string "meta_title"
     t.integer "newsletter_recipients_count"

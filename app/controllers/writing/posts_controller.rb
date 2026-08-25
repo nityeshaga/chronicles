@@ -78,6 +78,6 @@ class Writing::PostsController < Writing::BaseController
     end
 
     def post_params
-      params.require(:post).permit(:title, :slug, :excerpt, :feature_image, :feature_image_caption, :meta_title, :meta_description, :body, :uploaded_feature_image, tag_ids: [])
+      params.require(:post).permit(:title, :slug, :excerpt, :feature_image, :feature_image_caption, :meta_title, :meta_description, :body, :uploaded_feature_image, :lock_version, tag_ids: [])
     end
 end
