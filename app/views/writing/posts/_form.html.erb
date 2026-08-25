@@ -118,10 +118,17 @@
         <button type="button" class="draft-notice__action" data-action="local-save#discard">Discard</button>
       </p>
 
-      <div class="editor-canvas__body" data-controller="embed html-card"
+      <%# selection-bubble sits here too because the bubbles are about the body and nothing
+          else: the caret, the toolbar they proxy to, and the box they position inside are
+          all within this element. %>
+      <div class="editor-canvas__body" data-controller="embed html-card selection-bubble"
            data-embed-url-value="<%= writing_embeds_path %>"
            data-html-card-url-value="<%= writing_html_cards_path %>"
-           data-action="lexxy:insert-link->embed#unfurl">
+           data-action="lexxy:insert-link->embed#unfurl
+                        selectionchange@document->selection-bubble#follow
+                        lexxy:blur->selection-bubble#dismiss
+                        keydown@window->selection-bubble#dismissOnEscape
+                        turbo:before-cache@window->selection-bubble#dismiss">
         <%# The URL a card's frame loads, with a hole where the sgid goes: the canvas fills
             it from the attachment and never builds an address of its own. %>
         <%= form.rich_text_area :body, data: { html_card_target: "editor", local_save_target: "input",
@@ -145,6 +152,8 @@
             <p class="card-composer__hint">A card can't be edited here — delete it and insert it again, or change its markup with the update_html_card tool.</p>
           </div>
         </details>
+
+        <%= render "writing/posts/selection_bubble" %>
       </div>
     </div>
 
