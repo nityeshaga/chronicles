@@ -28,7 +28,9 @@
                   lexxy:change->bar#recount
                   lexxy:change->tk#scan
                   resize@window->tk#scan
-                  turbo:before-stream-render@document->tk#scan">
+                  turbo:before-stream-render@document->tk#scan
+                  turbo:before-cache@window->bar#beforeCache
+                  turbo:before-cache@window->tk#beforeCache">
   <div class="editor-shell__scrim" data-editor-target="backdrop" data-action="click->editor#close"></div>
 
   <%# Autosave rides the form in both states, and is the only save there is — no Save

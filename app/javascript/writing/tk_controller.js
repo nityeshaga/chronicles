@@ -38,6 +38,15 @@ export default class extends Controller {
     clearTimeout(this.#timer)
   }
 
+  // Turbo caches the DOM as it stands and repaints that on a restore visit. Markers are
+  // measured against a layout, and a warning is a count of prose — neither survives being
+  // photographed. Wipe both; connect() paints them again from the page that arrives.
+  beforeCache() {
+    clearTimeout(this.#timer)
+    this.#draw([])
+    this.#warn(0)
+  }
+
   // A scan walks every text node in the body and measures a range per hit, so it waits for
   // a pause the way the save does rather than running per keystroke.
   scan() {

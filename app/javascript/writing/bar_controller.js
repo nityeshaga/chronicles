@@ -19,8 +19,10 @@ import { Controller } from "@hotwired/stimulus"
 // lands while the page is still arriving, not under the writer's hands. It has to be
 // connect and not a lexxy:initialize action: the writing entry imports Lexxy before it
 // eager-loads these controllers, so the editor has already announced itself by the time
-// any data-action here exists to hear it. By the same ordering, the editor is already
-// built when this connects, so there is prose to count.
+// any data-action here exists to hear it. It goes through the same debounce as every
+// other recount, because that ordering does not hold on a Turbo restore: there the cached
+// markup is repainted and the editor refills itself a frame or two later, and a count
+// taken the instant this connects reads an empty body and says so.
 const RECOUNT_DELAY = 300
 
 export default class extends Controller {
@@ -39,7 +41,7 @@ export default class extends Controller {
     }, { rootMargin: `-${this.chromeTarget.offsetHeight}px 0px 0px 0px` })
     this.#observer.observe(this.canvasTitleTarget)
     this.retitle()
-    this.#recount()
+    this.recount()
   }
 
   disconnect() {
@@ -49,6 +51,13 @@ export default class extends Controller {
 
   retitle() {
     this.titleTarget.textContent = this.canvasTitleTarget.value
+  }
+
+  // Turbo photographs the DOM for a restore visit, and the title in the bar is only true
+  // of a scroll position the restored page doesn't have yet. Put it away; the observer
+  // fires on connect and says whether it belongs back.
+  beforeCache() {
+    this.titleTarget.hidden = true
   }
 
   // Recounting on every keystroke would walk the whole body per character. A third of a
