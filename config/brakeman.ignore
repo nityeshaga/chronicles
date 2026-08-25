@@ -1,0 +1,16 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "Cross-Site Scripting",
+      "warning_code": 2,
+      "fingerprint": "41c0f47c9dd16135a7b5dece449a129fa1430d13634ecff9412c0552e735e000",
+      "check_name": "CrossSiteScripting",
+      "message": "Unescaped parameter value",
+      "file": "app/views/writing/html_cards/show.html.erb",
+      "line": 17,
+      "confidence": "Weak",
+      "note": "Intended. An HtmlCard's content is the author's own hand-written markup, served bare so the editor canvas can frame it \u2014 the same trust boundary PostsController already extends to HtmlPage#raw_html (render html: ... .html_safe). The action is auth-gated (Writing::BaseController), the sgid lookup is restricted to HtmlCard, and the frame is sandboxed without allow-same-origin with a CSP sandbox directive on the response. See html_card.rb's header: the boundary is who can write, not what renders."
+    }
+  ],
+  "brakeman_version": "8.0.6"
+}

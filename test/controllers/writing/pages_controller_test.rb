@@ -170,5 +170,6 @@ class Writing::PagesControllerTest < ActionDispatch::IntegrationTest
     get writing_page_url(posts(:about))
     assert_response :success
     assert_select "article.gh-article"
+    assert_select ".preview-strip a[href=?]", edit_writing_page_path(posts(:about)), text: "Edit"
   end
 end

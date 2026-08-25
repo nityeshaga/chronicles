@@ -1,0 +1,23 @@
+<%# The one line that says this page is not the site: a preview only the signed-in writer
+    can reach, rendered in the public layout so it looks exactly like the live page will.
+    Outside the post's fragment cache on purpose — it must never be baked into the copy a
+    reader is served — and outside the public route entirely: only writing/posts#show and
+    writing/pages#show render it.
+
+    Phone is a frame, not a class. The site's small-screen rules are viewport media
+    queries, so narrowing a wrapper would show the desktop styles in a phone-shaped box;
+    the only honest 390px is a window that is 390px wide. The frame loads this same URL
+    on first click and the copy inside removes its own strip. %>
+<div data-controller="preview" data-preview-phone-class="preview-phone"
+     data-action="turbo:before-cache@document->preview#reset keydown.esc@window->preview#desktop">
+  <div class="preview-strip">
+    <span class="preview-strip__note">Preview — only you can see this</span>
+    <span class="preview-strip__devices" role="group" aria-label="Preview width">
+      <button type="button" class="preview-strip__device" aria-pressed="true" data-preview-target="desktop" data-action="preview#desktop">Desktop</button>
+      <button type="button" class="preview-strip__device" aria-pressed="false" data-preview-target="phone" data-action="preview#phone">Phone</button>
+    </span>
+    <%= link_to "Edit", [ :edit, :writing, post ], class: "preview-strip__edit" %>
+  </div>
+  <iframe class="preview-frame" title="Phone preview" data-preview-target="frame"></iframe>
+</div>
+<%= javascript_import_module_tag "preview" %>

@@ -14,8 +14,10 @@
 #
 # Two forms, and the difference is the whole class:
 #
-#   content      — what the author wrote. Reaches a browser through HtmlCard.expand, at
-#                  one seam, on the public post. Nowhere else.
+#   content      — what the author wrote. Reaches a browser at two seams and nowhere else:
+#                  HtmlCard.expand, on the public post, and Writing::HtmlCardsController#show,
+#                  which serves one card bare for the writer's canvas to frame. Both read
+#                  the record; the bytes still never ride in a body or an attachment.
 #   static_html  — the same markup with script and style pruned *with their contents*.
 #                  This is what the attachment partial renders, so email, feeds, search
 #                  descriptions and reading time get the readable skeleton for free rather

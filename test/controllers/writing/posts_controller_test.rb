@@ -908,6 +908,8 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
       "embed html-card", "lexxy:insert-link->embed#unfurl"
     assert_select "lexxy-editor[placeholder=?]",
       "Start writing. Paste a tweet or YouTube link on its own line to embed it."
+    # The canvas frames a card from this URL, filling the hole with the attachment's sgid.
+    assert_select "lexxy-editor[data-html-card-url-template=?]", writing_html_card_path("__sgid__")
   end
 
   test "preview renders the public post template behind auth" do
@@ -962,5 +964,34 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_equal %w[ Yellow Orange Red Pink Purple Blue Green Brown Grey ], toolbar["data-labels-swatches-value"].split
     assert_equal({ "h2" => "Heading 2", "h3" => "Heading 3", "h4" => "Heading 4" },
       JSON.parse(toolbar["data-labels-headings-value"]))
+  end
+
+  test "preview requires authentication" do
+    get writing_post_url(posts(:draft))
+    assert_redirected_to new_session_url
+  end
+
+  # The strip is what tells a page that looks exactly like the site apart from it. It is
+  # the preview's alone: the public route never renders it, signed in or not.
+  test "preview wears the strip and the public page never does" do
+    sign_in_as users(:nityesh)
+    get writing_post_url(posts(:draft))
+
+    assert_select ".preview-strip", text: /Preview — only you can see this/
+    assert_select ".preview-strip button[aria-pressed=true]", text: "Desktop"
+    assert_select ".preview-strip button[aria-pressed=false]", text: "Phone"
+    assert_select ".preview-strip a[href=?]", edit_writing_post_path(posts(:draft)), text: "Edit"
+    assert_select "script[type=module]", text: 'import "preview"'
+
+    get post_url(posts(:published), trailing_slash: true)
+    assert_select ".preview-strip", count: 0
+    assert_select "script[type=module]", text: 'import "preview"', count: 0
+  end
+
+  test "Preview opens in its own tab" do
+    sign_in_as users(:nityesh)
+    get edit_writing_post_url(posts(:draft))
+
+    assert_select ".editor-bar a[href=?][target=_blank][rel=noopener]", writing_post_path(posts(:draft)), text: "Preview"
   end
 end

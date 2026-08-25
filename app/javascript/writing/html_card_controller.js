@@ -6,10 +6,9 @@ import { Controller } from "@hotwired/stimulus"
 // this asks for the attachment element the way the embed controller asks for provider
 // HTML. The client invents no markup here either.
 //
-// What comes back from an insert is Lexxy's own preview of the card — the static
-// skeleton, cleaned, with a delete button, nothing running. That's the editor's terms and
-// they're the right ones: the desk is for writing, and a card is only itself once
-// published.
+// What comes back from an insert is the attachment element — sgid, and the static
+// skeleton in `content` for everything that can't run a card. The canvas itself paints
+// it as the real card, framed (lexxy_html_cards.js); that is not this controller's job.
 export default class extends Controller {
   static targets = [ "editor", "source", "disclosure" ]
   static values = { url: String }

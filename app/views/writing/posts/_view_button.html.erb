@@ -2,10 +2,13 @@
     that actually is: on a draft or a scheduled post the only reader is the writer himself,
     signed in; once it's live there's a real page to send him to. Shared by the post editor
     bar and the HTML-page editor's header, which differ only in button size. Both hrefs
-    carry the slug, and both are re-rendered from here when a save renames the post. %>
+    carry the slug, and both are re-rendered from here when a save renames the post.
+
+    Preview opens in its own tab: the editor stays where the writer left it, and a reload
+    of the preview is the whole "refresh" story — no save to lose, no Back to find. %>
 <% if post.published? %>
   <%= link_to "View live", public_post_path(post), class: "w-btn w-btn--ghost #{size}" %>
 <% else %>
-  <%= link_to "Preview", [ :writing, post ], class: "w-btn w-btn--ghost #{size}",
+  <%= link_to "Preview", [ :writing, post ], class: "w-btn w-btn--ghost #{size}", target: "_blank", rel: "noopener",
         title: "Only you can see this — it needs your sign-in" %>
 <% end %>

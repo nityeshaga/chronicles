@@ -122,7 +122,10 @@
            data-embed-url-value="<%= writing_embeds_path %>"
            data-html-card-url-value="<%= writing_html_cards_path %>"
            data-action="lexxy:insert-link->embed#unfurl">
-        <%= form.rich_text_area :body, data: { html_card_target: "editor", local_save_target: "input" },
+        <%# The URL a card's frame loads, with a hole where the sgid goes: the canvas fills
+            it from the attachment and never builds an address of its own. %>
+        <%= form.rich_text_area :body, data: { html_card_target: "editor", local_save_target: "input",
+              html_card_url_template: writing_html_card_path("__sgid__") },
               placeholder: "Start writing. Paste a tweet or YouTube link on its own line to embed it." do %>
           <%= render "writing/posts/toolbar" %>
         <% end %>
