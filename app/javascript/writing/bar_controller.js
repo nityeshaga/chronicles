@@ -24,7 +24,7 @@ import { Controller } from "@hotwired/stimulus"
 const RECOUNT_DELAY = 300
 
 export default class extends Controller {
-  static targets = [ "chrome", "title", "canvasTitle", "count", "words", "wordUnit", "minutes", "body" ]
+  static targets = [ "chrome", "title", "canvasTitle", "count", "words", "wordUnit", "pace", "minutes", "body" ]
   static values = { readingSpeed: Number }
 
   #observer
@@ -65,6 +65,9 @@ export default class extends Controller {
     this.wordsTarget.textContent = words.toLocaleString(document.documentElement.lang || undefined)
     this.wordUnitTarget.textContent = unit
     this.minutesTarget.textContent = Math.max(Math.ceil(words / this.readingSpeedValue), 1)
+    // The one-minute floor is a promise made to a reader — "0 words · 1 min" on an empty
+    // canvas is that promise pointed at the wrong person.
+    this.paceTarget.hidden = words === 0
   }
 
   get #words() {

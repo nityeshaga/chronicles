@@ -13,15 +13,6 @@ module Writing::EditorHelper
   # what the next save costs before a key is pressed rather than after it. A page reached
   # by a refused save (the alert below the bar says why) must not open on "Saved": the
   # writer's work did not land, and the bar says only what the canvas is showing.
-  # The one word in the bar's count that changes with the number. It rides the element as
-  # data as well as being printed, because the bar rewrites that line on every keystroke
-  # and the copy stays Ruby's on both passes.
-  WORD_UNITS = { one: "word", many: "words" }.freeze
-
-  def word_unit(count) = count == 1 ? WORD_UNITS[:one] : WORD_UNITS[:many]
-
-  def word_unit_data = { word_one: WORD_UNITS[:one], word_many: WORD_UNITS[:many] }
-
   def autosave_idle_status(post)
     return [ nil, nil ] unless post.persisted?
     return [ nil, "Showing the saved version" ] if flash[:alert].present?

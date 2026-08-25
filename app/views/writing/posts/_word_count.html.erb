@@ -1,0 +1,12 @@
+<%# How much of it there is, in the bar on the way to Settings. Server-rendered so the line
+    is right before any JavaScript runs and right on a post nobody types into; the bar
+    controller rewrites the spans as the body grows. The unit word rides as data because it
+    is the one that changes with the number, and the copy stays Ruby's on both passes.
+    A canvas with nothing in it says "0 words" and nothing about minutes: the one-minute
+    floor is a promise made to a reader, not a counter for the writer. %>
+<% words = word_count(post) %>
+<p class="editor-bar__count" data-bar-target="count" data-word-one="word" data-word-many="words">
+  <span data-bar-target="words"><%= number_with_delimiter(words) %></span>
+  <span data-bar-target="wordUnit"><%= "word".pluralize(words) %></span><span
+    data-bar-target="pace"<%= " hidden" if words.zero? %>> · <span data-bar-target="minutes"><%= reading_time(post) %></span> min</span>
+</p>
