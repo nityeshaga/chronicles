@@ -5,10 +5,15 @@
     carry the slug, and both are re-rendered from here when a save renames the post.
 
     Preview opens in its own tab: the editor stays where the writer left it, and a reload
-    of the preview is the whole "refresh" story — no save to lose, no Back to find. %>
+    of the preview is the whole "refresh" story — no save to lose, no Back to find.
+
+    Both carry the editor's preview target so ⌘P can click the link rather than build a
+    URL of its own. On the HTML-page editor there is no editor controller above it and
+    the attribute is inert, which is the right amount of nothing. %>
 <% if post.published? %>
-  <%= link_to "View live", public_post_path(post), class: "w-btn w-btn--ghost #{size}" %>
+  <%= link_to "View live", public_post_path(post), class: "w-btn w-btn--ghost #{size}",
+        data: { editor_target: "preview" } %>
 <% else %>
   <%= link_to "Preview", [ :writing, post ], class: "w-btn w-btn--ghost #{size}", target: "_blank", rel: "noopener",
-        title: "Only you can see this — it needs your sign-in" %>
+        title: "Only you can see this — it needs your sign-in", data: { editor_target: "preview" } %>
 <% end %>

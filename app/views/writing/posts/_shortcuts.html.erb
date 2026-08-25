@@ -1,0 +1,42 @@
+<%# Every key the writing room answers to, in the order a writer meets them: the marks he
+    makes inside a sentence, the shape he gives a block, then the room itself. Opened with
+    ⌘/ or from the foot of the settings panel. The wording matches the toolbar's own
+    titles — "Bold (⌘B)" there, ⌘B · Bold here — because they are the same fact said
+    twice, and an integration test holds the two together.
+
+    A real <dialog>: the browser traps Tab inside it, closes it on Escape and hands focus
+    back to whatever opened it, so none of that is written here. It sits outside the
+    autosaving form on purpose — the sheet is chrome, and nothing in it is the post. %>
+<dialog class="shortcut-sheet" data-editor-target="shortcuts"
+        data-action="click->editor#closeShortcutsOnBackdrop">
+  <header class="shortcut-sheet__head">
+    <h2>Keyboard shortcuts</h2>
+    <button type="button" class="panel-close" data-action="editor#closeShortcuts" aria-label="Close shortcuts">
+      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+  </header>
+
+  <table class="shortcut-sheet__table">
+    <thead>
+      <tr><th scope="col">Keys</th><th scope="col">Action</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><kbd>⌘B</kbd></td><td>Bold</td></tr>
+      <tr><td><kbd>⌘I</kbd></td><td>Italic</td></tr>
+      <tr><td><kbd>⌘⇧X</kbd></td><td>Strikethrough</td></tr>
+      <tr><td><kbd>⌘E</kbd></td><td>Inline code</td></tr>
+      <tr><td><kbd>⌘K</kbd></td><td>Link</td></tr>
+      <tr><td><kbd>⌘⌥2</kbd></td><td>Heading 2</td></tr>
+      <tr><td><kbd>⌘⌥3</kbd></td><td>Heading 3</td></tr>
+      <tr><td><kbd>⌘⌥4</kbd></td><td>Heading 4</td></tr>
+      <tr><td><kbd>⌘⌥0</kbd></td><td>Paragraph</td></tr>
+      <tr><td><kbd>⌘S</kbd></td><td>Save now — the editor saves on its own every couple of seconds</td></tr>
+      <tr><td><kbd>⌘P</kbd></td><td>Open the reader's view in a new tab</td></tr>
+      <tr><td><kbd>⌘⇧P</kbd></td><td>Publishing</td></tr>
+      <tr><td><kbd>⌘/</kbd></td><td>This sheet</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Close whatever is open</td></tr>
+    </tbody>
+  </table>
+
+  <p class="shortcut-sheet__foot">On Windows and Linux, press Ctrl wherever this says ⌘.</p>
+</dialog>

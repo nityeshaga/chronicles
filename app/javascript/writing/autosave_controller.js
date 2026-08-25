@@ -108,6 +108,13 @@ export default class extends Controller {
     this.#save()
   }
 
+  // ⌘S. There is no Save button and the timer would have landed this in two seconds
+  // anyway, so the key exists to answer the reflex — the bar says "Saving…" and then
+  // "Saved", which is the whole point of pressing it. Nothing waits on the result here.
+  flushNow() {
+    this.flush()
+  }
+
   // Run any pending work now and hand back the promise for it, so a caller can wait.
   flush() {
     if (this.#dirty) this.#save()

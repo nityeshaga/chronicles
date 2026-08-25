@@ -9,11 +9,22 @@ import { Controller } from "@hotwired/stimulus"
 // It also owns the two things inside the popover that depend on the canvas outside it:
 // whether the post has a title yet (retitle), and the rule that publishing never
 // overtakes a save still in flight (commitThenSubmit).
+//
+// And it owns the keyboard's half of the same overlays: ⌘⇧P for publishing, ⌘P for the
+// reader's view, ⌘/ for the shortcut sheet. A panel opened from the keyboard has to be
+// usable from the keyboard, so opening one moves focus in, holds it there while it's
+// open, and hands it back to whatever opened it — otherwise Tab walks the prose behind
+// a panel the writer can see but can't reach.
+const FOCUSABLE = "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])"
+
 export default class extends Controller {
-  static targets = ["settings", "publish", "backdrop", "titleNote", "publishSubmit"]
+  static targets = ["settings", "publish", "backdrop", "titleNote", "publishSubmit", "preview", "shortcuts"]
   static classes = ["open"]
   static outlets = ["autosave"]
   static values = { openPublish: Boolean }
+
+  // Where focus was when a panel took it. Held for exactly as long as one is open.
+  #focusReturn
 
   // The server decides this one: an arrival that came from a publishing action says so,
   // and the answer — LIVE, SCHEDULED, or the refusal — is showing before the writer has
@@ -29,6 +40,7 @@ export default class extends Controller {
   // second time. Both are transient state; neither belongs in the cache.
   beforeCache() {
     this.openPublishValue = false
+    this.closeShortcuts()
     this.close()
   }
 
@@ -37,13 +49,49 @@ export default class extends Controller {
     this.#show(this.settingsTarget.classList.contains(this.openClass) ? null : this.settingsTarget)
   }
 
+  // Also ⌘⇧P. A canvas with nothing saved has no publish popover to open — the key is
+  // simply not one of the ones this page answers to yet.
   togglePublish(event) {
     event.preventDefault()
+    if (!this.hasPublishTarget) return
+
     this.#show(this.publishTarget.classList.contains(this.openClass) ? null : this.publishTarget)
+  }
+
+  // ⌘P. The bar's own link is what's clicked: it already knows whether this post has a
+  // preview or a live page, it carries the URL the server stamped and the new tab, and a
+  // click made inside a key handler is still the user gesture a popup blocker asks for.
+  preview() {
+    if (this.hasPreviewTarget) this.previewTarget.click()
   }
 
   close() {
     this.#show(null)
+  }
+
+  // ⌘/ and the link at the foot of the settings panel. A real <dialog>, so the platform
+  // does the modal work this controller does by hand for the panels — focus in, Tab
+  // trapped, Escape, focus back — and the sheet is the same markup either way.
+  openShortcuts() {
+    if (this.hasShortcutsTarget && !this.shortcutsTarget.open) this.shortcutsTarget.showModal()
+  }
+
+  closeShortcuts() {
+    if (this.#shortcutsOpen) this.shortcutsTarget.close()
+  }
+
+  // Stimulus's key filters don't cover "/", so this combination is read here.
+  shortcutsOnSlash(event) {
+    if (event.key !== "/" || !(event.metaKey || event.ctrlKey)) return
+
+    event.preventDefault()
+    this.openShortcuts()
+  }
+
+  // A modal dialog's backdrop is the dialog's own box, so a click that landed on the
+  // element itself landed outside the sheet.
+  closeShortcutsOnBackdrop(event) {
+    if (event.target === this.shortcutsTarget) this.closeShortcuts()
   }
 
   // The popover's note and its disabled Publish are rendered from the record, but the
@@ -69,8 +117,32 @@ export default class extends Controller {
     submitter.form.requestSubmit(submitter)
   }
 
+  // The sheet is a modal dialog and closes itself on Escape; the panel underneath it is
+  // not what the writer was asking to leave.
   closeOnEscape(event) {
-    if (event.key === "Escape") this.close()
+    if (event.key !== "Escape" || this.#shortcutsOpen) return
+
+    this.close()
+  }
+
+  // Tab inside an open panel stays inside it: off the last control it wraps to the
+  // first, and Shift+Tab off the first wraps to the last. Without this the next Tab
+  // leaves for the prose behind the panel, where the writer can't see what he's typing
+  // into. The dialog does its own trapping, so it takes its own Tabs.
+  trapFocus(event) {
+    if (event.key !== "Tab" || this.#shortcutsOpen) return
+
+    const panel = this.#openPanel
+    if (!panel) return
+
+    const focusables = this.#focusablesIn(panel)
+    if (focusables.length === 0) return
+
+    const edge = event.shiftKey ? focusables[0] : focusables[focusables.length - 1]
+    if (document.activeElement !== edge && panel.contains(document.activeElement)) return
+
+    event.preventDefault()
+    ;(event.shiftKey ? focusables[focusables.length - 1] : focusables[0]).focus()
   }
 
   #show(panel) {
@@ -78,6 +150,36 @@ export default class extends Controller {
       target.classList.toggle(this.openClass, target === panel)
     }
     this.backdropTarget.classList.toggle(this.openClass, panel !== null)
+    this.#moveFocus(panel)
+  }
+
+  #moveFocus(panel) {
+    if (panel) {
+      this.#focusReturn ||= this.#focusableActiveElement
+      this.#focusablesIn(panel)[0]?.focus()
+    } else if (this.#focusReturn) {
+      // A rename morphs the bar, so the button that opened the panel may be a different
+      // element by the time it closes; there is nowhere to hand focus back to then.
+      if (this.#focusReturn.isConnected) this.#focusReturn.focus()
+      this.#focusReturn = null
+    }
+  }
+
+  #focusablesIn(panel) {
+    return Array.from(panel.querySelectorAll(FOCUSABLE))
+  }
+
+  get #focusableActiveElement() {
+    const active = document.activeElement
+    return active && active !== document.body ? active : null
+  }
+
+  get #openPanel() {
+    return this.#panels.find(panel => panel.classList.contains(this.openClass)) || null
+  }
+
+  get #shortcutsOpen() {
+    return this.hasShortcutsTarget && this.shortcutsTarget.open
   }
 
   get #panels() {

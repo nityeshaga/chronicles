@@ -1427,6 +1427,47 @@ body.html-card .gh-content, body.html-card .kg-card { margin: 0; }
 /* A refused publish time. Same line, said in the colour of a no. */
 .publish-note--refused { color: var(--w-danger); }
 
+/* A link at the foot of the settings panel, weighted as a link and not as a control —
+   the panel's real controls are the fields above it and Delete below. */
+.settings-panel__aside { display: flex; align-items: baseline; gap: .7rem; font-family: var(--font-sans); font-size: 1.3rem; color: var(--w-muted); }
+.panel-link { background: none; border: 0; padding: 0; font: inherit; color: var(--w-ink); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.panel-link:hover { color: var(--w-accent-ink); }
+
+/* ---- The shortcut sheet: a real <dialog>, so the browser owns the backdrop, the Escape
+   key and the focus trap. Sized to the table rather than the viewport — it is a thing to
+   glance at, not a page to read. ---- */
+.shortcut-sheet {
+  width: min(46rem, 92vw); max-height: 82vh; padding: 0; overflow: auto;
+  border: 1px solid var(--w-line); border-radius: var(--w-radius);
+  background: var(--w-panel); color: var(--w-ink); box-shadow: var(--w-shadow);
+  font-family: var(--font-sans);
+}
+.shortcut-sheet::backdrop { background: rgba(20, 18, 14, .3); }
+.shortcut-sheet__head {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 1.4rem 1.8rem; border-bottom: 1px solid var(--w-line);
+  position: sticky; top: 0; background: var(--w-panel);
+}
+.shortcut-sheet__head h2 { font-size: 1.5rem; font-weight: 600; }
+.shortcut-sheet__table { width: 100%; border-collapse: collapse; font-size: 1.35rem; }
+.shortcut-sheet__table th {
+  text-align: left; font-size: 1.15rem; font-weight: 600; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--w-faint); padding: 1.2rem 1.8rem .5rem;
+}
+.shortcut-sheet__table td { padding: .6rem 1.8rem; border-top: 1px solid var(--w-line); vertical-align: baseline; }
+.shortcut-sheet__table td:first-child { width: 1%; white-space: nowrap; }
+.shortcut-sheet__table tr:first-child td { border-top: 0; }
+.shortcut-sheet__foot { padding: 1.2rem 1.8rem 1.6rem; font-size: 1.25rem; color: var(--w-muted); }
+
+/* The keys themselves, wherever the workbench prints them. Scoped to the writing body:
+   a <kbd> inside a published post is the reader's typography, not this. */
+.writing-app kbd {
+  display: inline-block; padding: .2rem .55rem; min-width: 2.2rem; text-align: center;
+  font-family: var(--font-sans); font-size: 1.25rem; font-weight: 600; line-height: 1.4;
+  color: var(--w-ink); background: var(--w-surface);
+  border: 1px solid var(--w-line-strong); border-bottom-width: 2px; border-radius: 6px;
+}
+
 /* ---- Tags (existing checkboxes + the deliberate mint control) ---- */
 .tag-checkboxes { display: flex; flex-wrap: wrap; gap: .6rem; }
 .tag-choice {
