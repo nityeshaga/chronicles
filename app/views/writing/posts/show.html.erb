@@ -1,3 +1,4 @@
 <% content_for :title, "Preview: #{@post.title}" %>
 
+<%= render "writing/posts/preview_strip", post: @post %>
 <%= render "posts/post", post: @post %>

@@ -83,6 +83,17 @@ class Writing::HtmlPagesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_url
   end
 
+  # Same control as the post editor bar, so the same new tab — and, since the preview is
+  # the bare document, no strip can be laid over it.
+  test "Preview opens the document in its own tab" do
+    sign_in_as users(:nityesh)
+    page = posts(:html_page)
+    page.unpublish
+
+    get edit_writing_html_page_url(page)
+    assert_select ".form-page__head a[href=?][target=_blank][rel=noopener]", writing_html_page_path(page), text: "Preview"
+  end
+
   test "publishing resource is nested under HTML pages" do
     sign_in_as users(:nityesh)
     page = posts(:html_page)

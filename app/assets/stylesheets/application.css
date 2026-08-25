@@ -491,6 +491,36 @@ a:hover { opacity: .8; }
 .gh-viewport a.admin-link::before { content: "\270E"; font-size: 13px; letter-spacing: 0; }
 .gh-viewport a.admin-link:hover { color: var(--paper); background: var(--terracotta-deep); border-color: var(--terracotta-deep); opacity: 1; }
 
+/* The preview strip: the same near-black sticker, stretched across the top of a page
+   that only the signed-in writer can reach. Fixed, so it stays in view however far he
+   reads; the body makes room for it. Phone swaps the page for a 390px frame of itself
+   on a dark table — a real viewport that wide, because the responsive rules are media
+   queries and a narrowed wrapper would lie. */
+body:has(.preview-strip) { padding-top: 40px; }
+.preview-strip {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 20; height: 40px;
+  display: flex; align-items: center; justify-content: center; gap: 20px;
+  color: var(--paper); background: var(--ink);
+  font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase;
+  box-shadow: 0 2px 6px rgba(43, 38, 32, .28);
+}
+.preview-strip__devices { display: inline-flex; border: 1px solid rgba(246, 239, 224, .35); border-radius: 6px; overflow: hidden; }
+.preview-strip__device {
+  font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit;
+  background: none; border: 0; padding: 5px 11px; cursor: pointer;
+}
+.preview-strip__device[aria-pressed="true"] { color: var(--ink); background: var(--paper); cursor: default; }
+.preview-strip a.preview-strip__edit { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.preview-frame { display: none; }
+html.preview-phone, html.preview-phone body { background: #3a342d; }
+/* The strip and the frame are yielded into the viewport with the page; hide their siblings, not their parent. */
+html.preview-phone .gh-viewport > :not(:has(.preview-frame)) { display: none; }
+html.preview-phone .preview-frame {
+  display: block; width: 390px; height: calc(100vh - 88px); margin: 24px auto 0;
+  border: 0; border-radius: 22px; background: var(--paper);
+  box-shadow: 0 0 0 8px #14110e, 0 24px 60px rgba(0, 0, 0, .5);
+}
+
 /* ---- Site footer (site-wide) ---- */
 .site-footer { border-top: 1px solid var(--line); padding: 34px 0 44px; margin-top: auto; }
 .site-footer .wrap { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
