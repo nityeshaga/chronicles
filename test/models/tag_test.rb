@@ -27,4 +27,15 @@ class TagTest < ActiveSupport::TestCase
       assert post.reload.updated_at > original
     end
   end
+
+  # The touch is for caches, not for editors: nothing an open tab holds has changed, so
+  # the lock stays where it was and the writer's next keystroke is not refused.
+  test "renaming a tag leaves its posts' lock_version alone" do
+    post = posts(:published)
+    lock = post.lock_version
+
+    tags(:chronicles).update!(name: "Chronicles Renamed")
+
+    assert_equal lock, post.reload.lock_version
+  end
 end

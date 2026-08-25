@@ -902,12 +902,27 @@ a:hover { opacity: .8; }
 .autosave-status[data-state="saved"] { color: var(--w-ok); }
 .autosave-status[data-state="unsaved"] { color: var(--w-muted); }
 .autosave-status[data-state="error"],
-.autosave-status[data-state="refused"] { color: var(--w-danger); }
+.autosave-status[data-state="refused"],
+.autosave-status[data-state="signedout"],
+.autosave-status[data-state="stale"] { color: var(--w-danger); }
 /* The idle line on a live post. It is a warning, not a reassurance, so it wears the
    LIVE pill's dot rather than the pill's confidence. */
 .autosave-status[data-state="live"] { color: var(--w-muted); gap: .5rem; }
 .autosave-status[data-state="live"]::before {
   content: ""; width: .7rem; height: .7rem; border-radius: 50%; background: var(--w-ok);
+}
+
+/* The browser's own copy of the body, offered back after a save that never landed. One
+   line above the body, in the colour of the failure it follows; the two verbs are links,
+   not buttons, so the bar stays a sentence. */
+.draft-notice {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem; margin: 0 0 1.6rem;
+  font-family: var(--font-sans); font-size: 1.3rem; font-weight: 500; color: var(--w-danger);
+}
+.draft-notice[hidden] { display: none; }
+.draft-notice__action {
+  background: none; border: 0; padding: 0; font: inherit; color: var(--w-ink);
+  text-decoration: underline; cursor: pointer;
 }
 
 /* Match the published measure: max-width + horizontal padding land the contenteditable

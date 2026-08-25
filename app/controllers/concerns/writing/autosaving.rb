@@ -29,12 +29,19 @@ module Writing::Autosaving
     # No slug in the request is the editor saying the URL is still the title's to invent.
     # Absence, not a blank value: a writer who empties the field has typed a name the post
     # can't have, which is a refusal, not a rename.
+    #
+    # The form carries the record's lock_version, so a save from a tab that has fallen
+    # behind another raises StaleObjectError. That answer is a bodyless 409 for the same
+    # reason the 422 is bodyless; an explicit submit is sent back to the editor, which is
+    # the reload the bar asks for. Every save that lands hands back the version it made
+    # (X-Lock-Version), and the client adopts it the way it adopts a slug.
     def update_from_editor(record, attributes)
       derive = !attributes.key?(:slug) && !record.addressed?
 
       if record.save_keeping_url(attributes, derive_slug: derive)
         renamed = record.saved_change_to_slug?
         adopt_feature_image_upload(record)
+        announce_lock_version(record)
 
         if !renamed
           head :no_content
@@ -48,10 +55,24 @@ module Writing::Autosaving
       else
         render :edit, status: :unprocessable_entity
       end
+    rescue ActiveRecord::StaleObjectError
+      # Reloaded, because the address the editor lives at is the record's as saved, not
+      # as this request would have renamed it.
+      if autosave_request?
+        head :conflict
+      else
+        redirect_to [ :edit, :writing, record.reload ],
+          alert: "Another tab saved this post first — this save wasn't applied. This is the version that is saved."
+      end
     end
 
     def render_mint(record)
+      announce_lock_version(record)
       render_editor_chrome(record, status: :created)
+    end
+
+    def announce_lock_version(record)
+      response.headers["X-Lock-Version"] = record.lock_version.to_s
     end
 
     # The mint's answer, and a rename's — one renderer, because a rename installs exactly
@@ -65,8 +86,11 @@ module Writing::Autosaving
     # record actually kept, which is the only slug the canvas may show; X-Post-Id is
     # identity a slug can't give (it goes stale on the next rename). Every URL is built by
     # polymorphic routing, so a page lands on the pages routes with no branch here.
+    # X-Local-Save-Key names the slot the browser's copy of the body moves to now that
+    # the record exists — dom_id-shaped, and the client never derives one.
     def render_editor_chrome(record, status:)
       response.headers["X-Post-Id"] = record.id.to_s
+      response.headers["X-Local-Save-Key"] = helpers.dom_id(record)
       response.headers["X-Slug"] = record.slug
       response.headers["X-Edit-Url"] = url_for([ :edit, :writing, record ])
       render template: "writing/posts/create", formats: :turbo_stream,

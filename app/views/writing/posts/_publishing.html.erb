@@ -40,9 +40,13 @@
       <% elsif post.newsletter_ready? %>
         <% count = Subscriber.count %>
         <p class="publish-state"><span>Goes to <%= link_to pluralize(count, "subscriber"), writing_subscribers_path %>.</span></p>
+        <%# The mail is rendered from the record, so like Publish it waits for a save still
+            in flight — an issue can't be recalled to pick up the sentence typed two
+            seconds before the click. %>
         <%= button_to "Send as newsletter", [ :writing, post, :newsletter ], method: :post,
               class: "w-btn w-btn--ghost w-btn--sm", form_class: "w-inline",
-              data: { turbo_confirm: "Mail this post to all #{pluralize(count, "subscriber")}? This can’t be undone." } %>
+              data: { turbo_confirm: "Mail this post to all #{pluralize(count, "subscriber")}? This can’t be undone.",
+                      action: "click->editor#commitThenSubmit" } %>
       <% else %>
         <%# Live, unsent and not ready leaves exactly one case: nobody to send to. %>
         <p class="publish-state"><span>No <%= link_to "subscribers", writing_subscribers_path %> yet — nothing to send.</span></p>

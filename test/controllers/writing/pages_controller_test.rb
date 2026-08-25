@@ -86,6 +86,33 @@ class Writing::PagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal writing_page_url(page), response.location
   end
 
+  # Two tabs on one page are told apart the same way posts are: the same concern, the
+  # same 409, the same version handed back.
+  test "an autosave with a stale lock_version is refused bodyless and saves nothing" do
+    sign_in_as users(:nityesh)
+    page = posts(:about)
+    behind = page.lock_version
+    page.update!(body: "<p>saved from the other tab</p>")
+
+    patch writing_page_url(page), headers: { "X-Autosave" => "true" },
+      params: { page: { body: "<p>older</p>", lock_version: behind } }
+
+    assert_response :conflict
+    assert_empty response.body
+    assert_includes page.reload.body.to_s, "saved from the other tab"
+  end
+
+  test "a page save hands back the lock_version it made" do
+    sign_in_as users(:nityesh)
+    page = posts(:about)
+
+    patch writing_page_url(page), headers: { "X-Autosave" => "true" },
+      params: { page: { body: "<p>edited</p>", lock_version: page.lock_version } }
+
+    assert_response :no_content
+    assert_equal page.reload.lock_version.to_s, response.headers["X-Lock-Version"]
+  end
+
   # --- Pages share the autosave contract with posts: the debounced fetch is silent
   #     both ways, an explicit slug change redirects once. ---
   test "autosave persists changes and returns no content" do

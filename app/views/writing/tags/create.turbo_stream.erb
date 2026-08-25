@@ -1,5 +1,11 @@
 <%# Swap the checkbox list for one that includes (and checks) the freshly minted tag, and
-    reset the mint form's input so it's ready for the next one. %>
+    reset the mint form's input so it's ready for the next one. Attaching the tag touched
+    the post, and a touch moves its lock_version — so the form is handed the version the
+    record now stands at, or the writer's own next keystroke would be refused as another
+    tab's. %>
+<%= turbo_stream.replace dom_id(@post, :lock_version) do %>
+  <%= render "writing/posts/lock_version", post: @post %>
+<% end %>
 <%= turbo_stream.replace "post_tags" do %>
   <%= render "writing/posts/tags", post: @post %>
 <% end %>

@@ -44,26 +44,38 @@ import { Turbo } from "@hotwired/turbo-rails"
 // The gap that leaves is narrow and real: on the restore path nothing awaits the flush,
 // so a save that FAILS during a Back goes unreported. Reporting it would mean holding a
 // navigation the browser has already committed to, which is not ours to hold.
+//
+// Saves go out one at a time: each chains onto the one before it, so a slug commit and a
+// timer firing during a slow response can never have two PATCHes in flight with the
+// server free to land the older body last. A failed save leaves nothing armed and nothing
+// remembered — the next keystroke arms the timer again, and that IS the retry.
+//
+// Two tabs on one post are told apart by the record's lock_version, which the form
+// carries and every landed save hands back (X-Lock-Version) for this tab to adopt. A tab
+// that fell behind gets a 409: the bar says so, saving stops, and only a reload — the
+// writer's, with his eyes on both versions — continues. Nothing here tries to merge.
+//
+// A save that lands is announced (autosave:saved) so whatever else holds a copy of the
+// work — the local draft — can let it go.
 const INTERVAL = 2000
 // Work that would be lost if the document went away now: a save still to come, one that
-// failed (nothing retries it), or a session that died under it. Both leave guards read
-// this one list.
-const AT_RISK = ["unsaved", "saving", "error", "refused", "signedout"]
+// failed, a session that died under it, or a record another tab moved on. Both leave
+// guards read this one list.
+const AT_RISK = ["unsaved", "saving", "error", "refused", "signedout", "stale"]
 
 export default class extends Controller {
-  static targets = ["status", "slug", "file"]
+  static targets = ["status", "slug", "file", "lock"]
   // savedText is written by the server: what "saved" means depends on where the post
   // stands (a live post's save republished the page), and that copy is Ruby's to own.
   static values = { persisted: Boolean, savedText: String }
 
   #timer
-  #creating = false
   #state = ""
   // The one exit already refused out loud. Cleared by a save that works, so the warning
   // is about work that is still unsaved and never about work that since landed.
   #refusedUrl
-  // The save in flight, so callers that must not race it — Publish, an in-app exit —
-  // can await the very same promise instead of guessing at a delay.
+  // Every save so far, chained: the next one starts when this settles, and callers that
+  // must not race a save — Publish, an in-app exit — await the very same promise.
   #pending = Promise.resolve()
 
   disconnect() {
@@ -75,7 +87,7 @@ export default class extends Controller {
   // keystrokes skip the debounce: a URL lands when the writer is done with it, not two
   // seconds into typing it (holdSlug / commitSlug).
   change(event) {
-    if (!this.element.contains(event.target)) return
+    if (this.#stale || !this.element.contains(event.target)) return
     // The tag-mint input sits inside this form's DOM but is reassociated to #new-tag-form
     // via its `form` attribute, so its keystrokes aren't ours to save.
     if (event.target.form && event.target.form !== this.element) return
@@ -105,6 +117,7 @@ export default class extends Controller {
   // An explicit save (the feature-image file): a normal Turbo submit, because bytes need
   // one and a real error there should show itself.
   commit() {
+    if (this.#stale) return
     clearTimeout(this.#timer)
     this.#timer = null
     this.element.requestSubmit()
@@ -121,8 +134,17 @@ export default class extends Controller {
     if (event.target.classList.contains(openClass)) event.preventDefault()
   }
 
-  // Turbo tells us how the explicit submit resolved; mirror it in the indicator.
+  // Turbo tells us how the explicit submit resolved; mirror it in the indicator, and take
+  // the version it made — a save is a save, whichever wire it rode. A followed redirect is
+  // the server taking the page over (a rename, or a refusal), and what it meant is said
+  // on the page that arrives. Calling it "saved" here would let the local draft go first;
+  // leaving it at risk would have guardVisit refuse the very visit that carries the
+  // answer. So the bar goes quiet and the next page speaks.
   committed(event) {
+    const response = event.detail.fetchResponse
+    if (response?.redirected) return this.#setStatus("")
+
+    this.#adoptLockVersion(response?.header("X-Lock-Version"))
     this.#setStatus(event.detail.success ? "saved" : "error")
   }
 
@@ -140,7 +162,9 @@ export default class extends Controller {
 
     if (this.#atRisk) {
       this.#refusedUrl = url
-      this.#setStatus("refused")
+      // A stale tab stays stale: the bar already names the one way out, and saying
+      // anything else here would let saving quietly resume against a record that moved.
+      if (!this.#stale) this.#setStatus("refused")
     } else {
       Turbo.visit(url)
     }
@@ -159,15 +183,16 @@ export default class extends Controller {
   #save() {
     clearTimeout(this.#timer)
     this.#timer = null
-    return this.#pending = this.#run()
+    if (this.#stale) return this.#pending
+    return this.#pending = this.#pending.then(() => this.#run())
   }
 
   async #run() {
-    // New post: mint the draft first, but only once there's real content and never twice
-    // (a create in flight blocks a second). Once persisted this falls through to PATCH.
+    // New post: mint the draft first, but only once there's real content. Saves run one
+    // at a time, so a second mint can't start under the first; once persisted this falls
+    // through to PATCH.
     if (!this.persistedValue) {
-      if (this.#creating || !this.#hasContent) return this.#setStatus("")
-      return this.#createDraft()
+      return this.#hasContent ? this.#createDraft() : this.#setStatus("")
     }
 
     this.#setStatus("saving")
@@ -189,7 +214,6 @@ export default class extends Controller {
   // the record's id in X-Post-Id (announced to the rest of the form), and a Turbo Stream
   // carrying the chrome only a saved post can wear.
   async #createDraft() {
-    this.#creating = true
     this.#setStatus("saving")
     try {
       const response = await fetch(this.element.action, {
@@ -200,15 +224,17 @@ export default class extends Controller {
       if (response.status === 201) {
         // The draft now exists, so anything on this form that has to name the record can
         // stop guessing: announce the id the server just handed back (the slug check
-        // listens, to stop counting the draft's own slug against it).
-        this.dispatch("minted", { detail: { id: response.headers.get("X-Post-Id") } })
+        // listens, to stop counting the draft's own slug against it) and the slot the
+        // local draft now belongs in (local-save moves its copy over).
+        this.dispatch("minted", { detail: {
+          id: response.headers.get("X-Post-Id"),
+          localSaveKey: response.headers.get("X-Local-Save-Key")
+        } })
       }
       await this.#adopt(response)
       this.#setStatus(this.#outcome(response))
     } catch {
       this.#setStatus("error")
-    } finally {
-      this.#creating = false
     }
   }
 
@@ -217,11 +243,15 @@ export default class extends Controller {
   // bar (X-Edit-Url), the slug actually kept (X-Slug — hello-2 where hello was taken),
   // and a Turbo Stream carrying the chrome that
   // addresses this record — Publish, its popover, Delete, the tag mint — re-stamped from
-  // the one place each of them is written. An ordinary keystroke save is a bare 204 and
-  // none of this runs. Every URL arrives whole; none is assembled here out of a slug.
+  // the one place each of them is written. An ordinary keystroke save is a bare 204 that
+  // carries only the version it made. Every URL arrives whole; none is assembled here
+  // out of a slug.
   async #adopt(response) {
     // A dead session answers 200 too, with the sign-in page — nothing to adopt there.
-    if (response.redirected || ![ 200, 201 ].includes(response.status)) return
+    if (response.redirected) return
+
+    this.#adoptLockVersion(response.headers.get("X-Lock-Version"))
+    if (![ 200, 201 ].includes(response.status)) return
 
     this.#adoptPersistedUrl(response.headers.get("Location"))
     this.#adoptEditUrl(response.headers.get("X-Edit-Url"))
@@ -254,12 +284,20 @@ export default class extends Controller {
     if (url) history.replaceState(history.state, "", url)
   }
 
+  // The version the save just made, so the next save names the record as it now stands.
+  // Only answers that made one carry it; a refusal leaves the field as it was.
+  #adoptLockVersion(version) {
+    if (version != null && this.hasLockTarget) this.lockTarget.value = version
+  }
+
   // A save worked on 204 (nothing moved), 201 (the mint) or 200 (a rename's chrome).
   // Following a redirect to the sign-in page (a dead session) also arrives as a 200, and
-  // would lie "Saved" while nothing persisted — so that question is asked first.
+  // would lie "Saved" while nothing persisted — so that question is asked first. A 409
+  // is another tab having saved first.
   #outcome(response) {
     if (response.redirected) return "signedout"
     if ([ 200, 201, 204 ].includes(response.status)) return "saved"
+    if (response.status === 409) return "stale"
     return "error"
   }
 
@@ -309,6 +347,12 @@ export default class extends Controller {
     return AT_RISK.includes(this.#state)
   }
 
+  // Another tab saved over this one. Read off the state the bar already shows, so there
+  // is no second flag to fall out of step with it.
+  get #stale() {
+    return this.#state === "stale"
+  }
+
   get #csrfToken() {
     return document.querySelector("meta[name='csrf-token']")?.content
   }
@@ -319,13 +363,17 @@ export default class extends Controller {
 
   #setStatus(state) {
     this.#state = state
-    if (state === "saved") this.#refusedUrl = null
+    if (state === "saved") {
+      this.#refusedUrl = null
+      this.dispatch("saved")
+    }
 
     const text = {
       unsaved: "Unsaved changes",
       saving: "Saving…",
       saved: this.savedTextValue,
       signedout: "Signed out — changes NOT saved",
+      stale: "Edited elsewhere — reload to continue",
       error: "Couldn't save",
       refused: "Couldn't save — click again to leave anyway"
     }[state] || ""

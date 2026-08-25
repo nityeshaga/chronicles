@@ -293,6 +293,121 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_includes draft.body.to_s, "and a second"
   end
 
+  # --- Two tabs on one post. The form carries the record's lock_version, so the tab that
+  #     fell behind is told so — a bodyless 409, nothing saved — instead of quietly
+  #     winning. Every save that lands hands back the version it made. ---
+  test "an autosave with a stale lock_version is refused bodyless and saves nothing" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+    behind = draft.lock_version
+    draft.update!(body: "<p>saved from the other tab</p>")
+
+    patch writing_post_url(draft), headers: { "X-Autosave" => "true" },
+      params: { post: { title: "Typed In The Tab That Fell Behind", body: "<p>older</p>", lock_version: behind } }
+
+    assert_response :conflict
+    assert_empty response.body
+    assert_nil response.headers["X-Lock-Version"]
+    draft.reload
+    assert_equal "A Draft Post", draft.title
+    assert_includes draft.body.to_s, "saved from the other tab"
+  end
+
+  # A body-only edit never touches the posts row itself; it reaches the lock through the
+  # rich text's touch. That is the common case — two tabs typing prose — so it is the one
+  # that must conflict.
+  test "two tabs typing only prose still conflict" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+    behind = draft.lock_version
+    draft.update!(body: "<p>tab A</p>")
+
+    patch writing_post_url(draft), headers: { "X-Autosave" => "true" },
+      params: { post: { body: "<p>tab B</p>", lock_version: behind } }
+
+    assert_response :conflict
+    assert_includes draft.reload.body.to_s, "tab A"
+  end
+
+  test "every save that lands hands back the lock_version it made" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+
+    patch writing_post_url(draft), headers: { "X-Autosave" => "true" },
+      params: { post: { body: "<p>edited</p>", slug: draft.slug, lock_version: draft.lock_version } }
+    assert_response :no_content
+    assert_equal draft.reload.lock_version.to_s, response.headers["X-Lock-Version"]
+
+    patch writing_post_url(draft), headers: { "X-Autosave" => "true" },
+      params: { post: { slug: "moved-by-hand", lock_version: draft.lock_version } }
+    assert_response :ok
+    assert_equal draft.reload.lock_version.to_s, response.headers["X-Lock-Version"]
+  end
+
+  test "the mint hands back the lock_version the draft starts at" do
+    sign_in_as users(:nityesh)
+    post writing_posts_url, headers: { "X-Autosave" => "true" },
+      params: { post: { title: "Fresh Draft", body: "<p>opening line</p>" } }
+
+    assert_response :created
+    assert_equal Post.last.lock_version.to_s, response.headers["X-Lock-Version"]
+    # And the slot the browser's copy of the body moves to, now that there is a record.
+    assert_equal dom_id(Post.last), response.headers["X-Local-Save-Key"]
+  end
+
+  # A ticked tag rides autosave as tag_ids, and attaching it touches the post — which
+  # moves the lock. lock_version is permitted ahead of tag_ids so the touch runs against
+  # the version the form sent; the other way round, the writer's own save refused itself.
+  test "ticking a tag with a current lock_version saves" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+
+    patch writing_post_url(draft), headers: { "X-Autosave" => "true" },
+      params: { post: { tag_ids: [ "", tags(:ai).id ], lock_version: draft.lock_version } }
+
+    assert_response :no_content
+    assert_includes draft.reload.tags, tags(:ai)
+    assert_equal draft.lock_version.to_s, response.headers["X-Lock-Version"]
+  end
+
+  # The explicit submit (the feature-image file) can't read a 409; sending it back to the
+  # editor is the reload the bar asks for — and the editor says why it was sent back,
+  # because a redirect that looks like a save is how typed text disappears in silence.
+  test "an explicit save with a stale lock_version is sent back to the editor and told why" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+    behind = draft.lock_version
+    draft.update!(title: "Renamed In The Other Tab")
+
+    patch writing_post_url(draft), params: { post: { title: "Stale", lock_version: behind } }
+
+    assert_redirected_to edit_writing_post_url(draft)
+    assert_equal "Renamed In The Other Tab", draft.reload.title
+    follow_redirect!
+    assert_select ".errors li", text: /Another tab saved this post first/
+    assert_select "input[name='post[lock_version]'][value=?]", draft.lock_version.to_s
+    # And the bar above the alert can't claim the work landed.
+    assert_select ".editor-bar .autosave-status", text: "Showing the saved version"
+    assert_select ".editor-bar .autosave-status", text: /\ASaved/, count: 0
+  end
+
+  test "the editor form carries the record's lock_version and a slot for the local draft" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+
+    get edit_writing_post_url(draft)
+    assert_select "form.editor-shell__form[data-local-save-key-value=?]", dom_id(draft) do
+      assert_select "input##{dom_id(draft, :lock_version)}[name='post[lock_version]'][value=?]", draft.lock_version.to_s
+      assert_select ".draft-notice[hidden]" do
+        assert_select "button", text: "Restore"
+        assert_select "button", text: "Discard"
+      end
+    end
+
+    get new_writing_post_url
+    assert_select "form[data-local-save-key-value=new_post] input[name='post[lock_version]'][value=0]"
+  end
+
   # --- Explicit save (no header, a normal Turbo submit): a slug change redirects once,
   #     and a validation failure re-renders the form with its errors. ---
   test "committing a changed slug redirects so the form URL stays live" do
@@ -680,10 +795,10 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
   # Mailing the list is irreversible, so the send is never one click: the confirm is the
   # second deliberate act. With nobody subscribed there is nothing to send, so the button
   # is absent rather than sitting there ready to be refused.
-  test "the newsletter button confirms before it sends" do
+  test "the newsletter button confirms before it sends, and waits for a pending save first" do
     sign_in_as users(:nityesh)
     get edit_writing_post_url(posts(:published))
-    assert_select ".publish-newsletter [data-turbo-confirm]", text: "Send as newsletter"
+    assert_select ".publish-newsletter [data-turbo-confirm][data-action='click->editor#commitThenSubmit']", text: "Send as newsletter"
   end
 
   test "with nobody subscribed there is no newsletter button, and a line saying why" do

@@ -1,0 +1,6 @@
+<%# Which version of the record this tab is editing. A save from a tab that fell behind
+    another is refused (409) rather than quietly winning. Every save that lands hands the
+    new version back and autosave writes it here; a tag minted outside the form moves it
+    too, so that stream replaces this by id — one renderer, addressed by dom_id. %>
+<%= hidden_field post.model_name.param_key, :lock_version, value: post.lock_version,
+      id: dom_id(post, :lock_version), data: { autosave_target: "lock" } %>
