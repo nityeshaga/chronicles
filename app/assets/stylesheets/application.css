@@ -1117,6 +1117,9 @@ html.preview-phone .preview-frame {
 .editor-canvas__body {
   font-family: var(--font-serif); font-size: 2rem; line-height: 1.55;
   letter-spacing: -.01em; color: var(--ink);
+  /* The box the selection bubbles are positioned inside, so they scroll with the words
+     they point at rather than being pinned to the viewport. */
+  position: relative;
 }
 /* The gem is themed through its own --lexxy-* tokens, in one block, from the site palette —
    nothing reaches into its stylesheet. The canvas stays transparent on the paper. The
@@ -1167,6 +1170,13 @@ html.preview-phone .preview-frame {
   --lexxy-toolbar-spacing: .6rem;
   font-family: var(--font-sans); font-size: 1.4rem; line-height: 1.4; letter-spacing: 0;
   flex-wrap: nowrap; border-block-end-color: var(--w-line);
+  /* Two thousand words in, the toolbar used to be a thousand pixels above the caret. It
+     rides under the bar instead: 6rem is the bar's height, and the bar's z-index is 20, so
+     15 puts the toolbar over the prose and under the bar. Sticky makes it a stacking
+     context, which is what carries its dropdown panels over the prose with it. It needs an
+     opaque back — the canvas is transparent so the prose sits on the paper — and that back
+     is the page's own colour, not the panel's: anything else is a band the eye tracks. */
+  position: sticky; top: 6rem; z-index: 15; background: var(--background-color);
 }
 /* Our icons are strokes, the gem's are fills; its rule paints every toolbar svg with a
    fill, so say otherwise for ours (the filled dots set their own fill inline). */
@@ -1256,6 +1266,45 @@ html.preview-phone .preview-frame {
   inset-inline-start: auto; inset-inline-end: 0;
 }
 .editor-canvas__body lexxy-toolbar .lexxy-editor__toolbar-dropdown-reset { padding: .5rem 1rem; font-size: 1.3rem; font-weight: 500; }
+
+/* The bubbles that come to the caret. Chrome again, so out of the canvas serif and into
+   the panel's own paper — the same border, radius and shadow the toolbar's menus wear, so
+   everything that floats over the prose reads as one family. z-index 14 is deliberate:
+   over the body, under the sticky toolbar, so a bubble that ends up beside the chrome
+   goes behind it rather than through it. */
+.selection-bubble {
+  position: absolute; top: 0; left: 0; z-index: 14;
+  display: flex; align-items: center; gap: .2rem;
+  padding: .4rem; border: 1px solid var(--w-line-strong); border-radius: 8px;
+  background: var(--w-panel); box-shadow: var(--w-shadow);
+  font-family: var(--font-sans); font-size: 1.4rem; line-height: 1; letter-spacing: 0;
+  color: var(--w-ink);
+}
+.selection-bubble[hidden] { display: none; }
+.selection-bubble__button {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 3rem; height: 3rem; padding: 0; border: 0; border-radius: 6px;
+  background: none; color: inherit; cursor: pointer;
+}
+.selection-bubble__button svg {
+  width: 1.6rem; height: 1.6rem;
+  fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+}
+.selection-bubble__button:hover { background: rgba(0, 0, 0, .05); }
+.selection-bubble__button[aria-pressed="true"] { background: rgba(0, 0, 0, .08); color: var(--w-accent-ink); }
+.selection-bubble__label { font-size: 1.3rem; font-weight: 600; letter-spacing: -.01em; }
+.selection-bubble__rule { width: 1px; height: 1.8rem; margin: 0 .4rem; background: var(--w-line-strong); }
+/* The address is the label, not a control: it can be read, and it stays on one line so
+   the bubble keeps the shape of a bar. */
+.selection-bubble__href {
+  padding: 0 .6rem; font-family: var(--font-mono); font-size: 1.25rem;
+  color: var(--w-muted); white-space: nowrap;
+}
+.selection-bubble__action {
+  height: 3rem; padding: 0 .9rem; border: 0; border-radius: 6px;
+  background: none; font: inherit; font-weight: 500; color: inherit; cursor: pointer;
+}
+.selection-bubble__action:hover { background: rgba(0, 0, 0, .05); }
 
 /* Embeds, seen from the editor. A YouTube frame plays here exactly as it will on the
    published page, in the same .kg-embed-card figure under the same rules. A tweet can't:

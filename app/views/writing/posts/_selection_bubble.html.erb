@@ -1,0 +1,50 @@
+<%# Two small bars that come to the caret instead of making the writer go to the toolbar:
+    one over a selection with the seven formats a sentence actually asks for, one over the
+    link the caret lands inside (both drop below when above would be under the chrome).
+    Neither owns a command. Every button names a toolbar button in data-for and its click
+    is proxied there, so the toolbar stays the single place a command lives and a pressed
+    state has one source of truth. tabindex=-1 and a prevented mousedown are what keep the
+    selection alive across the click. %>
+<div class="selection-bubble" role="toolbar" aria-label="Format selection" hidden
+     data-selection-bubble-target="format"
+     data-action="mousedown->selection-bubble#keepSelection click->selection-bubble#proxy">
+  <button type="button" class="selection-bubble__button" tabindex="-1" data-for="bold" title="Bold (⌘B)" aria-label="Bold">
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 3h4a2.25 2.25 0 0 1 0 4.5h-4zM4.5 7.5H9a2.5 2.5 0 0 1 0 5H4.5z"/></svg>
+  </button>
+  <button type="button" class="selection-bubble__button" tabindex="-1" data-for="italic" title="Italic (⌘I)" aria-label="Italic">
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3h3.5M3 13h3.5M10 3l-4 10"/></svg>
+  </button>
+  <button type="button" class="selection-bubble__button" tabindex="-1" data-for="link" title="Link (⌘K)" aria-label="Link">
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6.5 9.5l3-3M5.3 6.8 3.6 8.5a2.6 2.6 0 0 0 3.7 3.7l1.7-1.7M10.7 9.2l1.7-1.7a2.6 2.6 0 0 0-3.7-3.7L7 5.5"/></svg>
+  </button>
+
+  <span class="selection-bubble__rule" aria-hidden="true"></span>
+
+  <%# The heading buttons Lexxy generates carry data-heading, not a name, so these two say
+      the tag and the controller looks them up by it. Letters, not glyphs: at bubble size a
+      drawn H2 is a smudge, and the writer already reads "H2" everywhere else. %>
+  <button type="button" class="selection-bubble__button" tabindex="-1" data-for="h2" title="Heading 2" aria-label="Heading 2">
+    <span class="selection-bubble__label">H2</span>
+  </button>
+  <button type="button" class="selection-bubble__button" tabindex="-1" data-for="h3" title="Heading 3" aria-label="Heading 3">
+    <span class="selection-bubble__label">H3</span>
+  </button>
+  <button type="button" class="selection-bubble__button" tabindex="-1" data-for="quote" title="Quote" aria-label="Quote">
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6.5 4.5C4.3 5.2 3 6.8 3 9v2.5h3.5V8H4.6c0-1.3.7-2.2 1.9-2.7zM13.5 4.5c-2.2.7-3.5 2.3-3.5 4.5v2.5h3.5V8h-1.9c0-1.3.7-2.2 1.9-2.7z"/></svg>
+  </button>
+  <button type="button" class="selection-bubble__button" tabindex="-1" data-for="code" title="Inline code (⌘E)" aria-label="Inline code">
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 5 2.5 8l3 3M10.5 5l3 3-3 3"/></svg>
+  </button>
+</div>
+
+<%# The caret inside a link: what it points at, and the two things worth doing about it.
+    Edit proxies to the toolbar's link trigger, whose panel is now one line above on the
+    sticky toolbar; Remove proxies to that panel's Unlink button, which dispatches the
+    gem's unlink command whether or not the panel is open. %>
+<div class="selection-bubble selection-bubble--link" role="toolbar" aria-label="Link" hidden
+     data-selection-bubble-target="link"
+     data-action="mousedown->selection-bubble#keepSelection click->selection-bubble#proxy">
+  <span class="selection-bubble__href" data-selection-bubble-target="href"></span>
+  <button type="button" class="selection-bubble__action" tabindex="-1" data-for="link">Edit</button>
+  <button type="button" class="selection-bubble__action" tabindex="-1" data-for="unlink">Remove</button>
+</div>

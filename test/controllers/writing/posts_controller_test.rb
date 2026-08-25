@@ -904,12 +904,39 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:nityesh)
     get new_writing_post_url
 
-    assert_select ".editor-canvas__body[data-controller=?][data-action=?]",
-      "embed html-card", "lexxy:insert-link->embed#unfurl"
+    body = css_select(".editor-canvas__body").first
+    assert_includes body["data-controller"].split, "embed"
+    assert_includes body["data-action"], "lexxy:insert-link->embed#unfurl"
     assert_select "lexxy-editor[placeholder=?]",
       "Start writing. Paste a tweet or YouTube link on its own line to embed it."
     # The canvas frames a card from this URL, filling the hole with the attachment's sgid.
     assert_select "lexxy-editor[data-html-card-url-template=?]", writing_html_card_path("__sgid__")
+  end
+
+  # The bubbles hold no commands: each button names a toolbar button and its click is
+  # forwarded there, so a name the toolbar doesn't answer is a dead button. Unlink lives on
+  # the link panel; the heading buttons are Lexxy's to generate, so the most the server can
+  # say is that the dropdown that generates them is in the markup.
+  test "every selection bubble button names a toolbar button" do
+    sign_in_as users(:nityesh)
+    get new_writing_post_url
+
+    # The bubbles are markup until the controller is on the body and hears the caret move.
+    body = css_select(".editor-canvas__body").first
+    assert_includes body["data-controller"].split, "selection-bubble"
+    assert_includes body["data-action"], "selectionchange@document->selection-bubble#follow"
+
+    names = css_select(".selection-bubble [data-for]").map { |button| button["data-for"] }
+    assert_equal %w[ bold italic link h2 h3 quote code link unlink ], names
+
+    names.uniq.each do |name|
+      selector = case name
+      when /\Ah\d\z/ then "lexxy-heading-dropdown"
+      when "unlink" then "lexxy-link-dropdown [value=unlink]"
+      else "lexxy-toolbar [name=#{name}]"
+      end
+      assert_select selector, minimum: 1, message: "the toolbar has nothing for #{name}"
+    end
   end
 
   test "preview renders the public post template behind auth" do
