@@ -329,6 +329,28 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_includes draft.reload.body.to_s, "tab A"
   end
 
+  # The production path, end to end: the save that attached an image, the analysis landing
+  # in a job behind the editor's back, the next keystroke. The version the client was
+  # handed has to still be the record's.
+  test "an image analysed after the save that attached it does not refuse the next autosave" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+    blob = ActiveStorage::Blob.create_and_upload!(io: file_fixture("feature.png").open, filename: "feature.png", content_type: "image/png")
+
+    patch writing_post_url(draft), headers: { "X-Autosave" => "true" },
+      params: { post: { body: %(<action-text-attachment sgid="#{blob.attachable_sgid}"></action-text-attachment>), lock_version: draft.lock_version } }
+    assert_response :no_content
+    held = response.headers["X-Lock-Version"]
+
+    perform_enqueued_jobs only: ActiveStorage::AnalyzeJob
+    assert blob.reload.analyzed?
+
+    patch writing_post_url(draft), headers: { "X-Autosave" => "true" },
+      params: { post: { body: "<p>typed after the analysis</p>", lock_version: held } }
+    assert_response :no_content
+    assert_includes draft.reload.body.to_s, "typed after the analysis"
+  end
+
   test "every save that lands hands back the lock_version it made" do
     sign_in_as users(:nityesh)
     draft = posts(:draft)

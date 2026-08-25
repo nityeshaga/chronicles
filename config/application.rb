@@ -37,6 +37,16 @@ module App
     # renders and datetime-local scheduling parse in the author's own wall clock.
     # Active Record keeps storing UTC (default default_timezone).
     config.time_zone = "Asia/Kolkata"
+
+    # An uploaded image is analysed in a job after the save that attached it. By default
+    # the analysis touches the attachment's record — here the body's RichText, whose own
+    # touch reaches the post — and a touch moves posts.lock_version behind the open
+    # editor's back, so the writer's next keystroke was refused as another tab's (409).
+    # Off, analysis changes the blob and nothing else. The cost: the `cache post` fragment
+    # is not re-rendered when analysis lands, only on the next save — and the blob partial
+    # never needed the metadata, so nothing renders differently in between. Body edits
+    # still reach the lock through the RichText's own touch, which this does not affect.
+    config.active_storage.touch_attachment_records = false
     # config.eager_load_paths << Rails.root.join("extras")
   end
 end

@@ -3,6 +3,43 @@ require "test_helper"
 class PostTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
 
+  # An uploaded image is analysed in a job after the save that attached it. The analysis
+  # must not move the post: the open editor holds lock_version, and a bump it never saw
+  # refused the writer's next keystroke as another tab's.
+  test "analysing an attached image leaves the post's lock_version and updated_at alone" do
+    blob = ActiveStorage::Blob.create_and_upload!(io: file_fixture("feature.png").open, filename: "feature.png", content_type: "image/png")
+    post = posts(:draft)
+    post.update!(body: %(<action-text-attachment sgid="#{blob.attachable_sgid}"></action-text-attachment>))
+    assert_not blob.reload.analyzed?
+    lock, touched = post.reload.lock_version, post.updated_at
+
+    blob.analyze
+
+    assert blob.reload.analyzed?
+    post.reload
+    assert_equal lock, post.lock_version
+    assert_equal touched, post.updated_at
+  end
+
+  # The editor's images arrive by direct upload: a blob created before its bytes, identified
+  # only when the body that references it is saved. That identification saves the blob in
+  # the middle of attaching it, which is the moment a touch of its attachments meets one
+  # that isn't in the database yet (see config/initializers/active_storage_touch_attachments.rb).
+  test "attaching a directly uploaded image to the body saves" do
+    io = file_fixture("feature.png").open
+    blob = ActiveStorage::Blob.create_before_direct_upload!(filename: "feature.png", byte_size: io.size,
+      checksum: ActiveStorage.checksum_implementation.base64digest(io.read).tap { io.rewind }, content_type: "image/png")
+    blob.service.upload(blob.key, io, checksum: blob.checksum)
+    assert_not blob.identified?
+    post = posts(:draft)
+
+    assert_nothing_raised do
+      post.update!(body: %(<action-text-attachment sgid="#{blob.attachable_sgid}"></action-text-attachment>))
+    end
+    assert blob.reload.identified?
+    assert_equal 1, post.rich_text_body.embeds.count
+  end
+
   test "generates a slug from the title when blank" do
     post = Post.create!(title: "Hello There World")
     assert_equal "hello-there-world", post.slug
