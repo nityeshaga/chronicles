@@ -1,14 +1,11 @@
-<figure class="attachment attachment--<%= blob.representable? ? "preview" : "file" %> attachment--<%= blob.filename.extension %>">
-  <% if blob.representable? %>
-    <%= image_tag blob.representation(resize_to_limit: local_assigns[:in_gallery] ? [ 800, 600 ] : [ 1024, 768 ]) %>
-  <% end %>
-
-  <figcaption class="attachment__caption">
-    <% if caption = blob.try(:caption) %>
-      <%= caption %>
-    <% else %>
-      <span class="attachment__name"><%= blob.filename %></span>
-      <span class="attachment__size"><%= number_to_human_size blob.byte_size %></span>
-    <% end %>
-  </figcaption>
-</figure>
+<%# An editor upload on the public page. Twin of the Lexxy node that paints it in the canvas —
+    see ImageCardsHelper. `blob` is the attachment, which carries what the editor said about
+    the image (alt, caption, size) and delegates the rest to the blob itself. %>
+<% if !blob.representable? %>
+<%= link_to blob.filename, url_for(blob.attachable) %>
+<% elsif local_assigns[:in_gallery] %>
+<div class="kg-gallery-image"><%= tag.img src: url_for(blob.attachable), srcset: kg_image_srcset(blob), sizes: "(min-width: 720px) 720px", alt: blob.node["alt"].to_s, width: blob.node["width"], height: blob.node["height"], loading: "lazy" %></div>
+<% else %>
+<%= kg_image_card src: url_for(blob.attachable), srcset: kg_image_srcset(blob), sizes: "(min-width: 720px) 720px",
+      alt: blob.node["alt"], caption: blob.caption, width: blob.node["width"], height: blob.node["height"] %>
+<% end %>
