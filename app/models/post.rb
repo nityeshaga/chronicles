@@ -3,7 +3,8 @@ class Post < ApplicationRecord
   # #fill_placeholder_title). Nothing wearing it is fit to publish.
   PLACEHOLDER_TITLE = "Untitled"
 
-  has_rich_text :body
+  include Body
+
   has_many :taggings, dependent: :destroy
   has_many :tags, through: :taggings
 
@@ -51,9 +52,14 @@ class Post < ApplicationRecord
 
   def to_param = slug
 
-  # The HtmlCards this body attaches. They are content the post renders but does not own,
-  # so anything caching a rendered post has to key on them too.
-  def html_cards = body&.body&.attachables.to_a.grep(HtmlCard)
+  # Came over from Ghost: the importer is the only writer of raw_source. What an imported
+  # post still owes the world is its old anchors, and which Ghost minted them decides their
+  # shape — see HeadingAnchors. Ghost's renderer read a missing version as 4.0; so do we.
+  def imported? = raw_source.present?
+
+  def ghost_version
+    JSON.parse(raw_source).fetch("ghostVersion", "4.0") if imported?
+  end
 
   # The image the site renders. The feature_image URL column is the source of truth —
   # Ghost's legacy /content/images paths and external URLs live there and stay

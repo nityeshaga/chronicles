@@ -45,8 +45,9 @@
     <% controllers = [ "cards" ]
        controllers << "tweets" if post.body.to_s.include?("twitter-tweet") %>
     <section class="gh-content-wrapper gh-canvas" data-controller="<%= controllers.join(" ") %>">
-      <%# The one place a card's bytes reach a browser raw. %>
-      <%= HtmlCard.expand(post.body.to_s) %>
+      <%# The one place a card's bytes reach a browser raw. Anchors go on first so a card's
+          markup is never parsed twice on its way out. %>
+      <%= HtmlCard.expand(HeadingAnchors.add(post.body.to_s, ghost_version: post.ghost_version)) %>
     </section>
   </article>
 </main>

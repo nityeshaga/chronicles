@@ -37,6 +37,12 @@ class UpdatePostToolTest < ActiveSupport::TestCase
     assert_includes result[:changed], "body"
   end
 
+  # The trim is the model's, so an agent's body gets it too.
+  test "blank paragraphs at the edges of a replacement body are trimmed" do
+    UpdatePostTool.new.call(id_or_slug: "a-draft-post", body: "<p><br></p><p>Fresh</p><p><br></p>")
+    assert_equal "<p>Fresh</p>", posts(:draft).reload.body.body.to_html
+  end
+
   test "applies a surgical body_patch" do
     result = UpdatePostTool.new.call(id_or_slug: "a-published-post", body_patches: [ { "old" => "published", "new" => "PUBLISHED" } ])
 

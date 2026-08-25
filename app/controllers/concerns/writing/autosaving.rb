@@ -11,9 +11,11 @@ module Writing::Autosaving
     end
 
     # A record is only worth minting once the author has typed something; keeps blank
-    # drafts from piling up if the create endpoint is hit with an empty form.
+    # drafts from piling up if the create endpoint is hit with an empty form. The editor's
+    # empty value is a paragraph, not an empty string, so the body is judged by what would
+    # survive the save.
     def draft_content?(attributes)
-      attributes[:title].present? || attributes[:body].present?
+      attributes[:title].present? || Post::Body.trim(attributes[:body]).present?
     end
 
     # Two ways in, one action, and both editors answer it identically because they answer
