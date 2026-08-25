@@ -905,21 +905,21 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:nityesh)
     get new_writing_post_url
 
-    body = css_select(".editor-canvas__body").first
-    assert_includes body["data-controller"].split, "embed"
-    assert_includes body["data-controller"].split, "slash-menu"
-    assert_includes body["data-action"], "lexxy:insert-link->embed#unfurl"
     assert_select "lexxy-editor[placeholder=?]",
       "Start writing. Type / for blocks, ## for a heading, or paste a link on its own line to embed it."
     # The canvas frames a card from this URL, filling the hole with the attachment's sgid.
     assert_select "lexxy-editor[data-html-card-url-template=?]", writing_html_card_path("__sgid__")
 
-    wiring = css_select(".editor-canvas__body").first["data-action"]
+    # Named, not matched whole: every slice of the writing room adds its own controller and
+    # its own wires to this element, and a test that spells the list out fails on the next
+    # one to land rather than on anything being wrong.
+    body = css_select(".editor-canvas__body").first
+    assert_empty %w[ embed html-card slash-menu ] - body["data-controller"].split
     [ "lexxy:insert-link->embed#unfurl", "keydown->slash-menu#navigate:capture",
       "lexxy:change->slash-menu#sync", "selectionchange@document->slash-menu#sync",
-      "lexxy:blur->slash-menu#close", "slash-menu:embed->embed#insert",
-      "slash-menu:card->html-card#open" ].each do |wire|
-      assert_includes wiring, wire
+      "lexxy:blur->slash-menu#close", "turbo:before-cache@window->slash-menu#close",
+      "slash-menu:embed->embed#insert", "slash-menu:card->html-card#open" ].each do |wire|
+      assert_includes body["data-action"], wire
     end
   end
 
@@ -932,7 +932,7 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     get new_writing_post_url
 
     names = css_select(".slash-menu__item[data-for]").map { |row| row["data-for"] }
-    headings, buttons = names.partition { |name| name.start_with?("h") && name.match?(/\Ah\d\z/) }
+    headings, buttons = names.partition { |name| name.match?(/\Ah\d\z/) }
 
     assert_equal %w[ h2 h3 h4 ], headings
     assert_equal %w[ unordered-list ordered-list quote code-block divider image table ], buttons
@@ -940,6 +940,14 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     toolbar = css_select("lexxy-toolbar").first
     assert_empty headings - JSON.parse(toolbar["data-labels-headings-value"]).keys
     buttons.each { |name| assert_select "lexxy-toolbar button[name=?]", name }
+
+    # The two rows the toolbar can't make say which event they raise instead, and the
+    # canvas is where that event is answered. A row nobody listens to is the same dead row.
+    wiring = css_select(".editor-canvas__body").first["data-action"]
+    dispatches = css_select(".slash-menu__item[data-dispatch]").map { |row| row["data-dispatch"] }
+
+    assert_equal %w[ embed card ], dispatches
+    dispatches.each { |event| assert_includes wiring, "slash-menu:#{event}->" }
   end
 
   # The bubbles hold no commands: each button names a toolbar button and its click is

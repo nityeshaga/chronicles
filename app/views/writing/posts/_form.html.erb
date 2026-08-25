@@ -103,11 +103,14 @@
         <% end %>
       </div>
 
-      <%# Both controllers sit on the body because the body is all either one touches: embed
-          hears Lexxy announce a pasted link and swaps the supported ones for provider
-          markup, and html-card writes a fragment of the writer's own into the same editor.
-          Both ask the server for what they insert. The placeholder is where the writer
-          learns the paste exists — one line, in the exact spot the paste lands, instead of
+      <%# All three controllers sit on the body because the body is all any of them touches:
+          embed hears Lexxy announce a pasted link and swaps the supported ones for provider
+          markup, html-card writes a fragment of the writer's own into the same editor, and
+          slash-menu offers the blocks at the line being typed. The first two ask the server
+          for what they insert; the third makes nothing at all — it clicks the toolbar, and
+          hands its two other rows to the controllers that own them, which is why those two
+          arrive here as events rather than as calls. The placeholder is where the writer
+          learns all of it exists — one line, in the exact spot the blocks land, instead of
           a permanent bar under the body. %>
       <%# The body the browser kept when a save didn't land — a crash, a dead session, a
           tab closed past the warning. Offered, not forced: the controller reveals this
@@ -135,6 +138,7 @@
                         lexxy:change->slash-menu#sync
                         lexxy:blur->slash-menu#close
                         selectionchange@document->slash-menu#sync
+                        turbo:before-cache@window->slash-menu#close
                         slash-menu:embed->embed#insert
                         slash-menu:card->html-card#open">
         <%# The URL a card's frame loads, with a hole where the sgid goes: the canvas fills
