@@ -13,7 +13,13 @@
 <div class="editor-shell" data-controller="editor" data-editor-open-class="is-open"
      data-editor-autosave-outlet=".editor-shell__form"
      data-editor-open-publish-value="<%= publishing_open? %>"
-     data-action="keydown@window->editor#closeOnEscape turbo:before-cache@window->editor#beforeCache">
+     data-action="keydown@window->editor#closeOnEscape keydown@window->editor#trapFocus
+                  keydown@window->editor#shortcutsOnSlash
+                  keydown.meta+shift+p@window->editor#togglePublish:prevent
+                  keydown.ctrl+shift+p@window->editor#togglePublish:prevent
+                  keydown.meta+p@window->editor#preview:prevent
+                  keydown.ctrl+p@window->editor#preview:prevent
+                  turbo:before-cache@window->editor#beforeCache">
   <div class="editor-shell__scrim" data-editor-target="backdrop" data-action="click->editor#close"></div>
 
   <%# Autosave rides the form in both states, and is the only save there is — no Save
@@ -33,7 +39,9 @@
                 "autosave:slugged->slug#kept autosave:minted->local-save#rekey " \
                 "turbo:before-morph-attribute@document->autosave#keepPanelOpen " \
                 "turbo:before-visit@window->autosave#guardVisit " \
-                "beforeunload@window->autosave#guardUnload",
+                "beforeunload@window->autosave#guardUnload " \
+                "keydown.meta+s@window->autosave#flush:prevent " \
+                "keydown.ctrl+s@window->autosave#flush:prevent",
         **slug_check_values(post) } do |form| %>
     <%= render "writing/posts/lock_version", post: post %>
     <header class="editor-bar">
@@ -222,6 +230,14 @@
           <%= form.text_area :meta_description, rows: 2 %>
         </div>
 
+        <hr class="settings-panel__rule">
+
+        <%# The one way into the shortcut sheet that doesn't need a shortcut. %>
+        <p class="settings-panel__aside">
+          <button type="button" class="panel-link" data-action="editor#openShortcuts">Keyboard shortcuts</button>
+          <kbd>⌘/</kbd>
+        </p>
+
         <div id="editor-delete"><%= render "writing/posts/editor_delete", post: post if saving %></div>
       </div>
     </aside>
@@ -230,4 +246,6 @@
   <%# Outside the form on purpose (nested forms get stripped by the parser), and behind a
       stable id so the mint can bring the whole persisted-post chrome in at once. %>
   <div id="editor-overlays"><%= render "writing/posts/editor_overlays", post: post if saving %></div>
+
+  <%= render "writing/posts/shortcuts" %>
 </div>

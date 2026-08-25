@@ -25,5 +25,7 @@ pin "lexxy_inline_code", preload: "writing"
 pin "lexxy_html_cards", preload: "writing"
 # A new code block is plain text, and a pasted fence or class keeps its language.
 pin "lexxy_code_blocks", preload: "writing"
+# ⌘⌥2/3/4/0 for headings — matched on event.code, which data-hotkey can't do.
+pin "lexxy_heading_hotkeys", preload: "writing"
 # Lexxy dynamically imports this for editor image/file direct uploads.
 pin "@rails/activestorage", to: "activestorage.esm.js", preload: "writing"

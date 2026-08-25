@@ -109,6 +109,9 @@ export default class extends Controller {
   }
 
   // Run any pending work now and hand back the promise for it, so a caller can wait.
+  // ⌘S is bound straight to this: on a document with a save owed the bar goes "Saving…"
+  // then "Saved", and on a clean one the key does nothing at all — which is the honest
+  // answer, because there is nothing to save and nothing to say about it.
   flush() {
     if (this.#dirty) this.#save()
     return this.#pending
