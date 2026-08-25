@@ -16,5 +16,7 @@ pin "lexxy_embed_frames", preload: "writing"
 # Teaches the editor Ghost's kg-* cards, so imported bodies round-trip.
 pin "lexxy_kg_cards", preload: "writing"
 pin "lexxy_body_headings", preload: "writing"
+# Adds the one toolbar command Lexxy lacks: toggling inline code.
+pin "lexxy_inline_code", preload: "writing"
 # Lexxy dynamically imports this for editor image/file direct uploads.
 pin "@rails/activestorage", to: "activestorage.esm.js", preload: "writing"

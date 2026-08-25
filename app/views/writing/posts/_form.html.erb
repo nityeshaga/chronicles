@@ -123,7 +123,9 @@
            data-html-card-url-value="<%= writing_html_cards_path %>"
            data-action="lexxy:insert-link->embed#unfurl">
         <%= form.rich_text_area :body, data: { html_card_target: "editor", local_save_target: "input" },
-              placeholder: "Start writing. Paste a tweet or YouTube link on its own line to embed it." %>
+              placeholder: "Start writing. Paste a tweet or YouTube link on its own line to embed it." do %>
+          <%= render "writing/posts/toolbar" %>
+        <% end %>
 
         <%# Writing a card is a rare, deliberate act — markup that will be served exactly as
             typed — so it stays folded away rather than sitting under the prose all day. The
