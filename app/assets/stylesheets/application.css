@@ -1167,6 +1167,12 @@ html.preview-phone .preview-frame {
   --lexxy-toolbar-spacing: .6rem;
   font-family: var(--font-sans); font-size: 1.4rem; line-height: 1.4; letter-spacing: 0;
   flex-wrap: nowrap; border-block-end-color: var(--w-line);
+  /* Two thousand words in, the toolbar used to be a thousand pixels above the caret. It
+     rides under the bar instead: 6rem is the bar's height, and the bar's z-index is 20, so
+     15 puts the toolbar over the prose and under the bar. Sticky makes it a stacking
+     context, which is what carries its dropdown panels over the prose with it. It needs an
+     opaque back — the canvas is transparent so the prose sits on the paper. */
+  position: sticky; top: 6rem; z-index: 15; background: var(--w-surface);
 }
 /* Our icons are strokes, the gem's are fills; its rule paints every toolbar svg with a
    fill, so say otherwise for ours (the filled dots set their own fill inline). */
