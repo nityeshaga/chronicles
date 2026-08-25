@@ -1,0 +1,24 @@
+<%# A card's document: its bytes in the published typography, and nothing of the page
+    around it. The canvas frames this; a reader never sees it (HtmlCard.expand serves the
+    same bytes inline on the post). The script at the foot is the document's one word to
+    its parent — how tall it is — so the frame can fit the card instead of scrolling it.
+    Sandboxed without allow-same-origin, the frame has no origin to name, so the message
+    goes to any parent and the canvas trusts it only from a frame it made. %>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML card</title>
+    <%= render "shared/fonts" %>
+    <%= stylesheet_link_tag :app %>
+  </head>
+  <body class="html-card has-serif-body">
+    <div class="gh-content"><div class="kg-card kg-html-card"><%= @card.content.html_safe %></div></div>
+    <script>
+      const report = () => parent.postMessage({ htmlCardHeight: Math.ceil(document.documentElement.getBoundingClientRect().height) }, "*")
+      new ResizeObserver(report).observe(document.documentElement)
+      addEventListener("load", report)
+    </script>
+  </body>
+</html>

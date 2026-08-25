@@ -908,6 +908,8 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
       "embed html-card", "lexxy:insert-link->embed#unfurl"
     assert_select "lexxy-editor[placeholder=?]",
       "Start writing. Paste a tweet or YouTube link on its own line to embed it."
+    # The canvas frames a card from this URL, filling the hole with the attachment's sgid.
+    assert_select "lexxy-editor[data-html-card-url-template=?]", writing_html_card_path("__sgid__")
   end
 
   test "preview renders the public post template behind auth" do

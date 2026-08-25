@@ -1223,6 +1223,19 @@ html.preview-phone .preview-frame {
 }
 .editor-canvas__body .lexxy-editor__content blockquote.twitter-tweet a { word-break: break-all; }
 
+/* An HTML card, seen from the editor: the real card in a sandboxed frame of its own
+   document (Writing::HtmlCardsController#show), sized to its content by the message
+   that document posts. Pointer events stay off so a click lands on the attachment and
+   selects it — the card is one opaque block here, select or delete, nothing inside it
+   is the writer's to press. */
+.editor-canvas__body action-text-attachment:has(> .html-card-frame) { display: block; margin: 2.4rem 0; }
+.editor-canvas__body .html-card-frame { display: block; width: 100%; height: 16rem; border: 0; pointer-events: none; }
+
+/* The card's own document, as the frame above loads it: the published typography with
+   none of the page around it, flush to the frame so the reported height is the card's. */
+body.html-card { margin: 0; background: transparent; }
+body.html-card .gh-content, body.html-card .kg-card { margin: 0; }
+
 /* The card composer: tooling, not page, so it steps out of the canvas serif and stays
    quiet — a folded line under the prose that only becomes a form when it's wanted. */
 .card-composer { margin-top: 2.4rem; font-family: var(--font-sans); font-size: 1.3rem; }

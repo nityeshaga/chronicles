@@ -25,6 +25,7 @@ class JavascriptEntryTest < ActionDispatch::IntegrationTest
     assert_select "link[rel=modulepreload][href*='/lexxy.min-']"
     assert_select "link[rel=modulepreload][href*=lexxy_embed_frames]"
     assert_select "link[rel=modulepreload][href*=lexxy_inline_code]"
+    assert_select "link[rel=modulepreload][href*=lexxy_html_cards]"
     assert_select "link[rel=modulepreload][href*='/writing/autosave_controller']"
   end
 

@@ -70,7 +70,10 @@ Rails.application.routes.draw do
     end
     resources :tags, only: %i[ index edit update create ]
     resources :embeds, only: %i[ create ]
-    resources :html_cards, only: %i[ create ]
+    # show is one card, bare, for the writer's canvas to frame — addressed by the sgid the
+    # attachment already carries, so the client fills a hole in a server-given URL and
+    # never learns a record id.
+    resources :html_cards, only: %i[ create show ]
     resources :uploads, only: %i[ create ]
     # "Is this URL still free?", asked from the editor as the writer types. Singular, and
     # the slug rides in the query: it's what the question is about, not where to ask it.
