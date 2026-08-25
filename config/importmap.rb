@@ -23,5 +23,7 @@ pin "lexxy_body_headings", preload: "writing"
 pin "lexxy_inline_code", preload: "writing"
 # Paints an HTML card in the canvas as the real thing, framed, instead of its skeleton.
 pin "lexxy_html_cards", preload: "writing"
+# A new code block is plain text, and a pasted fence or class keeps its language.
+pin "lexxy_code_blocks", preload: "writing"
 # Lexxy dynamically imports this for editor image/file direct uploads.
 pin "@rails/activestorage", to: "activestorage.esm.js", preload: "writing"
