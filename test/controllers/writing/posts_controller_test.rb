@@ -944,7 +944,8 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Lexxy paints a button's tooltip from title alone; a screen reader needs the name too.
-  # The swatches the gem generates get theirs from the controller, named in the markup.
+  # The swatches and heading items the gem generates get theirs from the controller,
+  # named in the markup — the headings as "Heading 2/3/4", not the gem's Large/Medium/Small.
   test "every toolbar button is titled and named" do
     sign_in_as users(:nityesh)
     get new_writing_post_url
@@ -956,7 +957,10 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
       assert button["aria-label"].present?, "unnamed toolbar button: #{button.to_html}"
     end
 
-    assert_select "lexxy-toolbar[data-controller=swatches][data-action=?][data-swatches-names-value]",
-      "lexxy:initialize@window->swatches#label"
+    assert_select "lexxy-toolbar[data-controller=labels][data-action=?]", "lexxy:initialize@window->labels#label"
+    toolbar = css_select("lexxy-toolbar").first
+    assert_equal %w[ Yellow Orange Red Pink Purple Blue Green Brown Grey ], toolbar["data-labels-swatches-value"].split
+    assert_equal({ "h2" => "Heading 2", "h3" => "Heading 3", "h4" => "Heading 4" },
+      JSON.parse(toolbar["data-labels-headings-value"]))
   end
 end

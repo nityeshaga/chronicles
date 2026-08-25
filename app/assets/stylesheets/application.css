@@ -1123,7 +1123,7 @@ a:hover { opacity: .8; }
 .editor-canvas__body lexxy-toolbar .lexxy-editor__toolbar-button:hover:not([aria-disabled="true"]) { background-color: rgba(0, 0, 0, .05); }
 /* A gap, not a rule, after the text-style menu: the gem draws its group rule and its
    chevron with the same ::after, so a trigger can't wear both. */
-.editor-canvas__body lexxy-toolbar > .lexxy-editor__toolbar-dropdown:first-child { margin-inline-end: .6rem; }
+.editor-canvas__body lexxy-toolbar > .lexxy-editor__toolbar-dropdown:has(> [name=format]) { margin-inline-end: .6rem; }
 /* Lexxy draws the dropdown caret at .3ch square, which renders as a dot — the text-style
    and colour buttons stop reading as menus. The caret is a rotated corner, so growing it
    drops its visual centre; pull it back up. */
@@ -1140,13 +1140,14 @@ a:hover { opacity: .8; }
   border: 1px solid var(--w-line-strong); border-radius: 8px; box-shadow: var(--w-shadow);
   color: var(--w-ink);
 }
-.toolbar-panel__label { padding: .2rem .6rem 0; font-size: 1.2rem; font-weight: 500; color: var(--w-muted); }
+.toolbar-panel__label { padding: .2rem .6rem 0; font-size: 1.3rem; font-weight: 500; color: var(--w-muted); }
 
 /* Text styles: each item is a preview of the style it applies — the label set in the
    heading's own face and size — so the gem's H2/H3/H4 glyphs are redundant. Lexxy
-   generates the heading items and owns their labels; the data-heading it stamps on each
-   is what sizes them. The gem collapses this list to an unlabelled icon grid once the
-   toolbar overflows; on a phone the labels are the whole point, so keep the list. */
+   generates the heading items (labels_controller names them from the toolbar markup);
+   the data-heading it stamps on each is what sizes them. The gem collapses this list to
+   an unlabelled icon grid once the toolbar overflows; on a phone the labels are the whole
+   point, so keep the list. */
 .editor-canvas__body lexxy-toolbar .toolbar-styles { min-inline-size: 18rem; padding: .4rem; }
 .editor-canvas__body lexxy-toolbar .toolbar-styles button { padding: .6rem 1rem; border-radius: 6px; }
 .editor-canvas__body lexxy-toolbar .toolbar-styles button svg { display: none; }
