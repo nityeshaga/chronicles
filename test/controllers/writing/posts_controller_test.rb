@@ -898,19 +898,48 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".schedule-form input[type=submit][disabled]", count: 0
   end
 
-  # Pasting a link is the only way to embed one, so the empty body is the only place a
-  # writer learns embeds exist. The controller listens on the body, where the paste lands.
-  test "the editor teaches embeds through the body placeholder" do
+  # The empty body is the only place a writer learns what the editor can do, so the
+  # placeholder names all three ways in: the slash menu, the heading shortcut, the paste.
+  # Every controller behind them listens on the body, which is where each one lands.
+  test "the editor teaches its blocks through the body placeholder" do
     sign_in_as users(:nityesh)
     get new_writing_post_url
 
     body = css_select(".editor-canvas__body").first
     assert_includes body["data-controller"].split, "embed"
+    assert_includes body["data-controller"].split, "slash-menu"
     assert_includes body["data-action"], "lexxy:insert-link->embed#unfurl"
     assert_select "lexxy-editor[placeholder=?]",
-      "Start writing. Paste a tweet or YouTube link on its own line to embed it."
+      "Start writing. Type / for blocks, ## for a heading, or paste a link on its own line to embed it."
     # The canvas frames a card from this URL, filling the hole with the attachment's sgid.
     assert_select "lexxy-editor[data-html-card-url-template=?]", writing_html_card_path("__sgid__")
+
+    wiring = css_select(".editor-canvas__body").first["data-action"]
+    [ "lexxy:insert-link->embed#unfurl", "keydown->slash-menu#navigate:capture",
+      "lexxy:change->slash-menu#sync", "selectionchange@document->slash-menu#sync",
+      "lexxy:blur->slash-menu#close", "slash-menu:embed->embed#insert",
+      "slash-menu:card->html-card#open" ].each do |wire|
+      assert_includes wiring, wire
+    end
+  end
+
+  # The menu makes nothing of its own: each row names a tool the toolbar declares, and the
+  # controller clicks that button. A row naming a button that isn't there is a dead row,
+  # and only this can see it — the heading buttons are generated in the browser, so they
+  # are checked against the tags the toolbar asks Lexxy to generate.
+  test "every slash-menu row names a tool the toolbar has" do
+    sign_in_as users(:nityesh)
+    get new_writing_post_url
+
+    names = css_select(".slash-menu__item[data-for]").map { |row| row["data-for"] }
+    headings, buttons = names.partition { |name| name.start_with?("h") && name.match?(/\Ah\d\z/) }
+
+    assert_equal %w[ h2 h3 h4 ], headings
+    assert_equal %w[ unordered-list ordered-list quote code-block divider image table ], buttons
+
+    toolbar = css_select("lexxy-toolbar").first
+    assert_empty headings - JSON.parse(toolbar["data-labels-headings-value"]).keys
+    buttons.each { |name| assert_select "lexxy-toolbar button[name=?]", name }
   end
 
   # The bubbles hold no commands: each button names a toolbar button and its click is
