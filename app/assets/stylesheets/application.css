@@ -1395,9 +1395,16 @@ body.html-card .gh-content, body.html-card .kg-card { margin: 0; }
   position: fixed; top: 0; right: 0; bottom: 0; z-index: 50; width: min(42rem, 94vw);
   display: flex; flex-direction: column; background: var(--w-panel);
   box-shadow: -14px 0 44px rgba(0, 0, 0, .14); visibility: hidden;
-  transform: translateX(100%); transition: transform .26s cubic-bezier(.4, 0, .2, 1), visibility .26s;
+  transform: translateX(100%);
+  /* Visibility waits out the slide on the way closed and flips at once on the way open.
+     Transitioning it in both directions left the panel un-focusable for the first frames
+     of an opening, and a panel that can't take focus is a panel the keyboard can't use. */
+  transition: transform .26s cubic-bezier(.4, 0, .2, 1), visibility 0s linear .26s;
 }
-.settings-panel.is-open { transform: translateX(0); visibility: visible; }
+.settings-panel.is-open {
+  transform: translateX(0); visibility: visible;
+  transition: transform .26s cubic-bezier(.4, 0, .2, 1), visibility 0s;
+}
 .settings-panel__head, .publish-popover__head {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   padding: 1.6rem 2rem; border-bottom: 1px solid var(--w-line); flex-shrink: 0;
@@ -1416,9 +1423,12 @@ body.html-card .gh-content, body.html-card .kg-card { margin: 0; }
   position: fixed; top: 6.8rem; right: max(3vmin, 14px); z-index: 50; width: min(36rem, 94vw);
   background: var(--w-panel); border: 1px solid var(--w-line); border-radius: var(--w-radius);
   box-shadow: var(--w-shadow); visibility: hidden; opacity: 0; transform: translateY(-8px);
-  transition: opacity .16s ease, transform .16s ease, visibility .16s;
+  transition: opacity .16s ease, transform .16s ease, visibility 0s linear .16s;
 }
-.publish-popover.is-open { visibility: visible; opacity: 1; transform: translateY(0); }
+.publish-popover.is-open {
+  visibility: visible; opacity: 1; transform: translateY(0);
+  transition: opacity .16s ease, transform .16s ease, visibility 0s;
+}
 .publish-popover__head { padding: 1.2rem 1.6rem; }
 .publish-popover__head h2 { font-family: var(--font-sans); font-size: 1.5rem; font-weight: 600; }
 .publish-popover__body { padding: 1.6rem; display: flex; flex-direction: column; gap: 1.3rem; }
@@ -1443,7 +1453,9 @@ body.html-card .gh-content, body.html-card .kg-card { margin: 0; }
    key and the focus trap. Sized to the table rather than the viewport — it is a thing to
    glance at, not a page to read. ---- */
 .shortcut-sheet {
-  width: min(46rem, 92vw); max-height: 82vh; padding: 0; overflow: auto;
+  /* The site's reset zeroes every margin, which takes the centring a modal <dialog>
+     gets from the UA stylesheet with it. Put it back. */
+  width: min(46rem, 92vw); max-height: 82vh; margin: auto; padding: 0; overflow: auto;
   border: 1px solid var(--w-line); border-radius: var(--w-radius);
   background: var(--w-panel); color: var(--w-ink); box-shadow: var(--w-shadow);
   font-family: var(--font-sans);
