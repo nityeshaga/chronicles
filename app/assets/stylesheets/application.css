@@ -1108,10 +1108,6 @@ a:hover { opacity: .8; }
   --lexxy-toolbar-button-size: 3.4rem;
   --lexxy-toolbar-icon-size: 1.6rem;
   --lexxy-toolbar-spacing: .6rem;
-  --lexxy-text-small: 1.3rem;
-  --lexxy-color-selected-hover: rgba(180, 83, 9, .2);
-  --lexxy-focus-ring-color: var(--accent-color);
-  --lexxy-radius: 6px;
   font-family: var(--font-sans); font-size: 1.4rem; line-height: 1.4; letter-spacing: 0;
   flex-wrap: nowrap; border-block-end-color: var(--w-line);
 }
