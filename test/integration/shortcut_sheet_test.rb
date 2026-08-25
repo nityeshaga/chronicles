@@ -12,13 +12,17 @@ class ShortcutSheetTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     printed = css_select(".shortcut-sheet kbd").map(&:text)
+    buttons = css_select("lexxy-toolbar [data-hotkey]")
     assert printed.any?, "the shortcut sheet printed no keys at all"
+    assert buttons.any?, "the toolbar declared no hotkeys, so this test proved nothing"
 
-    css_select("lexxy-toolbar [data-hotkey]").each do |button|
+    buttons.each do |button|
+      # A button declares the same chord once per platform ("cmd+e ctrl+e"); the sheet is
+      # written in Mac symbols and says so in its foot, so printing any one of them counts.
       combinations = button["data-hotkey"].split.map { |combination| symbolize(combination) }
 
       assert combinations.intersect?(printed),
-        "the toolbar's #{button["name"]} answers to #{combinations.to_sentence(two_words_connector: " or ", last_word_connector: " or ")} and the sheet prints neither"
+        "the toolbar's #{button["name"]} answers to #{combinations.join(" / ")} and the sheet prints none of them"
     end
   end
 
