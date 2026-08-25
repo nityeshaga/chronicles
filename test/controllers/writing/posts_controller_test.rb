@@ -386,6 +386,9 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_select ".errors li", text: /Another tab saved this post first/
     assert_select "input[name='post[lock_version]'][value=?]", draft.lock_version.to_s
+    # And the bar above the alert can't claim the work landed.
+    assert_select ".editor-bar .autosave-status", text: "Showing the saved version"
+    assert_select ".editor-bar .autosave-status", text: /\ASaved/, count: 0
   end
 
   test "the editor form carries the record's lock_version and a slot for the local draft" do
