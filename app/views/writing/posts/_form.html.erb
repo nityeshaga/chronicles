@@ -40,8 +40,8 @@
                 "turbo:before-morph-attribute@document->autosave#keepPanelOpen " \
                 "turbo:before-visit@window->autosave#guardVisit " \
                 "beforeunload@window->autosave#guardUnload " \
-                "keydown.meta+s@window->autosave#flushNow:prevent " \
-                "keydown.ctrl+s@window->autosave#flushNow:prevent",
+                "keydown.meta+s@window->autosave#flush:prevent " \
+                "keydown.ctrl+s@window->autosave#flush:prevent",
         **slug_check_values(post) } do |form| %>
     <%= render "writing/posts/lock_version", post: post %>
     <header class="editor-bar">
