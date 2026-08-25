@@ -13,7 +13,25 @@ import { Controller } from "@hotwired/stimulus"
 const BLOCKS = "p, h1, h2, h3, h4, h5, h6, li, blockquote, td, th"
 
 export default class extends Controller {
+  static targets = [ "editor" ]
   static values = { url: String }
+
+  // The slash menu's /embed. The writer typed the URL instead of pasting it, so make the
+  // link he would have made and then take the same road: same server, same swap, same
+  // undo. Handing the markup straight to the editor would have worked too — it takes the
+  // identical route back out of kg-cards — but then a host Embed doesn't know would leave
+  // the writer with nothing where his URL was. This way it leaves him a link, exactly as
+  // a paste does.
+  async insert({ detail: { argument: url } }) {
+    if (!url) return
+
+    const linkKey = this.editorTarget.contents.createLink(url)
+    const html = await this.#embedHtml(url)
+
+    if (html && this.element.isConnected) {
+      this.editorTarget.contents.replaceNodeWithHTML(linkKey, html, { attachment: { contentType: "text/html" } })
+    }
+  }
 
   async unfurl({ detail: { url, replaceLinkWith } }) {
     if (!await this.#ownsItsLine(url)) return
