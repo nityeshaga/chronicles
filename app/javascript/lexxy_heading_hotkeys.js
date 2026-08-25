@@ -6,12 +6,10 @@ import { Extension } from "lexxy"
 // the physical key and says Digit2 whatever Option did to the character, so the chords
 // are matched on that instead. Ctrl stands in for Cmd, as everywhere else in the toolbar.
 //
-// The tag comes from the editor's own heading config and the command is the one the
-// heading dropdown's buttons dispatch, so configuring a different set of headings moves
-// the keyboard with the menu. A digit with no configured heading (⌘⌥1 — the body has no
-// h1, on purpose) does nothing.
-const PRESET_COMMANDS = [ "setFormatHeadingLarge", "setFormatHeadingMedium", "setFormatHeadingSmall" ]
-
+// `applyHeadingFormat` is Lexxy's own command for "make this heading that tag" — the same
+// call its Large/Medium/Small presets resolve to, only named rather than counted. The tag
+// has to be one the editor is configured for, so ⌘⌥1 does nothing: the body has no h1, on
+// purpose, and configuring a different set of headings moves the keyboard with the menu.
 export default class HeadingHotkeys extends Extension {
   get lexicalExtension() {
     return this.defineExtension({
@@ -28,7 +26,11 @@ export default class HeadingHotkeys extends Extension {
   }
 
   #handleHotkey(event, editor) {
-    if (!event.altKey || !(event.metaKey || event.ctrlKey)) return
+    if (!event.altKey || event.shiftKey || !(event.metaKey || event.ctrlKey)) return
+    // AltGr reports as Ctrl+Alt on a European layout, where these digits are characters
+    // the writer means to type. A Mac's Option never carries Cmd with it, so the chord
+    // this file exists for is not what's being turned away.
+    if (event.getModifierState?.("AltGraph") && !event.metaKey) return
 
     const dispatch = this.#dispatchFor(event.code)
     if (!dispatch) return
@@ -44,10 +46,7 @@ export default class HeadingHotkeys extends Extension {
     if (code === "Digit0") return { command: "setFormatParagraph" }
 
     const tag = code.replace(/^Digit/, "h")
-    const index = this.#headings.indexOf(tag)
-    if (index < 0) return null
-
-    return { command: PRESET_COMMANDS[index] ?? "applyHeadingFormat", payload: tag }
+    return this.#headings.includes(tag) ? { command: "applyHeadingFormat", payload: tag } : null
   }
 
   get #headings() {
