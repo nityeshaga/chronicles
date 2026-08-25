@@ -934,7 +934,8 @@ html.preview-phone .preview-frame {
 }
 .dash-tab:hover { color: var(--w-ink); }
 .dash-tab[aria-pressed="true"] { color: var(--w-ink); border-bottom-color: var(--w-accent); }
-.dash-tab__count { font-size: 1.15rem; font-weight: 600; color: var(--w-faint); background: rgba(0, 0, 0, .05); border-radius: 20px; padding: .15rem .6rem; min-width: 2.1rem; text-align: center; }
+/* The token, not faint: the count sits on its own 5% tint, where faint reads 4.10:1. */
+.dash-tab__count { font-size: 1.15rem; font-weight: 600; color: var(--w-muted); background: rgba(0, 0, 0, .05); border-radius: 20px; padding: .15rem .6rem; min-width: 2.1rem; text-align: center; }
 .dash-tab[aria-pressed="true"] .dash-tab__count { color: var(--w-accent); background: rgba(180, 83, 9, .12); }
 
 /* Filter-as-you-type. Full width under the tabs, because the list it narrows is that
@@ -1477,9 +1478,11 @@ body.html-card .gh-content, body.html-card .kg-card { margin: 0; }
 .shortcut-sheet__table tr:first-child td { border-top: 0; }
 .shortcut-sheet__foot { padding: 1.2rem 1.8rem 1.6rem; font-size: 1.25rem; color: var(--w-muted); }
 
-/* The keys themselves, wherever the workbench prints them. Scoped to the writing body:
-   a <kbd> inside a published post is the reader's typography, not this. */
-.writing-app kbd {
+/* The keys themselves, in the two places the workbench prints them. Named rather than
+   scoped to `.writing-app`, which would reach into the canvas and restyle a <kbd> the
+   writer typed — the editor's prose has to look like the published page. */
+.shortcut-sheet kbd,
+.settings-panel__aside kbd {
   display: inline-block; padding: .2rem .55rem; min-width: 2.2rem; text-align: center;
   font-family: var(--font-sans); font-size: 1.25rem; font-weight: 600; line-height: 1.4;
   color: var(--w-ink); background: var(--w-surface);
