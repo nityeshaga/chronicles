@@ -916,4 +916,47 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "article.gh-article"
   end
+
+  # The toolbar is ours, not the gem's default: the tools a blog post uses, in reading
+  # order, and none it doesn't — a post attaches no files, and undo is Cmd+Z. It rides
+  # inside the editor element, which is where Lexxy looks for one before making its own.
+  test "the editor carries its own toolbar with the blog's tools and no file attachment" do
+    sign_in_as users(:nityesh)
+    get new_writing_post_url
+
+    assert_select "lexxy-editor > lexxy-toolbar", count: 1 do
+      assert_equal %w[ format bold italic strikethrough code link unordered-list ordered-list
+                       quote divider code-block table image highlight ],
+        css_select("lexxy-toolbar button[name]").map { |button| button["name"] } - %w[ paragraph ]
+
+      assert_select "button[data-command=uploadFile]", count: 0
+      assert_select "button[name=file]", count: 0
+      assert_select "button[name=undo], button[name=redo]", count: 0
+
+      assert_select "button[name=image][data-command=uploadImage][data-prevent-overflow]"
+      assert_select "button[name=link][data-hotkey=?]", "cmd+k ctrl+k"
+      assert_select "button[name=code][data-command=inlineCode][data-hotkey=?]", "cmd+e ctrl+e"
+      assert_select "button[name=paragraph][data-command=setFormatParagraph]", text: "Paragraph"
+      assert_select "lexxy-heading-dropdown .lexxy-heading-options"
+      assert_select "lexxy-highlight-dropdown [data-command=removeHighlight]"
+      assert_select ".lexxy-editor__toolbar-overflow [data-dropdown-panel]"
+    end
+  end
+
+  # Lexxy paints a button's tooltip from title alone; a screen reader needs the name too.
+  # The swatches the gem generates get theirs from the controller, named in the markup.
+  test "every toolbar button is titled and named" do
+    sign_in_as users(:nityesh)
+    get new_writing_post_url
+
+    buttons = css_select("lexxy-toolbar button")
+    assert_operator buttons.size, :>=, 16
+    buttons.each do |button|
+      assert button["title"].present?, "untitled toolbar button: #{button.to_html}"
+      assert button["aria-label"].present?, "unnamed toolbar button: #{button.to_html}"
+    end
+
+    assert_select "lexxy-toolbar[data-controller=swatches][data-action=?][data-swatches-names-value]",
+      "lexxy:initialize@window->swatches#label"
+  end
 end

@@ -1098,13 +1098,85 @@ a:hover { opacity: .8; }
   border: 0; border-radius: 0; background: none;
 }
 
-/* Lexxy draws the dropdown caret at .3ch square, which at our toolbar size renders as a
-   dot — the text-style and highlight buttons stop reading as menus. One step above the
-   gem's own rule, so it wins on specificity rather than on load order. No !important. */
-.editor-canvas__body lexxy-editor .lexxy-editor__toolbar-button--chevron:after {
-  /* The caret is a rotated corner, so growing it drops its visual centre — pull it back. */
+/* The toolbar is chrome, not prose: it steps out of the canvas serif into the UI sans at
+   14px, which is also what sizes Lexxy's buttons (2lh of it — 62px when it inherited the
+   20px serif, which is why eleven tools overflowed a 680px measure). Everything below is
+   scoped to <lexxy-toolbar>, one specificity step above the gem's :where() rules, so it
+   wins on weight rather than load order. No !important. The canvas's own tokens on
+   lexxy-editor above are untouched. */
+.editor-canvas__body lexxy-toolbar {
+  --lexxy-toolbar-button-size: 3.4rem;
+  --lexxy-toolbar-icon-size: 1.6rem;
+  --lexxy-toolbar-spacing: .6rem;
+  --lexxy-text-small: 1.3rem;
+  --lexxy-color-selected-hover: rgba(180, 83, 9, .2);
+  --lexxy-focus-ring-color: var(--accent-color);
+  --lexxy-radius: 6px;
+  font-family: var(--font-sans); font-size: 1.4rem; line-height: 1.4; letter-spacing: 0;
+  flex-wrap: nowrap; border-block-end-color: var(--w-line);
+}
+/* Our icons are strokes, the gem's are fills; its rule paints every toolbar svg with a
+   fill, so say otherwise for ours (the filled dots set their own fill inline). */
+.editor-canvas__body lexxy-toolbar .lexxy-editor__toolbar-button svg {
+  fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+}
+.editor-canvas__body lexxy-toolbar .lexxy-editor__toolbar-button:hover:not([aria-disabled="true"]) { background-color: rgba(0, 0, 0, .05); }
+/* A gap, not a rule, after the text-style menu: the gem draws its group rule and its
+   chevron with the same ::after, so a trigger can't wear both. */
+.editor-canvas__body lexxy-toolbar > .lexxy-editor__toolbar-dropdown:first-child { margin-inline-end: .6rem; }
+/* Lexxy draws the dropdown caret at .3ch square, which renders as a dot — the text-style
+   and colour buttons stop reading as menus. The caret is a rotated corner, so growing it
+   drops its visual centre; pull it back up. */
+.editor-canvas__body lexxy-toolbar .lexxy-editor__toolbar-button--chevron:after {
   block-size: .65ch; inline-size: .65ch; margin-block-start: -.2ch;
 }
+
+/* Panels. The gem paints them with --lexxy-color-canvas, which the editor sets to
+   transparent so the prose sits on the page — so every menu let the prose bleed through.
+   Redefine that one token on the panel itself: the panel and what's in it turn opaque,
+   the canvas never sees the change. Our border and shadow, not the gem's blue 2px. */
+.editor-canvas__body lexxy-toolbar [data-dropdown-panel] {
+  --lexxy-color-canvas: var(--w-panel);
+  border: 1px solid var(--w-line-strong); border-radius: 8px; box-shadow: var(--w-shadow);
+  color: var(--w-ink);
+}
+.toolbar-panel__label { padding: .2rem .6rem 0; font-size: 1.2rem; font-weight: 500; color: var(--w-muted); }
+
+/* Text styles: each item is a preview of the style it applies — the label set in the
+   heading's own face and size — so the gem's H2/H3/H4 glyphs are redundant. Lexxy
+   generates the heading items and owns their labels; the data-heading it stamps on each
+   is what sizes them. The gem collapses this list to an unlabelled icon grid once the
+   toolbar overflows; on a phone the labels are the whole point, so keep the list. */
+.editor-canvas__body lexxy-toolbar .toolbar-styles { min-inline-size: 18rem; padding: .4rem; }
+.editor-canvas__body lexxy-toolbar .toolbar-styles button { padding: .6rem 1rem; border-radius: 6px; }
+.editor-canvas__body lexxy-toolbar .toolbar-styles button svg { display: none; }
+.editor-canvas__body lexxy-toolbar .toolbar-styles button span { font-family: var(--font-serif); font-size: 1.6rem; line-height: 1.2; color: var(--w-ink); }
+.editor-canvas__body lexxy-toolbar .toolbar-styles .lexxy-heading-button span { font-weight: 600; letter-spacing: -.015em; }
+.editor-canvas__body lexxy-toolbar .toolbar-styles [data-heading="h2"] span { font-size: 2.3rem; }
+.editor-canvas__body lexxy-toolbar .toolbar-styles [data-heading="h3"] span { font-size: 1.9rem; }
+.editor-canvas__body lexxy-toolbar .toolbar-styles [data-heading="h4"] span { font-size: 1.65rem; }
+.editor-canvas__body lexxy-toolbar[overflowing] .toolbar-styles:not([hidden]) { display: flex; }
+.editor-canvas__body lexxy-toolbar[overflowing] .toolbar-styles button span { display: inline; }
+
+/* The link dialog hangs off its button at a readable width, instead of spanning the
+   toolbar. Once the toolbar overflows (a phone) there's no room beside anything, so it
+   goes back to the gem's full-width placement. */
+.editor-canvas__body lexxy-toolbar .lexxy-editor__toolbar-dropdown--link { position: relative; }
+.editor-canvas__body lexxy-toolbar .lexxy-editor__toolbar-dropdown--link [data-dropdown-panel] {
+  inset-inline-start: 0; inset-inline-end: auto; inline-size: 36rem; padding: .6rem;
+}
+.editor-canvas__body lexxy-toolbar .lexxy-editor__toolbar-dropdown--link [data-dropdown-panel] button { inline-size: auto; padding-inline: 1.4rem; font-weight: 500; }
+.editor-canvas__body lexxy-toolbar[overflowing] .lexxy-editor__toolbar-dropdown--link { position: static; }
+.editor-canvas__body lexxy-toolbar[overflowing] .lexxy-editor__toolbar-dropdown--link [data-dropdown-panel] {
+  inset-inline: var(--lexxy-toolbar-spacing); inline-size: auto;
+}
+/* The palette hangs off the right end of the bar, so it grows leftward, over the bar,
+   rather than past the measure's edge. On a phone the gem's full-width placement stands. */
+.editor-canvas__body lexxy-toolbar .lexxy-editor__toolbar-dropdown--highlight [data-dropdown-panel] { padding: .6rem; }
+.editor-canvas__body lexxy-toolbar:not([overflowing]) .lexxy-editor__toolbar-dropdown--highlight [data-dropdown-panel] {
+  inset-inline-start: auto; inset-inline-end: 0;
+}
+.editor-canvas__body lexxy-toolbar .lexxy-editor__toolbar-dropdown-reset { padding: .5rem 1rem; font-size: 1.3rem; font-weight: 500; }
 
 /* Embeds, seen from the editor. A YouTube frame plays here exactly as it will on the
    published page, in the same .kg-embed-card figure under the same rules. A tweet can't:
