@@ -223,6 +223,15 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     assert_empty response.body
   end
 
+  # Lexxy's empty value is a paragraph, not an empty string; it is still nothing to save.
+  test "autosave create refuses to mint a draft whose body is only empty paragraphs" do
+    sign_in_as users(:nityesh)
+    assert_no_difference -> { Post.count } do
+      post writing_posts_url, headers: { "X-Autosave" => "true" }, params: { post: { title: "", body: "<p><br></p>" } }
+    end
+    assert_response :unprocessable_entity
+  end
+
   test "autosave create titles a body-first draft so it can persist" do
     sign_in_as users(:nityesh)
     assert_difference -> { Post.articles.count }, 1 do
