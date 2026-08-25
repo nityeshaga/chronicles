@@ -1,0 +1,5 @@
+<%# Action Text's own partial wraps this in <figure class="attachment attachment--content">.
+    Lexxy reads the rendered form back as the node's content and writes it to the body on
+    the next save, so every editor load grew one more wrapper around each embed (post 76
+    reached ten). Unwrapped, a render is a fixed point: the content comes out as it went in. %>
+<%= content_attachment.attachable -%>

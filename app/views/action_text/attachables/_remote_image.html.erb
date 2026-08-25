@@ -1,0 +1,4 @@
+<%# An image the body points at rather than stores — imported, agent-uploaded or pasted —
+    rendered as the same kg-image-card an upload gets. Twin notice in ImageCardsHelper. %>
+<%= kg_image_card src: remote_image.url, alt: remote_image.node["alt"], caption: remote_image.caption,
+      width: remote_image.width, height: remote_image.height %>

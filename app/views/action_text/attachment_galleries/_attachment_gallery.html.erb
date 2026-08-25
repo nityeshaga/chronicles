@@ -1,0 +1,5 @@
+<%# Two or more uploads in a row. The same figure the importer wrote for Ghost galleries
+    (lib/ghost/mobiledoc.rb card_gallery), so the gallery CSS serves both. Action Text keeps
+    each image inside its <action-text-attachment>, so that wrapper — not .kg-gallery-image —
+    is the row's flex item; application.css gives it display: contents. %>
+<figure class="kg-card kg-gallery-card kg-width-wide"><div class="kg-gallery-container"><div class="kg-gallery-row"><%= yield %></div></div></figure>

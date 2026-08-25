@@ -325,4 +325,14 @@ class PostTest < ActiveSupport::TestCase
     assert_equal "A headline split across lines", post.title
     assert_equal "One standfirst", post.excerpt
   end
+
+  test "a post can be created without a body" do
+    assert_nothing_raised { Post.create!(title: "Bodiless", body: nil) }
+  end
+
+  test "a content attachment is stored in the renderer's shape" do
+    post = Post.create!(title: "Carded", body: %(<p><action-text-attachment content-type="text/html" content="\n&lt;figure class=&quot;kg-card&quot; data-x=&quot;1&quot;&gt;&lt;script&gt;1&lt;/script&gt;&lt;/figure&gt;\n"></action-text-attachment></p>))
+
+    assert_equal %(<figure class="kg-card">1</figure>), Nokogiri::HTML5.fragment(post.body.body.to_html).at_css("action-text-attachment")["content"]
+  end
 end

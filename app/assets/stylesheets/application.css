@@ -254,6 +254,8 @@ a:hover { opacity: .8; }
 /* gallery */
 .kg-gallery-container { display: flex; flex-direction: column; gap: 10px; margin-inline: auto; }
 .kg-gallery-row { display: flex; gap: 10px; }
+/* An editor gallery keeps each image inside its attachment element; let the row see through it. */
+.kg-gallery-row > action-text-attachment { display: contents; }
 .kg-gallery-image { flex: 1 1 0; }
 .kg-gallery-image img { width: 100%; height: 100%; object-fit: cover; border-radius: 3px; margin: 0; }
 

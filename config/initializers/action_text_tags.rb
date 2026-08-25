@@ -34,3 +34,8 @@ ActiveSupport.on_load(:action_text_content) do
     current.sanitizer_allowed_attributes - attachment_only +
       %w[sgid class srcset sizes loading allowfullscreen frameborder allow scrolling colspan rowspan]
 end
+
+# Lexxy writes the image's alt text onto the attachment node, but Action Text rebuilds the
+# node from this list before a partial sees it (ActionText::Attachment#with_full_attributes),
+# and `alt` isn't on it — so the partial would render every image without one.
+ActionText::Attachment::ATTRIBUTES << "alt" unless ActionText::Attachment::ATTRIBUTES.include?("alt")
