@@ -766,13 +766,18 @@ html.preview-phone .preview-frame {
   --w-panel: #fffdf8;
   --w-ink: #14171a;
   --w-muted: #5f6165;
-  --w-faint: #8b8d90;
+  /* Every grey here clears WCAG AA (4.5:1) on both --w-surface and --w-panel: faint is
+     4.57 / 4.81, muted 5.80 / 6.10. Faint was #8b8d90 — 3.11 / 3.27, a fail it carried
+     across fifteen uses, most of them the dashboard's dates, slugs and URLs. */
+  --w-faint: #6f7175;
   --w-line: rgba(0, 0, 0, .09);
   --w-line-strong: rgba(0, 0, 0, .17);
   --w-accent: var(--accent-color);
   --w-accent-ink: #9a460a;
   --w-danger: #b00020;
-  --w-ok: #1f7a3d;
+  /* Darkened from #1f7a3d, which read 4.22:1 as the Published pill's text on its own
+     13%-green tint. 4.82 there now, 5.73 as plain text on the surface. */
+  --w-ok: #1c7038;
   --w-radius: 12px;
   --w-shadow: 0 1px 2px rgba(0, 0, 0, .05), 0 10px 30px rgba(0, 0, 0, .07);
 }
@@ -891,7 +896,8 @@ html.preview-phone .preview-frame {
   padding: .35rem .75rem; border-radius: 6px; white-space: nowrap;
 }
 .status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-.status--draft { color: #6b6d70; background: rgba(0, 0, 0, .06); }
+/* The token, not a grey of its own: #6b6d70 read 4.24:1 on the pill's own tint. */
+.status--draft { color: var(--w-muted); background: rgba(0, 0, 0, .06); }
 .status--scheduled { color: #8a5300; background: rgba(180, 83, 9, .13); }
 .status--published { color: var(--w-ok); background: rgba(31, 122, 61, .13); }
 
