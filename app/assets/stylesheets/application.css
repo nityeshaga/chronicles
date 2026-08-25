@@ -1115,8 +1115,8 @@ html.preview-phone .preview-frame {
    rules it shares with .gh-content (above); this wrapper carries the same measure so the
    toolbar, which inherits from it, is sized against the body type. */
 .editor-canvas__body {
-  /* Positioned so the slash menu can be placed against the paragraph it belongs to
-     without leaving the canvas — it is the only absolute child. */
+  /* Positioned so the bubbles and the slash menu can be placed against the words they
+     belong to without leaving the canvas — they are its absolute children. */
   position: relative;
   font-family: var(--font-serif); font-size: 2rem; line-height: 1.55;
   letter-spacing: -.01em; color: var(--ink);
