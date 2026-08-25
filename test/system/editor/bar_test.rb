@@ -4,14 +4,7 @@ require "editor_system_test_case"
 # under it, and what it says about the writer's work while a save is in the air.
 module Editor
   class BarTest < EditorSystemTestCase
-    # click_on returns before the sign-in redirect has landed, so anything that visits
-    # straight after it races the session cookie and bounces back to the door. Wait for
-    # the room. (EditorSystemTestCase is byte-identical across the Phase 2 branches, so
-    # the wait belongs here rather than in it.)
-    setup do
-      sign_in_as users(:nityesh)
-      assert_selector ".writing-dash"
-    end
+    setup { sign_in_as users(:nityesh) }
 
     test "the title moves into the bar once the canvas title has gone under it" do
       open_editor posts(:draft)

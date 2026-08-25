@@ -3,14 +3,7 @@ require "editor_system_test_case"
 # TK reminders: Koenig's rule, a marker in the gutter, and a warning that never blocks.
 module Editor
   class TkTest < EditorSystemTestCase
-    # click_on returns before the sign-in redirect has landed, so anything that visits
-    # straight after it races the session cookie and bounces back to the door. Wait for
-    # the room. (EditorSystemTestCase is byte-identical across the Phase 2 branches, so
-    # the wait belongs here rather than in it.)
-    setup do
-      sign_in_as users(:nityesh)
-      assert_selector ".writing-dash"
-    end
+    setup { sign_in_as users(:nityesh) }
 
     test "a TK in the body is marked, counted, and warned about before publishing" do
       open_editor posts(:draft)
