@@ -921,6 +921,11 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:nityesh)
     get new_writing_post_url
 
+    # The bubbles are markup until the controller is on the body and hears the caret move.
+    body = css_select(".editor-canvas__body").first
+    assert_includes body["data-controller"].split, "selection-bubble"
+    assert_includes body["data-action"], "selectionchange@document->selection-bubble#follow"
+
     names = css_select(".selection-bubble [data-for]").map { |button| button["data-for"] }
     assert_equal %w[ bold italic link h2 h3 quote code link unlink ], names
 

@@ -125,16 +125,23 @@ export default class extends Controller {
   // Absolute inside the canvas body, so the bubble scrolls with the words it belongs to.
   // Above the selection by default; below it when above would be under the chrome — the
   // toolbar's own bottom edge is the measure, so this stays right when the bar changes.
+  // Then clamped to the window on all three edges it can leave: a selection on the last
+  // visible line would otherwise put a below-placed bubble off screen, and a selection at
+  // the measure's edge would put a wide one past the right of a narrow window. The
+  // viewport is documentElement.clientWidth/Height, not window.inner*, which counts the
+  // scrollbar gutter as room the bubble doesn't have.
   #place(bubble, rect) {
     const host = this.element.getBoundingClientRect()
     const chrome = this.#toolbar?.getBoundingClientRect().bottom ?? 0
+    const view = document.documentElement
     const gap = 8
 
     let top = rect.top - bubble.offsetHeight - gap
     if (top < chrome + gap) top = rect.bottom + gap
+    top = Math.max(Math.min(top, view.clientHeight - bubble.offsetHeight - gap), chrome + gap)
 
     const centred = rect.left + rect.width / 2 - bubble.offsetWidth / 2
-    const left = Math.min(Math.max(centred, gap), window.innerWidth - bubble.offsetWidth - gap)
+    const left = Math.min(Math.max(centred, gap), view.clientWidth - bubble.offsetWidth - gap)
 
     bubble.style.top = `${top - host.top}px`
     bubble.style.left = `${left - host.left}px`

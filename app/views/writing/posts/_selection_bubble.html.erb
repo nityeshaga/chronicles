@@ -1,9 +1,10 @@
 <%# Two small bars that come to the caret instead of making the writer go to the toolbar:
-    one over a selection with the seven formats a sentence actually asks for, one under
-    the caret when it lands inside a link. Neither owns a command. Every button names a
-    toolbar button in data-for and its click is proxied there, so the toolbar stays the
-    single place a command lives and a pressed state has one source of truth. tabindex=-1
-    and a prevented mousedown are what keep the selection alive across the click. %>
+    one over a selection with the seven formats a sentence actually asks for, one over the
+    link the caret lands inside (both drop below when above would be under the chrome).
+    Neither owns a command. Every button names a toolbar button in data-for and its click
+    is proxied there, so the toolbar stays the single place a command lives and a pressed
+    state has one source of truth. tabindex=-1 and a prevented mousedown are what keep the
+    selection alive across the click. %>
 <div class="selection-bubble" role="toolbar" aria-label="Format selection" hidden
      data-selection-bubble-target="format"
      data-action="mousedown->selection-bubble#keepSelection click->selection-bubble#proxy">
