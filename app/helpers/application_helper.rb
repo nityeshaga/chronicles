@@ -35,10 +35,18 @@ module ApplicationHelper
   def public_tag_path(tag)   = tag_path(tag, trailing_slash: true)
   def public_tag_url(tag)    = tag_url(tag, trailing_slash: true)
 
-  # Ghost rendered ~265 words/minute; match its "X min read" label.
+  # Ghost rendered ~265 words/minute; match its "X min read" label. The editor bar counts
+  # the same words at the same speed, so the number the writer watches climb is the number
+  # the reader is promised — the speed rides onto the bar as data rather than being typed
+  # a second time in JavaScript.
+  READING_SPEED = 265
+
+  def word_count(post)
+    strip_tags(post.body.to_s).split.size
+  end
+
   def reading_time(post)
-    words = strip_tags(post.body.to_s).split.size
-    [ (words / 265.0).ceil, 1 ].max
+    [ (word_count(post) / READING_SPEED.to_f).ceil, 1 ].max
   end
 
   # Absolute URL for og/canonical tags, honoring the mirrored image tree.

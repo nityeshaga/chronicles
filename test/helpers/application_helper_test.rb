@@ -12,6 +12,28 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_equal "Thu, 02 Jan 2025 19:30:00 GMT", rss_time(Time.utc(2025, 1, 2, 19, 30))
   end
 
+  # One speed, one count. If the bar ever divided by its own 265 the two surfaces would
+  # drift a minute apart on a long post and nothing would fail.
+  test "reading time is the word count at the one reading speed" do
+    post = posts(:published)
+    assert_equal (word_count(post) / ApplicationHelper::READING_SPEED.to_f).ceil, reading_time(post)
+  end
+
+  test "word count reads the words, not the markup" do
+    post = posts(:published)
+    post.body = "<p>One <strong>two</strong> three</p>"
+    assert_equal 3, word_count(post)
+    assert_equal 1, reading_time(post)
+  end
+
+  # A body with nothing in it still reads as a minute — "0 min read" is not a thing.
+  test "reading time floors at one minute" do
+    post = posts(:published)
+    post.body = ""
+    assert_equal 0, word_count(post)
+    assert_equal 1, reading_time(post)
+  end
+
   test "the time helpers are nil-safe" do
     assert_nil ghost_time(nil)
     assert_nil rss_time(nil)
