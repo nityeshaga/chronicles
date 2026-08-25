@@ -19,5 +19,5 @@ class EmbedFrames extends Extension {
 }
 
 // Lexxy defers defining its elements until the current call stack drains, so
-// configuring here — right after application.js imports it — lands in time.
+// configuring here — right after the writing entry imports it — lands in time.
 configure({ global: { extensions: [ EmbedFrames ] } })
