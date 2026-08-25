@@ -28,6 +28,13 @@ export default class extends Controller {
   #block = null
   #argument = ""
 
+  // A row is announced by id, not by text, so the ids are plumbing rather than copy and
+  // are stamped here — hand-numbered rows in the partial would drift the first time
+  // someone reorders the menu.
+  connect() {
+    this.itemTargets.forEach((item, index) => item.id ||= `slash-menu-${index}`)
+  }
+
   // Two events ask the same question. `lexxy:change` catches the typing; it fires only
   // when the body's HTML changed, so it can't see a caret arrowing out of the block —
   // `selectionchange` is what closes the menu when the writer walks away from it.
@@ -92,20 +99,27 @@ export default class extends Controller {
 
   #hide() {
     this.menuTarget.hidden = true
+    this.#content?.removeAttribute("aria-activedescendant")
     this.#block = null
   }
 
+  // A row that says it needs the words after the trigger does nothing without them: the
+  // menu stays open on "/embed" and the writer types the link. Which rows those are is
+  // the markup's to say.
   #run(item) {
     if (!item) return
 
     const { for: name, dispatch: event } = item.dataset
     const argument = this.#argument
+    if (item.hasAttribute("data-requires-argument") && argument === "") return
 
     this.#hide()
     this.#emptyBlock()
 
-    const button = this.#toolbarButton(name)
-    button ? button.click() : this.dispatch(event, { detail: { argument } })
+    // Branch on what the row claims, not on what the lookup found: a row naming a button
+    // that has gone missing must fail quietly, not dispatch an event named "undefined"
+    // after the line has already been emptied.
+    name ? this.#toolbarButton(name)?.click() : this.dispatch(event, { detail: { argument } })
   }
 
   // The "/quote" the writer typed was never the post — it was how he asked for one. Empty
@@ -168,9 +182,12 @@ export default class extends Controller {
   }
 
   // Which row is current is the aria-selected attribute and nothing else — the highlight
-  // and what a screen reader announces read the same fact, so they can't drift.
+  // and what a screen reader announces read the same fact, so they can't drift. Focus
+  // never leaves the prose, so the editor's root is what points at the row: an attribute
+  // on the contenteditable itself, which Lexical leaves alone (it reconciles children).
   #select(item) {
     for (const other of this.itemTargets) other.setAttribute("aria-selected", other === item)
+    this.#content?.setAttribute("aria-activedescendant", item.id)
     item.scrollIntoView({ block: "nearest" })
   }
 

@@ -8,7 +8,10 @@
 
     `data-keywords` is the entire filter — everything the writer may type after the "/"
     to reach a row, aliases included, which is how /youtube and /twitter find Embed.
-    Labels and descriptions are copy, so they live here rather than in JavaScript. %>
+    Labels and descriptions are copy, so they live here rather than in JavaScript.
+
+    The row ids the editor announces are stamped by the controller, so reordering the menu
+    can't leave them pointing at the wrong line. %>
 <ul class="slash-menu" role="listbox" aria-label="Insert a block" hidden
     data-slash-menu-target="menu"
     data-action="mousedown->slash-menu#keepSelection click->slash-menu#pick">
@@ -62,8 +65,10 @@
     <span class="slash-menu__label">Table</span>
     <span class="slash-menu__hint">Rows and columns</span>
   </li>
+  <%# The one row that needs the words after the trigger: choosing it without a link does
+      nothing and leaves the menu open, rather than eating the line the writer typed. %>
   <li class="slash-menu__item" role="option" aria-selected="false" data-slash-menu-target="item"
-      data-dispatch="embed" data-keywords="embed youtube video twitter x tweet link">
+      data-dispatch="embed" data-requires-argument data-keywords="embed youtube video twitter x tweet link">
     <span class="slash-menu__label">Embed</span>
     <span class="slash-menu__hint">Type /embed and a YouTube or X link</span>
   </li>
