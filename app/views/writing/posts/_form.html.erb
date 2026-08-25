@@ -30,15 +30,12 @@
         action: "input->autosave#change lexxy:change->autosave#change " \
                 "input->local-save#save lexxy:change->local-save#save autosave:saved->local-save#saved " \
                 "turbo:submit-end->autosave#committed autosave:minted->slug#minted " \
-                "autosave:slugged->slug#kept " \
+                "autosave:slugged->slug#kept autosave:minted->local-save#rekey " \
                 "turbo:before-morph-attribute@document->autosave#keepPanelOpen " \
                 "turbo:before-visit@window->autosave#guardVisit " \
                 "beforeunload@window->autosave#guardUnload",
         **slug_check_values(post) } do |form| %>
-    <%# Which version of the record this tab is editing. A save from a tab that fell behind
-        another is refused (409) rather than quietly winning; every save that lands hands
-        the new version back and autosave writes it here. %>
-    <%= form.hidden_field :lock_version, data: { autosave_target: "lock" } %>
+    <%= render "writing/posts/lock_version", post: post %>
     <header class="editor-bar">
       <div class="editor-bar__side">
         <%= link_to writing_posts_path, class: "editor-bar__back", title: "Back to all writing" do %>
@@ -59,10 +56,12 @@
 
     <%# What the record itself refused, which after an explicit (non-autosave) save is the
         only thing that lands here — every publishing refusal is shown inside the popover
-        the writer was looking at when he caused it. %>
-    <% if post.errors.any? %>
+        the writer was looking at when he caused it. The alert is the one refusal that
+        arrives by redirect: an explicit save from a tab another tab had overtaken. %>
+    <% refusals = post.errors.full_messages + [ flash[:alert] ].compact_blank %>
+    <% if refusals.any? %>
       <ul class="errors">
-        <% post.errors.full_messages.each do |message| %>
+        <% refusals.each do |message| %>
           <li><%= message %></li>
         <% end %>
       </ul>

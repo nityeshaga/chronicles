@@ -48,7 +48,13 @@ class Tag < ApplicationRecord
       self.slug = name.to_s.parameterize if slug.blank?
     end
 
+    # Not touch_all: update_all on a locked model bumps lock_version unless it is told to
+    # leave it, and a renamed tag has changed nothing an open editor holds — a bumped
+    # version would refuse the writer's next keystroke as another tab's. Scoped by
+    # subquery rather than through the association: the join aliases posts, and the bare
+    # column name has to mean the row being updated.
     def touch_posts
-      posts.touch_all
+      Post.where(id: taggings.select(:post_id))
+        .update_all(updated_at: Time.current, lock_version: Arel.sql("lock_version"))
     end
 end

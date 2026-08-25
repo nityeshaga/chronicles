@@ -351,11 +351,29 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :created
     assert_equal Post.last.lock_version.to_s, response.headers["X-Lock-Version"]
+    # And the slot the browser's copy of the body moves to, now that there is a record.
+    assert_equal dom_id(Post.last), response.headers["X-Local-Save-Key"]
+  end
+
+  # A ticked tag rides autosave as tag_ids, and attaching it touches the post — which
+  # moves the lock. lock_version is permitted ahead of tag_ids so the touch runs against
+  # the version the form sent; the other way round, the writer's own save refused itself.
+  test "ticking a tag with a current lock_version saves" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+
+    patch writing_post_url(draft), headers: { "X-Autosave" => "true" },
+      params: { post: { tag_ids: [ "", tags(:ai).id ], lock_version: draft.lock_version } }
+
+    assert_response :no_content
+    assert_includes draft.reload.tags, tags(:ai)
+    assert_equal draft.lock_version.to_s, response.headers["X-Lock-Version"]
   end
 
   # The explicit submit (the feature-image file) can't read a 409; sending it back to the
-  # editor is the reload the bar asks for.
-  test "an explicit save with a stale lock_version is sent back to the editor" do
+  # editor is the reload the bar asks for — and the editor says why it was sent back,
+  # because a redirect that looks like a save is how typed text disappears in silence.
+  test "an explicit save with a stale lock_version is sent back to the editor and told why" do
     sign_in_as users(:nityesh)
     draft = posts(:draft)
     behind = draft.lock_version
@@ -365,6 +383,9 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to edit_writing_post_url(draft)
     assert_equal "Renamed In The Other Tab", draft.reload.title
+    follow_redirect!
+    assert_select ".errors li", text: /Another tab saved this post first/
+    assert_select "input[name='post[lock_version]'][value=?]", draft.lock_version.to_s
   end
 
   test "the editor form carries the record's lock_version and a slot for the local draft" do
@@ -373,7 +394,7 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
 
     get edit_writing_post_url(draft)
     assert_select "form.editor-shell__form[data-local-save-key-value=?]", dom_id(draft) do
-      assert_select "input[name='post[lock_version]'][value=?]", draft.lock_version.to_s
+      assert_select "input##{dom_id(draft, :lock_version)}[name='post[lock_version]'][value=?]", draft.lock_version.to_s
       assert_select ".draft-notice[hidden]" do
         assert_select "button", text: "Restore"
         assert_select "button", text: "Discard"

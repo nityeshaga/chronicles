@@ -77,6 +77,8 @@ class Writing::PostsController < Writing::BaseController
       @post = Post.find_by!(slug: params[:id])
     end
 
+    # lock_version is permitted ahead of tag_ids on purpose: attaching a tag touches the
+    # post, and the touch has to run against the version the form sent.
     def post_params
       params.require(:post).permit(:title, :slug, :excerpt, :feature_image, :feature_image_caption, :meta_title, :meta_description, :body, :uploaded_feature_image, :lock_version, tag_ids: [])
     end

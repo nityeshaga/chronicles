@@ -54,6 +54,27 @@ class Writing::TagsControllerTest < ActionDispatch::IntegrationTest
     assert_match "post_tags", response.body
   end
 
+  # Attaching the tag touches the post, and a touch moves its lock_version. The stream
+  # hands the form the version the record now stands at — without it the writer's own
+  # next keystroke came back 409, refused as another tab's.
+  test "minting a tag hands the form the post's new lock_version" do
+    sign_in_as users(:nityesh)
+    draft = posts(:draft)
+    before = draft.lock_version
+
+    post writing_tags_url, params: { tag_name: "Field Notes", post_id: draft.id }, as: :turbo_stream
+
+    draft.reload
+    assert_operator draft.lock_version, :>, before
+    assert_select "turbo-stream[action=replace][target=?]", dom_id(draft, :lock_version) do
+      assert_select "input[name='post[lock_version]'][value=?]", draft.lock_version.to_s
+    end
+
+    patch writing_post_url(draft), headers: { "X-Autosave" => "true" },
+      params: { post: { body: "<p>typed after the mint</p>", lock_version: draft.lock_version } }
+    assert_response :no_content
+  end
+
   test "minting reuses an existing tag rather than duplicating it" do
     sign_in_as users(:nityesh)
     draft = posts(:draft)

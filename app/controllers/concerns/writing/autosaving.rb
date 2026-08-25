@@ -58,7 +58,12 @@ module Writing::Autosaving
     rescue ActiveRecord::StaleObjectError
       # Reloaded, because the address the editor lives at is the record's as saved, not
       # as this request would have renamed it.
-      autosave_request? ? head(:conflict) : redirect_to([ :edit, :writing, record.reload ])
+      if autosave_request?
+        head :conflict
+      else
+        redirect_to [ :edit, :writing, record.reload ],
+          alert: "Another tab saved this post first — this save wasn't applied. This is the version that is saved."
+      end
     end
 
     def render_mint(record)
@@ -81,8 +86,11 @@ module Writing::Autosaving
     # record actually kept, which is the only slug the canvas may show; X-Post-Id is
     # identity a slug can't give (it goes stale on the next rename). Every URL is built by
     # polymorphic routing, so a page lands on the pages routes with no branch here.
+    # X-Local-Save-Key names the slot the browser's copy of the body moves to now that
+    # the record exists — dom_id-shaped, and the client never derives one.
     def render_editor_chrome(record, status:)
       response.headers["X-Post-Id"] = record.id.to_s
+      response.headers["X-Local-Save-Key"] = helpers.dom_id(record)
       response.headers["X-Slug"] = record.slug
       response.headers["X-Edit-Url"] = url_for([ :edit, :writing, record ])
       render template: "writing/posts/create", formats: :turbo_stream,

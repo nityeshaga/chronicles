@@ -50,6 +50,21 @@ export default class extends Controller {
     this.noticeTarget.hidden = true
   }
 
+  // The record this form edits has just been minted and named its slot. Take the name —
+  // never build one — and the copy moves with it, so a crash after the mint is found by
+  // the record it belongs to and not by the next blank canvas.
+  rekey({ detail: { localSaveKey } }) {
+    if (localSaveKey) this.keyValue = localSaveKey
+  }
+
+  keyValueChanged(key, previous) {
+    if (!previous || previous === key) return
+
+    const slot = localStorage.getItem(previous)
+    if (slot) localStorage.setItem(key, slot)
+    localStorage.removeItem(previous)
+  }
+
   #offer() {
     const slot = this.#slot
     if (!slot || slot.value === this.inputTarget.value) return
@@ -71,10 +86,11 @@ export default class extends Controller {
   }
 }
 
-const UNITS = [["day", 86400], ["hour", 3600], ["minute", 60], ["second", 1]]
+const UNITS = [["day", 86400], ["hour", 3600], ["minute", 60]]
 
 function relativeTime(at) {
   const seconds = Math.round((at - Date.now()) / 1000)
-  const [unit, size] = UNITS.find(([, size]) => Math.abs(seconds) >= size) || UNITS.at(-1)
+  const [unit, size] = UNITS.find(([, size]) => Math.abs(seconds) >= size) || []
+  if (!unit) return "just now"
   return new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(Math.round(seconds / size), unit)
 }

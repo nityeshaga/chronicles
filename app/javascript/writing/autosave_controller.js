@@ -117,6 +117,7 @@ export default class extends Controller {
   // An explicit save (the feature-image file): a normal Turbo submit, because bytes need
   // one and a real error there should show itself.
   commit() {
+    if (this.#stale) return
     clearTimeout(this.#timer)
     this.#timer = null
     this.element.requestSubmit()
@@ -134,9 +135,16 @@ export default class extends Controller {
   }
 
   // Turbo tells us how the explicit submit resolved; mirror it in the indicator, and take
-  // the version it made — a save is a save, whichever wire it rode.
+  // the version it made — a save is a save, whichever wire it rode. A followed redirect is
+  // the server taking the page over (a rename, or a refusal), and what it meant is said
+  // on the page that arrives. Calling it "saved" here would let the local draft go first;
+  // leaving it at risk would have guardVisit refuse the very visit that carries the
+  // answer. So the bar goes quiet and the next page speaks.
   committed(event) {
-    this.#adoptLockVersion(event.detail.fetchResponse?.header("X-Lock-Version"))
+    const response = event.detail.fetchResponse
+    if (response?.redirected) return this.#setStatus("")
+
+    this.#adoptLockVersion(response?.header("X-Lock-Version"))
     this.#setStatus(event.detail.success ? "saved" : "error")
   }
 
@@ -154,7 +162,9 @@ export default class extends Controller {
 
     if (this.#atRisk) {
       this.#refusedUrl = url
-      this.#setStatus("refused")
+      // A stale tab stays stale: the bar already names the one way out, and saying
+      // anything else here would let saving quietly resume against a record that moved.
+      if (!this.#stale) this.#setStatus("refused")
     } else {
       Turbo.visit(url)
     }
@@ -214,8 +224,12 @@ export default class extends Controller {
       if (response.status === 201) {
         // The draft now exists, so anything on this form that has to name the record can
         // stop guessing: announce the id the server just handed back (the slug check
-        // listens, to stop counting the draft's own slug against it).
-        this.dispatch("minted", { detail: { id: response.headers.get("X-Post-Id") } })
+        // listens, to stop counting the draft's own slug against it) and the slot the
+        // local draft now belongs in (local-save moves its copy over).
+        this.dispatch("minted", { detail: {
+          id: response.headers.get("X-Post-Id"),
+          localSaveKey: response.headers.get("X-Local-Save-Key")
+        } })
       }
       await this.#adopt(response)
       this.#setStatus(this.#outcome(response))
