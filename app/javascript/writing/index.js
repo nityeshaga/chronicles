@@ -8,11 +8,12 @@ import KgCards from "lexxy_kg_cards"
 import BodyHeadings from "lexxy_body_headings"
 import InlineCode from "lexxy_inline_code"
 import HtmlCards from "lexxy_html_cards"
+import CodeBlocks from "lexxy_code_blocks"
 
 // One configure call for every extension: Lexxy merges arrays by replacement, so a second
 // call would silently drop the first's. It defers defining its elements until the current
 // call stack drains, so configuring here — right after the import — lands in time.
-configure({ global: { extensions: [ EmbedFrames, KgCards, BodyHeadings, InlineCode, HtmlCards ] } })
+configure({ global: { extensions: [ EmbedFrames, KgCards, BodyHeadings, InlineCode, HtmlCards, CodeBlocks ] } })
 
 import { application } from "controllers/application"
 import { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"
