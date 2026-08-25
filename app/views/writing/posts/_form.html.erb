@@ -13,7 +13,7 @@
 <%# bar rides the shell rather than the bar itself: what it shows lives up here, but what
     it shows it ABOUT — the canvas title, the prose — lives down in the canvas, and a
     Stimulus target has to be a descendant. The editor controller keeps the overlays. %>
-<div class="editor-shell" data-controller="editor bar" data-editor-open-class="is-open"
+<div class="editor-shell" data-controller="editor bar tk" data-editor-open-class="is-open"
      data-editor-autosave-outlet=".editor-shell__form"
      data-editor-open-publish-value="<%= publishing_open? %>"
      data-bar-reading-speed-value="<%= ApplicationHelper::READING_SPEED %>"
@@ -25,7 +25,9 @@
                   keydown.meta+p@window->editor#preview:prevent
                   keydown.ctrl+p@window->editor#preview:prevent
                   turbo:before-cache@window->editor#beforeCache
-                  lexxy:change->bar#recount">
+                  lexxy:change->bar#recount
+                  lexxy:change->tk#scan
+                  resize@window->tk#scan">
   <div class="editor-shell__scrim" data-editor-target="backdrop" data-action="click->editor#close"></div>
 
   <%# Autosave rides the form in both states, and is the only save there is — no Save
@@ -104,13 +106,15 @@
       <%= form.text_area :title, rows: 1, class: "editor-canvas__title", placeholder: "Title",
             value: (post.title unless post.untitled?),
             autofocus: !saving, data: { controller: "autogrow", bar_target: "canvasTitle",
-            action: "input->autogrow#grow input->editor#retitle input->bar#retitle" } %>
+            tk_target: "title",
+            action: "input->autogrow#grow input->editor#retitle input->bar#retitle input->tk#scan" } %>
 
       <%# The excerpt is the standfirst: edited inline as a subtitle here (Ghost-style), the
           same attribute the public <h1> subtitle and social cards read. %>
       <%= form.label :excerpt, class: "sr-only" %>
       <%= form.text_area :excerpt, rows: 1, class: "editor-canvas__subtitle", placeholder: "Add a subtitle…",
-            data: { controller: "autogrow", action: "input->autogrow#grow" } %>
+            data: { controller: "autogrow", tk_target: "subtitle",
+            action: "input->autogrow#grow input->tk#scan" } %>
 
       <%# The post's public address, on the canvas because that is where it is decided —
           the host and the trailing slash are the site's, the middle is the writer's.
@@ -155,7 +159,7 @@
           all within this element. slash-menu is the fourth: it makes nothing itself — it
           clicks the toolbar for the blocks, and hands its two other rows to the controllers
           that own them, which is why those two arrive here as events rather than as calls. %>
-      <div class="editor-canvas__body" data-controller="embed html-card selection-bubble slash-menu" data-bar-target="body"
+      <div class="editor-canvas__body" data-controller="embed html-card selection-bubble slash-menu" data-bar-target="body" data-tk-target="body"
            data-embed-url-value="<%= writing_embeds_path %>"
            data-html-card-url-value="<%= writing_html_cards_path %>"
            data-action="lexxy:insert-link->embed#unfurl
@@ -199,6 +203,12 @@
 
         <%= render "writing/posts/selection_bubble" %>
       </div>
+
+      <%# The markers' own layer, over the canvas and outside the prose. Lexical reconciles
+          everything inside its content element against its own model, so a marker painted
+          in there is a node it will either throw away or take into the document — this is
+          how a TK gets a mark beside it without a byte being written into the body. %>
+      <div class="editor-canvas__gutter" data-tk-target="gutter" data-label="TK" aria-hidden="true"></div>
     </div>
 
     <aside class="settings-panel" data-editor-target="settings" role="dialog" aria-label="Post settings">

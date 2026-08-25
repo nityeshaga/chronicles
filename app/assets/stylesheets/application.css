@@ -1099,7 +1099,22 @@ html.preview-phone .preview-frame {
    WIDTH (clamp/vw), not vmin — vmin tied the column to window height and narrowed it on
    tall screens. Lexxy's own content padding is zeroed below so text starts at the title's
    left edge and the wrapper width IS the writing measure. */
-.editor-canvas { max-width: 76rem; margin: 0 auto; padding: 5rem clamp(20px, 4vw, 40px) 12rem; }
+/* position: relative so the TK gutter measures against the canvas rather than the page. */
+.editor-canvas { position: relative; max-width: 76rem; margin: 0 auto; padding: 5rem clamp(20px, 4vw, 40px) 12rem; }
+
+/* The writer's own notes-to-self, marked in the margin. Their own layer over the canvas
+   and never inside the prose: Lexical owns every node in its content element and would
+   either discard a marker or take it into the document. */
+.editor-canvas__gutter { position: absolute; inset: 0; pointer-events: none; }
+.tk-marker {
+  position: absolute; right: -3.4rem;
+  font-family: var(--font-sans); font-size: 1.1rem; font-weight: 600; letter-spacing: .05em;
+  color: var(--w-accent-ink); background: rgba(180, 83, 9, .12);
+  border-radius: 4px; padding: .1rem .45rem;
+}
+/* Past the measure while there is room outside it, and back against the canvas edge when
+   there isn't — a marker off the side of the screen marks nothing. */
+@media (max-width: 860px) { .tk-marker { right: 0; } }
 /* Type and colour come from the public title/standfirst rules they share (see
    .gh-article-title); only the box is decided here. */
 .editor-canvas__title,
