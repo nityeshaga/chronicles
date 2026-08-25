@@ -5,10 +5,12 @@
 # annotations development adds — changed shape on its next save with nothing typed.
 # Running the renderer's own pass on the way in makes the first save store what every
 # later render and save will produce: the stored body is a fixed point, not a moving one.
+# Stripped, because the annotations leave their newlines behind when the sanitizer takes
+# the comments, and a card's markup means nothing by the whitespace around it.
 ActiveSupport.on_load(:action_text_rich_text) do
   before_save do
     self.body = body.fragment.replace("#{ActionText::Attachment.tag_name}[content]") do |node|
-      node["content"] = body.sanitize_content_attachment(node["content"])
+      node["content"] = body.sanitize_content_attachment(node["content"]).strip
       node
     end
   end

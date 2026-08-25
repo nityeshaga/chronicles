@@ -62,12 +62,14 @@ class ContentAttachmentRoundTripTest < ActionDispatch::IntegrationTest
   end
 
   test "content is stored in the renderer's shape, so the first save is the last change" do
-    raw = %(<figure class="kg-card kg-embed-card" data-kg-hook="x"><blockquote class="twitter-tweet"><a href="https://twitter.com/x/status/1">tweet</a></blockquote><script async src="https://platform.twitter.com/widgets.js"></script></figure>)
+    raw = %(\n<!-- BEGIN a view annotation -->\n<figure class="kg-card kg-embed-card" data-kg-hook="x"><blockquote class="twitter-tweet"><a href="https://twitter.com/x/status/1">tweet</a></blockquote><script async src="https://platform.twitter.com/widgets.js"></script></figure>\n<!-- END -->\n)
     patch writing_post_url(@draft), params: { post: { body: opaque(raw) } }
 
     stored = stored_body
     refute_includes stored_content, "script"
     refute_includes stored_content, "data-kg-hook"
+    refute_includes stored_content, "<!--"
+    assert_equal stored_content, stored_content.strip
     assert_includes stored_content, %(<blockquote class="twitter-tweet">)
 
     save_as_the_editor_would(editor_value)
