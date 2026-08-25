@@ -32,11 +32,12 @@ module CodeHighlighting
     # A highlighted block is left alone, so running the pass over its own output changes
     # nothing.
     def highlight
-      return if @pre.classes.include?("highlight")
+      return if @pre["data-highlighted"]
 
       code = source
       @pre.add_class("highlight")
       @pre["data-language"] = language
+      @pre["data-highlighted"] = "true"
       @pre.remove_attribute("data-highlight-language")
       @pre["data-controller"] = "clipboard"
       @pre["data-clipboard-supported-class"] = "highlight--copyable"
@@ -54,15 +55,19 @@ module CodeHighlighting
       # The editor stamps data-language; Ghost's importer and a markdown fence spell the
       # same thing as class="language-ruby", on the pre or on the code inside it.
       def language
-        @language ||= @pre["data-language"].presence || class_language(@pre) || class_language(@pre.at_css("code")) || "plain"
+        @language ||= (@pre["data-language"].presence || class_language(@pre) || class_language(@pre.at_css("code")) || "plain").strip.downcase
       end
 
       def class_language(element)
         element&.classes&.filter_map { |name| name[LANGUAGE_CLASS, 1] }&.first
       end
 
+      # The editor's picker offers Prism's generic "clike"; Rouge has no such lexer, and
+      # C is the closest reading of code a writer filed under it.
+      LEXER_ALIASES = { "clike" => "c" }
+
       def lexer
-        @lexer ||= (Rouge::Lexer.find(language) || Rouge::Lexers::PlainText).new
+        @lexer ||= (Rouge::Lexer.find(LEXER_ALIASES.fetch(language, language)) || Rouge::Lexers::PlainText).new
       end
 
       def formatter = Rouge::Formatters::HTML.new

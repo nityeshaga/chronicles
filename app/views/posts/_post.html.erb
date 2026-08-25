@@ -2,6 +2,10 @@
     update_html_card revises a card without touching any post that carries it, and every
     one of those posts would go on serving the bytes it cached. %>
 <% cache [ post, post.html_cards, Setting.current ] do %>
+<%# The render passes below are not in the cache key: a change to their output busts
+    nothing on its own. Bump this date when one changes — it changes the template digest,
+    and with it the fragment and the ETag in one move.
+    Render Pass Dependency Updated: HeadingAnchors, CodeHighlighting, HtmlCard.expand 2026-08-25 %>
 <main class="gh-main">
   <article class="gh-article post <%= "no-image" unless post.feature_image.present? %>" id="<%= dom_id post %>">
     <header class="gh-article-header gh-canvas">

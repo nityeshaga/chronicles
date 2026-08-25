@@ -13,8 +13,13 @@ export default class extends Controller {
     if (this.hasSupportedClass && navigator.clipboard) this.element.classList.add(this.supportedClass)
   }
 
+  disconnect() {
+    clearTimeout(this.timeout)
+  }
+
+  // Only the trailing newline goes: a code block's first line may be indented on purpose.
   async copy() {
-    const text = this.sourceTarget.textContent.trim()
+    const text = this.sourceTarget.textContent.replace(/\n$/, "")
 
     try {
       await navigator.clipboard.writeText(text)

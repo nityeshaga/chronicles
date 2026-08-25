@@ -27,11 +27,34 @@ class CodeHighlightingTest < ActiveSupport::TestCase
     assert_includes on_pre, %(<span class="kd">const</span>)
   end
 
+  test "a language is matched without regard to case or stray whitespace" do
+    html = CodeHighlighting.add(%(<pre><code class="language-Ruby">def a</code></pre><pre data-language="javascript ">const a = 1</pre>))
+
+    assert_includes html, %(data-language="ruby")
+    assert_includes html, %(<span class="highlight__language">Ruby</span>)
+    assert_includes html, %(data-language="javascript")
+    assert_includes html, %(<span class="highlight__language">JavaScript</span>)
+  end
+
+  test "the picker's clike reads as C" do
+    html = CodeHighlighting.add(%(<pre data-language="clike">int x;</pre>))
+
+    assert_includes html, %(<span class="kt">int</span>)
+    assert_includes html, %(<span class="highlight__language">C</span>)
+  end
+
+  test "text that looks like markup stays text" do
+    html = CodeHighlighting.add(%(<pre data-language="plain">&lt;script&gt;alert(1)&lt;/script&gt;</pre>))
+
+    assert_includes html, "&lt;script&gt;alert(1)&lt;/script&gt;"
+    assert_not_includes html, "<script>"
+  end
+
   test "an unknown language and a block with none render as plain text, unlabelled" do
-    unknown = CodeHighlighting.add(%(<pre data-language="clike">int x;</pre>))
+    unknown = CodeHighlighting.add(%(<pre data-language="brainfudge">++.</pre>))
     none = CodeHighlighting.add(%(<pre>just text</pre>))
 
-    assert_includes unknown, %(<code data-clipboard-target="source">int x;</code>)
+    assert_includes unknown, %(<code data-clipboard-target="source">++.</code>)
     assert_not_includes unknown, "highlight__language"
     assert_includes none, %(data-language="plain")
     assert_includes none, %(<code data-clipboard-target="source">just text</code>)
@@ -49,6 +72,7 @@ class CodeHighlightingTest < ActiveSupport::TestCase
   test "running the pass over its own output changes nothing" do
     once = CodeHighlighting.add(%(<p>Intro</p><pre data-language="ruby">def a<br>end</pre><pre>plain</pre>))
 
+    assert_includes once, %(data-highlighted="true")
     assert_equal once, CodeHighlighting.add(once)
   end
 

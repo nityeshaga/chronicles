@@ -17,15 +17,22 @@ import { Extension } from "lexxy"
 // importer (the same shape) and Trix (<pre language="ruby">) all spell it differently, and
 // every one of them landed as JavaScript. Conversion matchers all run before one is
 // chosen, so a matcher that copies the hint onto data-language and claims nothing lets
-// Lexical's own converter find it.
+// Lexical's own converter find it. It goes straight into the editor's conversion cache,
+// the way Lexxy's own highlight-preserving pre converter does, because an extension's
+// html.import is merged by tag — declaring pre there would displace Lexxy's Trix converter,
+// and the next extension to declare pre would displace ours, neither with an error.
 const LANGUAGE_CLASS = /^language-(.+)$/
 
 export default class CodeBlocks extends Extension {
   get lexicalExtension() {
     return this.defineExtension({
       name: "chronicles/code-blocks",
-      html: { import: { pre: rememberLanguageHint } },
-      register: defaultToPlainText
+      register(editor) {
+        const conversions = editor._htmlConversions.get("pre")
+        conversions.push(rememberLanguageHint)
+        const forget = defaultToPlainText(editor)
+        return () => { conversions.splice(conversions.indexOf(rememberLanguageHint), 1); forget() }
+      }
     })
   }
 }
