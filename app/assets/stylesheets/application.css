@@ -409,6 +409,33 @@ a:hover { opacity: .8; }
   color: inherit;
 }
 
+/* Code colour. Rouge paints the published block (CodeHighlighting, class-based tokens);
+   Prism paints the editor canvas. One palette for both: the Rouge classes below and the
+   Lexxy token variables further down point at the same ink/terracotta/wood/green tokens,
+   so the writer sees what readers will. Keywords terracotta, strings green, numbers and
+   constants wood, comments soft ink, names plain ink. */
+.gh-content pre.highlight { position: relative; }
+.highlight .k, .highlight .kd, .highlight .kn, .highlight .kp, .highlight .kr, .highlight .kt, .highlight .kc, .highlight .ow, .highlight .na { color: var(--terracotta-deep); }
+.highlight .s, .highlight .s1, .highlight .s2, .highlight .sb, .highlight .sh, .highlight .si, .highlight .sx, .highlight .sr, .highlight .sc, .highlight .sd, .highlight .se, .highlight .nb { color: var(--tms-green); }
+.highlight .ss, .highlight .dl { color: var(--tms-green-deep); }
+.highlight .m, .highlight .mi, .highlight .mf, .highlight .mh, .highlight .mo, .highlight .mb, .highlight .no, .highlight .nt, .highlight .cp { color: var(--wood); }
+.highlight .nf, .highlight .nc, .highlight .nn, .highlight .fm { color: var(--wood-deep); }
+.highlight .c, .highlight .c1, .highlight .cm, .highlight .cs { color: var(--ink-soft); font-style: italic; }
+.highlight .o, .highlight .p { color: var(--ink-soft); }
+.highlight .gi { color: var(--tms-green); } .highlight .gd { color: var(--spool-red); }
+.highlight .err { color: var(--spool-red); }
+/* The label and the copy button sit in the block's top-right corner, in the mono the
+   labels elsewhere use. The button hides until the clipboard controller confirms the API. */
+.highlight__tools {
+  position: absolute; top: .6rem; right: 1rem; display: flex; align-items: center; gap: .8rem;
+  font-family: var(--font-mono); font-size: 1.1rem; line-height: 1; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--ink-soft); white-space: normal;
+}
+.highlight__language { opacity: .7; }
+.highlight__copy { display: none; font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: .4rem .7rem; cursor: pointer; }
+.highlight--copyable .highlight__copy { display: inline-block; }
+.highlight__copy:hover { color: var(--ink); border-color: var(--ink-soft); }
+
 /* embeds */
 .kg-embed-card { display: flex; flex-direction: column; align-items: center; }
 .kg-embed-card iframe { margin-inline: auto; }
@@ -1154,6 +1181,29 @@ html.preview-phone .preview-frame {
    and colour buttons stop reading as menus. The caret is a rotated corner, so growing it
    drops its visual centre; pull it back up. */
 .editor-canvas__body lexxy-toolbar .lexxy-editor__toolbar-button--chevron:after {
+
+/* The canvas's code block reads as the published one: same paper-deep box, and Prism's
+   token variables pointed at the Rouge palette above. */
+.editor-canvas__body code[data-language] {
+  background: var(--paper-deep); border: 1px solid var(--line); border-radius: 6px;
+  font-family: var(--font-mono); font-size: 1.5rem; line-height: 1.5; padding: 16px 20px;
+}
+.editor-canvas__body lexxy-editor {
+  --lexxy-color-code-token-att: var(--terracotta-deep);
+  --lexxy-color-code-token-selector: var(--tms-green);
+  --lexxy-color-code-token-property: var(--wood);
+  --lexxy-color-code-token-function: var(--wood-deep);
+  --lexxy-color-code-token-comment: var(--ink-soft);
+  --lexxy-color-code-token-operator: var(--ink-soft);
+  --lexxy-color-code-token-punctuation: var(--ink-soft);
+  --lexxy-color-code-token-variable: var(--ink);
+}
+
+/* Lexxy draws the dropdown caret at .3ch square, which at our toolbar size renders as a
+   dot — the text-style and highlight buttons stop reading as menus. One step above the
+   gem's own rule, so it wins on specificity rather than on load order. No !important. */
+.editor-canvas__body lexxy-editor .lexxy-editor__toolbar-button--chevron:after {
+  /* The caret is a rotated corner, so growing it drops its visual centre — pull it back. */
   block-size: .65ch; inline-size: .65ch; margin-block-start: -.2ch;
 }
 

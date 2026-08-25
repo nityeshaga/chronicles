@@ -323,6 +323,8 @@ GEM
     reline (0.6.3)
       io-console (~> 0.5)
     rexml (3.4.4)
+    rouge (5.1.0)
+      strscan (~> 3.1)
     rubocop (1.88.2)
       json (~> 2.3)
       language_server-protocol (~> 3.17.0.2)
@@ -395,6 +397,7 @@ GEM
       ostruct
     stimulus-rails (1.3.4)
       railties (>= 6.0.0)
+    strscan (3.1.8)
     thor (1.5.0)
     thruster (0.1.22)
     thruster (0.1.22-aarch64-linux)
@@ -453,6 +456,7 @@ DEPENDENCIES
   propshaft
   puma (>= 5.0)
   rails (~> 8.1.3)
+  rouge
   rubocop-rails-omakase
   selenium-webdriver
   solid_cable
@@ -584,6 +588,7 @@ CHECKSUMS
   regexp_parser (2.12.0) sha256=35a916a1d63190ab5c9009457136ae5f3c0c7512d60291d0d1378ba18ce08ebb
   reline (0.6.3) sha256=1198b04973565b36ec0f11542ab3f5cfeeec34823f4e54cebde90968092b1835
   rexml (3.4.4) sha256=19e0a2c3425dfbf2d4fc1189747bdb2f849b6c5e74180401b15734bc97b5d142
+  rouge (5.1.0) sha256=b77c632842ab7f5147940212f0345808cccfbce864fd5b631d7d12a35ac85452
   rubocop (1.88.2) sha256=8def251c90cd955feb4daa3edc0ab56893250c4ce90ef81e6c80c03f9a939bbf
   rubocop-ast (1.50.0) sha256=b9ca88300da0803ee222ad20cdb30494c0a784eed06fdc35d254b06d662788db
   rubocop-performance (1.26.1) sha256=cd19b936ff196df85829d264b522fd4f98b6c89ad271fa52744a8c11b8f71834
@@ -606,6 +611,7 @@ CHECKSUMS
   sqlite3 (2.9.6-x86_64-linux-musl) sha256=d493b11818a3573387a1d56e1ee8fa00da23a683a7a1cc063e7a0feeed843abf
   sshkit (1.25.0) sha256=c8c6543cdb60f91f1d277306d585dd11b6a064cb44eab0972827e4311ff96744
   stimulus-rails (1.3.4) sha256=765676ffa1f33af64ce026d26b48e8ffb2e0b94e0f50e9119e11d6107d67cb06
+  strscan (3.1.8) sha256=aae2db611a225559f21ffbb71765c9a4e60fd262534a9ea84f4f11c7f32f679e
   thor (1.5.0) sha256=e3a9e55fe857e44859ce104a84675ab6e8cd59c650a49106a05f55f136425e73
   thruster (0.1.22) sha256=f34fb82bd3e31570ae8f8b930e484f9e1db7b080cbc993d49090b161879c3e05
   thruster (0.1.22-aarch64-linux) sha256=6c306241e8ff8912fb26705a15cbb7b44a4dfcedd59fa890b2c72811f15cfa0e

@@ -18,6 +18,9 @@ gem "stimulus-rails"
 # Rich text editor for Action Text — Trix's successor from 37signals [https://github.com/basecamp/lexxy]
 gem "lexxy", "~> 0.9.31"
 
+# Syntax highlighting at render, so readers get coloured code without downloading the editor [https://github.com/rouge-ruby/rouge]
+gem "rouge"
+
 # MCP server for agent-native access (Claude Code, Luo Ji) [https://github.com/yjacquin/fast-mcp]
 gem "fast-mcp"
 
