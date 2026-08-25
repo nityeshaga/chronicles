@@ -10,16 +10,22 @@
 <% content_for :head do %><%= stylesheet_link_tag "lexxy" %><% end %>
 <% saving = post.persisted? %>
 
-<div class="editor-shell" data-controller="editor" data-editor-open-class="is-open"
+<%# bar rides the shell rather than the bar itself: what it shows lives up here, but what
+    it shows it ABOUT — the canvas title, the prose — lives down in the canvas, and a
+    Stimulus target has to be a descendant. The editor controller keeps the overlays. %>
+<div class="editor-shell" data-controller="editor bar" data-editor-open-class="is-open"
      data-editor-autosave-outlet=".editor-shell__form"
      data-editor-open-publish-value="<%= publishing_open? %>"
-     data-action="keydown@window->editor#closeOnEscape keydown@window->editor#trapFocus
+     data-bar-reading-speed-value="<%= ApplicationHelper::READING_SPEED %>"
+     data-action="keydown@window->editor#closeOnEscape
+                  keydown@window->editor#trapFocus
                   keydown@window->editor#shortcutsOnSlash
                   keydown.meta+shift+p@window->editor#togglePublish:prevent
                   keydown.ctrl+shift+p@window->editor#togglePublish:prevent
                   keydown.meta+p@window->editor#preview:prevent
                   keydown.ctrl+p@window->editor#preview:prevent
-                  turbo:before-cache@window->editor#beforeCache">
+                  turbo:before-cache@window->editor#beforeCache
+                  lexxy:change->bar#recount">
   <div class="editor-shell__scrim" data-editor-target="backdrop" data-action="click->editor#close"></div>
 
   <%# Autosave rides the form in both states, and is the only save there is — no Save
@@ -44,7 +50,7 @@
                 "keydown.ctrl+s@window->autosave#flush:prevent",
         **slug_check_values(post) } do |form| %>
     <%= render "writing/posts/lock_version", post: post %>
-    <header class="editor-bar">
+    <header class="editor-bar" data-bar-target="chrome">
       <div class="editor-bar__side">
         <%= link_to writing_posts_path, class: "editor-bar__back", title: "Back to all writing" do %>
           <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -53,7 +59,22 @@
         <%= render "writing/posts/autosave_status", post: post %>
       </div>
 
+      <%# Which post this is, once the canvas title has gone under the bar. A copy of the
+          textarea's value, not a second field: empty while the post is untitled, and the
+          stylesheet hides an empty one so there is no state to keep about that. %>
+      <p class="editor-bar__title" data-bar-target="title" hidden></p>
+
       <div class="editor-bar__side editor-bar__side--end">
+        <%# How much of it there is, on the way to Settings. Server-rendered so it is right
+            before any JavaScript runs; the bar controller rewrites the three spans as the
+            body grows, and the unit word rides as data because it is the one that changes
+            with the number. %>
+        <%= tag.p class: "editor-bar__count", data: { bar_target: "count", **word_unit_data } do %>
+          <% words = word_count(post) %>
+          <span data-bar-target="words"><%= number_with_delimiter(words) %></span>
+          <span data-bar-target="wordUnit"><%= word_unit(words) %></span> ·
+          <span data-bar-target="minutes"><%= reading_time(post) %></span> min
+        <% end %>
         <button type="button" class="w-btn w-btn--ghost" data-action="editor#toggleSettings" aria-haspopup="dialog">
           <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="6" cy="4" r="2.2" fill="currentColor"/><circle cx="10" cy="8" r="2.2" fill="currentColor"/><circle cx="5" cy="12" r="2.2" fill="currentColor"/></svg>
           Settings
@@ -82,8 +103,8 @@
           and showing it back would make him delete a word he never wrote. %>
       <%= form.text_area :title, rows: 1, class: "editor-canvas__title", placeholder: "Title",
             value: (post.title unless post.untitled?),
-            autofocus: !saving, data: { controller: "autogrow",
-            action: "input->autogrow#grow input->editor#retitle" } %>
+            autofocus: !saving, data: { controller: "autogrow", bar_target: "canvasTitle",
+            action: "input->autogrow#grow input->editor#retitle input->bar#retitle" } %>
 
       <%# The excerpt is the standfirst: edited inline as a subtitle here (Ghost-style), the
           same attribute the public <h1> subtitle and social cards read. %>
@@ -134,7 +155,7 @@
           all within this element. slash-menu is the fourth: it makes nothing itself — it
           clicks the toolbar for the blocks, and hands its two other rows to the controllers
           that own them, which is why those two arrive here as events rather than as calls. %>
-      <div class="editor-canvas__body" data-controller="embed html-card selection-bubble slash-menu"
+      <div class="editor-canvas__body" data-controller="embed html-card selection-bubble slash-menu" data-bar-target="body"
            data-embed-url-value="<%= writing_embeds_path %>"
            data-html-card-url-value="<%= writing_html_cards_path %>"
            data-action="lexxy:insert-link->embed#unfurl
