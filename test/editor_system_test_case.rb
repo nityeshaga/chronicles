@@ -12,6 +12,9 @@ class EditorSystemTestCase < ActionDispatch::SystemTestCase
     fill_in "Email", with: user.email_address
     fill_in "Password", with: "secret123"
     click_on "Sign in"
+    # A real browser's submit is asynchronous: leave before the landing page has arrived
+    # and the next visit races the session cookie and lands signed out.
+    assert_selector ".writing-dash h1", text: "Writing"
   end
 
   def open_editor(post)
