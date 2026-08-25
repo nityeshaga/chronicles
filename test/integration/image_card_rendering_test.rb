@@ -45,7 +45,8 @@ class ImageCardRenderingTest < ActionDispatch::IntegrationTest
   test "consecutive uploads are a kg-gallery-card" do
     publish "<div>#{upload}#{upload}</div>"
 
-    assert_select "figure.kg-card.kg-gallery-card.kg-width-wide .kg-gallery-container .kg-gallery-image img[srcset]", 2
+    assert_select "figure.kg-card.kg-gallery-card.kg-width-wide > .kg-gallery-container > .kg-gallery-row", 1
+    assert_select ".kg-gallery-row > action-text-attachment > .kg-gallery-image img[srcset]", 2
     assert_select "figure.kg-image-card", false
     assert_select ".attachment-gallery", false
   end

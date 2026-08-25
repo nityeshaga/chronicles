@@ -5,7 +5,8 @@
 #
 # Twin notice: the editor canvas is the one place this can't reach. Lexxy paints an image
 # with its own node renderer, and app/javascript/lexxy_kg_cards.js turns this exact figure
-# back into that node when a post opens. Change the shape here and change it there.
+# back into that node when a post opens, and test/integration/kg_cards_round_trip_test.rb
+# restates which figures it takes. Change the shape here and change it in both.
 module ImageCardsHelper
   def kg_image_card(src:, alt: nil, caption: nil, width: nil, height: nil, srcset: nil, sizes: nil)
     tag.figure class: class_names("kg-card kg-image-card", "kg-card-hascaption": caption.present?) do

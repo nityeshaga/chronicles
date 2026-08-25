@@ -28,5 +28,5 @@ editor, type and delete a character, save → stored body byte-identical (2054 b
 
 Screenshots: `*-canvas-top.png`, `*-canvas-image-node.png` (caption textarea shows raw caption HTML — see
 report), `*-canvas-opaque-card.png`, `*-public-top.png`, `*-public-card.png` for posts 8 and 64;
-`new-post-canvas.png`, `new-post-public.png`. Images under /content/images/ 404 in dev (no volume), so
+`new-post-canvas.png`, `new-post-public-gallery-2.png` / `-3.png` (editor gallery as a kg-gallery-row: two uploads 335px each, three 220px each, side by side). Images under /content/images/ 404 in dev (no volume), so
 imported Ghost-hosted images paint blank in both canvas and public page here.

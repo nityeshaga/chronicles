@@ -16,7 +16,8 @@ import { Extension, configure, ActionTextAttachmentNode, CustomActionTextAttachm
 //
 // Twin notice: app/helpers/image_cards_helper.rb paints the public figure this reads.
 // The attributes taken from the figure here — img src/alt/width/height, the figcaption —
-// are the ones it emits. Change one side, change the other.
+// are the ones it emits, and test/integration/kg_cards_round_trip_test.rb restates
+// isEditableImageCard in Ruby. Change one side, change all three.
 
 // Everything a card may hold that Lexxy's sanitizer would otherwise strip before painting
 // an opaque card in the canvas. What the server's allow-list drops anyway (script, button,
