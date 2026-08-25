@@ -7,7 +7,7 @@ pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"
 pin_all_from "app/javascript/controllers", under: "controllers"
 # The preview strip's controller, registered by the preview page alone: it renders in the
 # public layout, so it can't ride the writing entry, and it mustn't ride the public one.
-pin "preview"
+pin "preview", preload: false
 
 # The writing room's entry and its controllers. Preloaded only behind that entry point,
 # so a public page's <head> never asks the browser to fetch the editor.

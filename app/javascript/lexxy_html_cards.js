@@ -74,7 +74,7 @@ class HtmlCardNode extends CustomActionTextAttachmentNode {
     frame.title = "HTML card"
     frame.className = "html-card-frame"
 
-    figure.replaceChildren(frame, figure.querySelector("lexxy-node-delete-button"))
+    figure.replaceChildren(frame, ...figure.querySelectorAll("lexxy-node-delete-button"))
     return figure
   }
 
@@ -86,9 +86,10 @@ class HtmlCardNode extends CustomActionTextAttachmentNode {
 // Configured by the writing entry (writing/index.js), together with the other extension.
 export default class HtmlCards extends Extension {
   // A card's document reports its height (html_cards/show.html.erb). The frame has no
-  // origin to check, so the sender is checked instead: only a frame this editor painted.
+  // origin to check, so the sender is checked instead: only a frame this editor painted —
+  // and the number is clamped, so a card can't stretch the page by asking.
   #resize = (event) => {
-    const height = event.data?.htmlCardHeight
+    const height = Math.min(Math.max(event.data?.htmlCardHeight, 0), 4000)
     if (!Number.isInteger(height)) return
 
     const frame = Array.from(this.editorElement.querySelectorAll("iframe.html-card-frame"))

@@ -9,7 +9,7 @@
     the only honest 390px is a window that is 390px wide. The frame loads this same URL
     on first click and the copy inside removes its own strip. %>
 <div data-controller="preview" data-preview-phone-class="preview-phone"
-     data-action="turbo:before-cache@document->preview#reset">
+     data-action="turbo:before-cache@document->preview#reset keydown.esc@window->preview#desktop">
   <div class="preview-strip">
     <span class="preview-strip__note">Preview — only you can see this</span>
     <span class="preview-strip__devices" role="group" aria-label="Preview width">
