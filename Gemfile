@@ -16,7 +16,7 @@ gem "turbo-rails"
 gem "stimulus-rails"
 
 # Rich text editor for Action Text — Trix's successor from 37signals [https://github.com/basecamp/lexxy]
-gem "lexxy", "~> 0.9.24"
+gem "lexxy", "~> 0.9.31"
 
 # MCP server for agent-native access (Claude Code, Luo Ji) [https://github.com/yjacquin/fast-mcp]
 gem "fast-mcp"
