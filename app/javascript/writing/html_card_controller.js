@@ -13,6 +13,17 @@ export default class extends Controller {
   static targets = [ "editor", "source", "disclosure" ]
   static values = { url: String }
 
+  // The slash menu's /html. The composer below the prose is where a card is written, so
+  // unfold it and put the caret in it; a card is still inserted at the end of the body,
+  // not at the caret, and still can't be edited in place — both are Phase 3.
+  open() {
+    this.disclosureTarget.open = true
+    // Lexical puts the caret back in the canvas as it reconciles the edit that got here —
+    // the slash menu emptying the line the writer typed "/html" on — so take the focus
+    // after that lands, or the markup he types next goes into the prose.
+    requestAnimationFrame(() => this.sourceTarget.focus())
+  }
+
   async insert() {
     const content = this.sourceTarget.value.trim()
     if (!content) return
