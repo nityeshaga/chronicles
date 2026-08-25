@@ -4,6 +4,7 @@
 import "application"
 import "lexxy"
 import "lexxy_embed_frames"
+import "lexxy_kg_cards"
 
 import { application } from "controllers/application"
 import { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"
