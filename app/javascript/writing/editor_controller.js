@@ -15,7 +15,9 @@ import { Controller } from "@hotwired/stimulus"
 // usable from the keyboard, so opening one moves focus in, holds it there while it's
 // open, and hands it back to whatever opened it — otherwise Tab walks the prose behind
 // a panel the writer can see but can't reach.
-const FOCUSABLE = "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])"
+// input[type=hidden] answers every other part of this selector and can never take
+// focus: the tags field ships one, and at an edge of the list it would end the trap.
+const FOCUSABLE = "a[href], button:not([disabled]), input:not([type=hidden]):not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])"
 
 export default class extends Controller {
   static targets = ["settings", "publish", "backdrop", "titleNote", "publishSubmit", "preview", "shortcuts"]
@@ -49,20 +51,25 @@ export default class extends Controller {
     this.#show(this.settingsTarget.classList.contains(this.openClass) ? null : this.settingsTarget)
   }
 
-  // Also ⌘⇧P. A canvas with nothing saved has no publish popover to open — the key is
-  // simply not one of the ones this page answers to yet.
+  // Also ⌘⇧P, which two states refuse: a canvas with nothing saved has no popover to
+  // open, and neither key may open one behind the shortcut sheet's backdrop, where the
+  // writer would see it and not be able to reach it.
   togglePublish(event) {
     event.preventDefault()
-    if (!this.hasPublishTarget) return
+    if (!this.hasPublishTarget || this.#shortcutsOpen) return
 
     this.#show(this.publishTarget.classList.contains(this.openClass) ? null : this.publishTarget)
   }
 
-  // ⌘P. The bar's own link is what's clicked: it already knows whether this post has a
-  // preview or a live page, it carries the URL the server stamped and the new tab, and a
-  // click made inside a key handler is still the user gesture a popup blocker asks for.
+  // ⌘P. The URL comes off the bar's own link — it already knows whether this post has a
+  // preview or a live page, and the server stamped the address — but the tab is opened
+  // here rather than by clicking it: the live button navigates in place, and a keystroke
+  // that took the writer out of the editor mid-sentence would be a worse feature than no
+  // keystroke. A window.open inside a key handler is still the gesture a blocker asks for.
   preview() {
-    if (this.hasPreviewTarget) this.previewTarget.click()
+    if (!this.hasPreviewTarget || this.#shortcutsOpen) return
+
+    window.open(this.previewTarget.href, "_blank", "noopener")
   }
 
   close() {
