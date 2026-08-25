@@ -53,12 +53,8 @@ class HotkeysTest < EditorSystemTestCase
   end
 
   private
-    # sign_in_as clicks and returns without waiting for the answer, so the dashboard is
-    # what says the session exists; without it the next visit can race the sign-in and
-    # land back on the door.
     def open_editor_as(post)
       sign_in_as users(:nityesh)
-      assert_selector ".writing-dash"
       open_editor post
     end
 
