@@ -11,13 +11,8 @@ class SlashMenuTest < EditorSystemTestCase
   # yet. A full load has the parser build the tree before Lexxy defines either element, so
   # they upgrade in registration order and the editor comes up. Reported separately; when
   # it's fixed, this can go back to clicking.
-  #
-  # The assert_text is what waits for the sign-in to land: sign_in_as returns the moment
-  # the button is pressed, and a visit issued in that window cancels the POST.
   setup do
     sign_in_as users(:nityesh)
-    assert_text "New post"
-
     visit new_writing_post_url
     assert_selector "lexxy-editor .lexxy-editor__content"
     body.click
@@ -35,10 +30,16 @@ class SlashMenuTest < EditorSystemTestCase
     assert_not_includes body.text, "/"
   end
 
+  # Both halves in one test on purpose: "no menu here" passes just as well when the
+  # JavaScript never loaded, so it only means anything next to a "menu there".
   test "a slash inside a sentence is a slash" do
     body.send_keys "and/or"
-
     assert_no_selector ".slash-menu"
+
+    body.send_keys :enter
+    body.send_keys "/qu"
+
+    assert_selector ".slash-menu [aria-selected=true]", text: "Quote"
   end
 
   test "escape closes the menu and leaves what was typed alone" do
