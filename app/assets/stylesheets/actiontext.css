@@ -23,19 +23,15 @@
   .trix-content h1 {
     font-size: 1.2em;
     line-height: 1.2; }
-  .trix-content blockquote {
-    border: 0 solid #ccc;
-    border-left-width: 0.3em;
-    margin-left: 0.3em;
-    padding-left: 0.6em; }
+  /* The LTR blockquote and li rules that used to sit here are stated once, shared with the
+     editor canvas, in application.css (.gh-content blockquote / li); only the RTL variants,
+     which no shared rule covers, remain. */
   .trix-content [dir=rtl] blockquote,
   .trix-content blockquote[dir=rtl] {
     border-width: 0;
     border-right-width: 0.3em;
     margin-right: 0.3em;
     padding-right: 0.6em; }
-  .trix-content li {
-    margin-left: 1em; }
   .trix-content [dir=rtl] li {
     margin-right: 1em; }
   .trix-content pre {

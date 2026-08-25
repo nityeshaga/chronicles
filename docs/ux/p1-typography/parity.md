@@ -61,6 +61,17 @@ The canvas list begins with Lexxy's hidden provisional paragraph (`P→FIGURE:0`
 | llm-390 title | Newsreader · 34px · 600 · 37.4px · -0.748px · rgb(20, 23, 26) · normal | Fraunces · 34px · 600 · 36.04px · -0.68px · rgb(43, 38, 32) · normal | Fraunces · 34px · 600 · 36.04px · -0.68px · rgb(43, 38, 32) · normal |
 | llm-390 subtitle | Newsreader · 17px · 400 · 24.65px · -0.306px · rgb(95, 97, 101) · normal | Newsreader · 18.17px · 400 · 26.3465px · normal · rgb(92, 83, 71) · italic | Newsreader · 18.17px · 400 · 26.3465px · normal · rgb(92, 83, 71) · italic |
 
+## Blockquote inset (review follow-up)
+
+Trix's legacy `.trix-content blockquote { margin-left: .3em }` and `.trix-content li { margin-left: 1em }` shaped the page outside the shared list; the page's blockquote sat 6px in, the canvas's at 0. Both values now live once in the shared rules and the Trix LTR rules are gone (`actiontext.css`). Re-measured on `nn`:
+
+| Width | Canvas margin-left · padding-left · border · x from body edge | Preview |
+|---|---|---|
+| 1440 | 6px · 24px · 3px rgb(176, 92, 52) · 6px | 6px · 24px · 3px rgb(176, 92, 52) · 6px |
+| 390 | 5.4px · 24px · 3px rgb(176, 92, 52) · 5px | 5.4px · 24px · 3px rgb(176, 92, 52) · 5px |
+
+`li` margin-left: 20px / 18px on both surfaces at 1440 / 390.
+
 ## What could not be made identical, and why
 
 - **The imported table's cells.** The llm post's table came from a paste that carries inline `style` on every `th`/`td` (`padding-left:0px`, `border-bottom:1px solid rgb(var(--ds-rgb-label-3))`, `color:rgb(var(--ds-rgb-label-1))`). Loofah keeps those styles on the public page, so they beat the shared cell rule; the editor drops cell styles on import, so the canvas shows the site's table. Content, not CSS — a re-save from the editor would align them.
@@ -70,7 +81,7 @@ The canvas list begins with Lexxy's hidden provisional paragraph (`P→FIGURE:0`
 
 ## Tokens
 
-All `--lexxy-*` values are set in one block on `.editor-canvas__body lexxy-editor` (application.css). `--lexxy-color-canvas` stays `transparent` so the prose sits on the paper; Lexxy also paints its dropdown panels with that token, which is what leaves them translucent — left for the toolbar slice (`p1/toolbar`).
+All `--lexxy-*` values are set in one block on `.editor-canvas__body lexxy-editor` (application.css). The `--highlight-*` swatches are on `.gh-content, .editor-canvas__body lexxy-editor` rather than `:root`, so they beat Lexxy's own `:root` definitions by inheritance, not stylesheet order (checked: `--highlight-1` resolves to `#b05c34` on the page, swatches terracotta/terracotta-deep/spool-red on the canvas). `--lexxy-color-canvas` stays `transparent` so the prose sits on the paper; Lexxy also paints its dropdown panels with that token, which is what leaves them translucent — left for the toolbar slice (`p1/toolbar`).
 
 ## Headings
 

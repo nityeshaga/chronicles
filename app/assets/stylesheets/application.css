@@ -26,27 +26,6 @@
   --body: "Newsreader", Georgia, serif;
   --mono: "IBM Plex Mono", monospace;
 
-  /* Highlight swatches. The editor writes a pick inline as `color: var(--highlight-N)` or
-     `background-color: var(--highlight-bg-N)` and the page renders that same variable, so
-     both surfaces must read one definition: Lexxy's nine slots, filled from the palette. */
-  --highlight-1: var(--terracotta);
-  --highlight-2: var(--terracotta-deep);
-  --highlight-3: var(--spool-red);
-  --highlight-4: var(--wood);
-  --highlight-5: var(--wood-deep);
-  --highlight-6: var(--tms-green);
-  --highlight-7: var(--tms-green-deep);
-  --highlight-8: var(--ink-soft);
-  --highlight-9: var(--ink);
-  --highlight-bg-1: var(--gold);
-  --highlight-bg-2: rgba(176, 92, 52, .18);
-  --highlight-bg-3: rgba(208, 64, 42, .16);
-  --highlight-bg-4: rgba(122, 82, 48, .18);
-  --highlight-bg-5: rgba(44, 69, 58, .16);
-  --highlight-bg-6: var(--paper-deep);
-  --highlight-bg-7: var(--line);
-  --highlight-bg-8: rgba(150, 73, 31, .14);
-  --highlight-bg-9: rgba(43, 38, 32, .08);
 
   --background-color: var(--paper);
   --accent-color: var(--terracotta-deep);
@@ -231,20 +210,45 @@ a:hover { opacity: .8; }
 .gh-content a, .editor-canvas__body .lexxy-editor__content a { color: var(--accent-color); text-decoration: underline; }
 .gh-content a:hover, .editor-canvas__body .lexxy-editor__content a:hover { opacity: .8; }
 .gh-content :is(ul, ol), .editor-canvas__body .lexxy-editor__content :is(ul, ol) { padding-left: 2.8rem; }
-/* The 1em is Trix's legacy `.trix-content li` indent (actiontext.css), which the published
-   body has always worn; stated here so the canvas wears it too. */
+/* The item indent and the blockquote's slight inset are what Trix's content stylesheet gave
+   the published body for years; they are the site's look now, stated here once for both. */
 .gh-content li, .editor-canvas__body .lexxy-editor__content li { margin-left: 1em; }
 .gh-content :is(li + li, li :is(ul, ol)),
 .editor-canvas__body .lexxy-editor__content :is(li + li, li :is(ul, ol)) { margin-top: .8rem; }
 .gh-content blockquote,
 .editor-canvas__body .lexxy-editor__content blockquote {
   border-left: 3px solid var(--terracotta);
+  margin-left: .3em;
   padding: 0 0 0 2.4rem;
   font-style: italic;
   color: var(--ink-soft);
 }
-/* A highlight is the colour the writer picked, carried inline as a --highlight-* variable
-   (defined in :root); a <mark> without one is just text — no browser yellow. */
+/* A highlight is the colour the writer picked, carried inline as `color: var(--highlight-N)`
+   or `background-color: var(--highlight-bg-N)`; the page renders that same variable, so
+   Lexxy's nine slots are filled from the palette once, on both surfaces. They sit here and
+   not on :root because Lexxy defines its own on :root and a nearer ancestor wins regardless
+   of which stylesheet loads first. A <mark> without a pick is just text — no browser yellow. */
+.gh-content,
+.editor-canvas__body lexxy-editor {
+  --highlight-1: var(--terracotta);
+  --highlight-2: var(--terracotta-deep);
+  --highlight-3: var(--spool-red);
+  --highlight-4: var(--wood);
+  --highlight-5: var(--wood-deep);
+  --highlight-6: var(--tms-green);
+  --highlight-7: var(--tms-green-deep);
+  --highlight-8: var(--ink-soft);
+  --highlight-9: var(--ink);
+  --highlight-bg-1: var(--gold);
+  --highlight-bg-2: color-mix(in srgb, var(--terracotta) 18%, transparent);
+  --highlight-bg-3: color-mix(in srgb, var(--spool-red) 16%, transparent);
+  --highlight-bg-4: color-mix(in srgb, var(--wood) 18%, transparent);
+  --highlight-bg-5: color-mix(in srgb, var(--tms-green) 16%, transparent);
+  --highlight-bg-6: var(--paper-deep);
+  --highlight-bg-7: var(--line);
+  --highlight-bg-8: color-mix(in srgb, var(--terracotta-deep) 14%, transparent);
+  --highlight-bg-9: color-mix(in srgb, var(--ink) 8%, transparent);
+}
 .gh-content mark, .editor-canvas__body .lexxy-editor__content mark { background-color: transparent; color: inherit; }
 .gh-content img,
 .editor-canvas__body .lexxy-editor__content img { margin-left: auto; margin-right: auto; border-radius: 4px; max-block-size: none; }
@@ -1066,7 +1070,7 @@ a:hover { opacity: .8; }
   --lexxy-color-canvas: transparent;
   --lexxy-color-ink: var(--ink);
   --lexxy-color-ink-medium: var(--ink-soft);
-  --lexxy-color-ink-light: #a3947c;
+  --lexxy-color-ink-light: color-mix(in srgb, var(--ink-soft) 50%, var(--paper));
   --lexxy-color-ink-lighter: var(--line);
   --lexxy-color-ink-lightest: var(--paper-deep);
   --lexxy-color-ink-inverted: var(--paper);

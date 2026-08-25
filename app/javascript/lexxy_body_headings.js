@@ -7,7 +7,9 @@ const { $getSelection, $isRangeSelection, $getNodeByKey } = Lexical
 // and a body h1 reaches the public page as a second <h1>. The shortcut list isn't
 // configurable, so this watches for an h1 under the caret — a heading the writer just
 // made — and sets it down to h2. A heading the caret isn't in is left alone: an imported
-// post's h1s are a fact of the import, not something opening it quietly rewrites.
+// post's h1s are a fact of the import, not something opening it quietly rewrites. Two
+// consequences are intended: undo can't bring an h1 back (Cmd+Z lands the caret in it and
+// it is demoted again), and of a pasted fragment only the h1 the caret ends in is demoted.
 export default class BodyHeadings extends Extension {
   get lexicalExtension() {
     return this.defineExtension({
