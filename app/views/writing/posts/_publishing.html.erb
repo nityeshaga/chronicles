@@ -67,6 +67,14 @@
         back as an older body — and then save itself over the newer one. %>
     <%= form_with url: [ :writing, post, :publishing ], method: :post, class: "schedule-form",
           data: { controller: "label-swap", label_swap_empty_value: "Publish", label_swap_filled_value: "Schedule" } do |form| %>
+      <%# What the writer left himself to look up, counted across the title, the subtitle
+          and the body. A warning and not a gate — Ghost lets a post go out with TKs in it
+          and so does this; it just doesn't let it go out unsaid. Pluralised in the
+          browser, which is why both words are written here. %>
+      <p class="publish-note" hidden data-tk-target="note" data-one="TK remains" data-many="TKs remain">
+        <span data-tk-target="count"></span> — publish anyway?
+      </p>
+
       <%# An untitled post would go live at /untitled/ — a URL no rename takes back. The
           model refuses it; this says so, and the title field re-enables the button live. %>
       <%= tag.p class: "publish-note", hidden: !post.untitled?, data: { editor_target: "titleNote" } do %>

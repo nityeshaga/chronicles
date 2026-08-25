@@ -56,7 +56,10 @@ import { Turbo } from "@hotwired/turbo-rails"
 // writer's, with his eyes on both versions — continues. Nothing here tries to merge.
 //
 // A save that lands is announced (autosave:saved) so whatever else holds a copy of the
-// work — the local draft — can let it go.
+// work — the local draft — can let it go. The announcement and the line in the bar are
+// two different claims: one is about the save, the other about the canvas. They part
+// company whenever a key is pressed while a PATCH is in flight, and the bar follows the
+// canvas (see #report).
 const INTERVAL = 2000
 // Work that would be lost if the document went away now: a save still to come, one that
 // failed, a session that died under it, or a record another tab moved on. Both leave
@@ -148,7 +151,7 @@ export default class extends Controller {
     if (response?.redirected) return this.#setStatus("")
 
     this.#adoptLockVersion(response?.header("X-Lock-Version"))
-    this.#setStatus(event.detail.success ? "saved" : "error")
+    this.#report(event.detail.success ? "saved" : "error")
   }
 
   // In-app exit (‹ Writing, any Turbo link). Hold the visit, land the save, then make the
@@ -206,7 +209,7 @@ export default class extends Controller {
         body: this.#payload
       })
       await this.#adopt(response)
-      this.#setStatus(this.#outcome(response))
+      this.#report(this.#outcome(response))
     } catch {
       this.#setStatus("error")
     }
@@ -235,7 +238,7 @@ export default class extends Controller {
         } })
       }
       await this.#adopt(response)
-      this.#setStatus(this.#outcome(response))
+      this.#report(this.#outcome(response))
     } catch {
       this.#setStatus("error")
     }
@@ -364,12 +367,24 @@ export default class extends Controller {
     if (!this.#dirty) this.#setStatus("unsaved")
   }
 
+  // What a landed save is allowed to say. The save landed — that is a fact, and whatever
+  // else holds a copy of the work is told so it can let its copy go. But the bar is not
+  // about the response, it is about the canvas, and a keystroke during the fetch put work
+  // in the canvas that no save holds yet. So "Saved" does not get to paint over "Unsaved
+  // changes" merely because a reply arrived while the timer was already re-armed.
+  #report(outcome) {
+    if (outcome === "saved" && this.#dirty) return this.#announceSaved()
+    this.#setStatus(outcome)
+  }
+
+  #announceSaved() {
+    this.#refusedUrl = null
+    this.dispatch("saved")
+  }
+
   #setStatus(state) {
     this.#state = state
-    if (state === "saved") {
-      this.#refusedUrl = null
-      this.dispatch("saved")
-    }
+    if (state === "saved") this.#announceSaved()
 
     const text = {
       unsaved: "Unsaved changes",

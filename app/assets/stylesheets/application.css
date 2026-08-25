@@ -1038,6 +1038,30 @@ html.preview-phone .preview-frame {
 .editor-bar__back:hover { color: var(--w-ink); opacity: 1; }
 .editor-bar__publish svg { opacity: .75; }
 
+/* Which post this is, once the canvas title has gone under the bar. It takes the slack
+   between the two sides rather than being centred absolutely, so it can never sit on top
+   of the controls at either end — it gives way to them instead. */
+.editor-bar__title {
+  flex: 1 1 auto; min-width: 0; text-align: center;
+  font-family: var(--font-sans); font-size: 1.4rem; font-weight: 500; color: var(--w-muted);
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
+/* The observer hides it on scroll; :empty hides it while the post is untitled, so nothing
+   anywhere has to remember whether there is a title yet. Both need saying, or the display
+   above would keep an empty box on the bar. */
+.editor-bar__title[hidden],
+.editor-bar__title:empty { display: none; }
+
+/* How much of it there is. Tabular figures so a climbing count doesn't shuffle the words
+   beside it on every other keystroke. */
+.editor-bar__count {
+  font-family: var(--font-sans); font-size: 1.3rem; font-weight: 500; color: var(--w-faint);
+  white-space: nowrap; font-variant-numeric: tabular-nums;
+}
+/* The bar's job at this width is the save state and the ship button; a number the writer
+   can scroll to the foot of the canvas for is what gives way first. */
+@media (max-width: 680px) { .editor-bar__count { display: none; } }
+
 .autosave-status {
   display: inline-flex; align-items: center; min-height: 1.4em;
   font-size: 1.3rem; font-weight: 500; color: var(--w-faint);
@@ -1075,7 +1099,22 @@ html.preview-phone .preview-frame {
    WIDTH (clamp/vw), not vmin — vmin tied the column to window height and narrowed it on
    tall screens. Lexxy's own content padding is zeroed below so text starts at the title's
    left edge and the wrapper width IS the writing measure. */
-.editor-canvas { max-width: 76rem; margin: 0 auto; padding: 5rem clamp(20px, 4vw, 40px) 12rem; }
+/* position: relative so the TK gutter measures against the canvas rather than the page. */
+.editor-canvas { position: relative; max-width: 76rem; margin: 0 auto; padding: 5rem clamp(20px, 4vw, 40px) 12rem; }
+
+/* The writer's own notes-to-self, marked in the margin. Their own layer over the canvas
+   and never inside the prose: Lexical owns every node in its content element and would
+   either discard a marker or take it into the document. */
+.editor-canvas__gutter { position: absolute; inset: 0; pointer-events: none; }
+.tk-marker {
+  position: absolute; right: -3.4rem;
+  font-family: var(--font-sans); font-size: 1.1rem; font-weight: 600; letter-spacing: .05em;
+  color: var(--w-accent-ink); background: rgba(180, 83, 9, .12);
+  border-radius: 4px; padding: .1rem .45rem;
+}
+/* Past the measure while there is room outside it, and back against the canvas edge when
+   there isn't — a marker off the side of the screen marks nothing. */
+@media (max-width: 860px) { .tk-marker { right: 0; } }
 /* Type and colour come from the public title/standfirst rules they share (see
    .gh-article-title); only the box is decided here. */
 .editor-canvas__title,
@@ -1551,6 +1590,9 @@ body.html-card .gh-content, body.html-card .kg-card { margin: 0; }
      rather than shove the publish controls off the bar. (The rest of the phone editor
      chrome — icon-only Settings, a chevron back link — is its own piece of work.) */
   .editor-bar__back { flex: none; }
+  /* A phone bar has room for the state of the work or the name of it, not both, and the
+     writer is one flick from the title itself. (Phone editor chrome proper is 5.6.) */
+  .editor-bar__title { display: none; }
   .editor-bar .autosave-status {
     display: block; min-width: 0;
     overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
