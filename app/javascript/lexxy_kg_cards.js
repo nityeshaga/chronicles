@@ -1,4 +1,4 @@
-import { Extension, configure, ActionTextAttachmentNode, CustomActionTextAttachmentNode } from "lexxy"
+import { Extension, ActionTextAttachmentNode, CustomActionTextAttachmentNode } from "lexxy"
 
 // Ghost's kg-* cards are the site's dialect: the importer wrote every card as a bare
 // figure/div with kg-* classes, 30 published posts hold them, and the public CSS styles
@@ -32,7 +32,7 @@ const CARD_ELEMENTS = [
 // The figure's img may carry exactly what the image node carries back.
 const IMAGE_ATTRIBUTES = [ "src", "alt", "width", "height", "class", "loading" ]
 
-class KgCards extends Extension {
+export default class KgCards extends Extension {
   get allowedElements() {
     return CARD_ELEMENTS
   }
@@ -99,5 +99,3 @@ function captionOf(figcaption) {
 function opaqueNodeFor(element) {
   return new CustomActionTextAttachmentNode({ contentType: "text/html", innerHtml: element.outerHTML })
 }
-
-configure({ global: { extensions: [ KgCards ] } })
