@@ -7,6 +7,8 @@ module ToolErrors
   HTML_CARD_NOT_FOUND = { error: "HTML card not found. The id is the one create_html_card returned, and cards aren't listed anywhere else — if it's lost, create the card again and patch the new attachment_html over the old reference in the body." }.freeze
   INVALID_KIND = { error: "kind must be 'article' or 'page'." }.freeze
   HTML_PAGE_KIND = { error: "kind 'html_page' isn't set here. A whole-document HTML page is created with create_html_page and edited with update_html_page." }.freeze
+  IS_AN_EXPLORABLE = { error: "That's an explorable: a bundle of files, not one document. Use update_explorable (send index.html in files to change the front document)." }.freeze
+  NOT_AN_EXPLORABLE = { error: "That's not an explorable. Use update_html_page for an HTML page, or update_post for a post or page." }.freeze
   NOT_AN_HTML_PAGE = { error: "That's a regular post or page, not an HTML page. Use update_post to edit it." }.freeze
   IS_AN_HTML_PAGE = { error: "That's an HTML page: its body is a whole stored HTML document, not Action Text. Use update_html_page to edit it." }.freeze
 end

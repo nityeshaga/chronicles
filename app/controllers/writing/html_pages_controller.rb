@@ -23,7 +23,7 @@ class Writing::HtmlPagesController < Writing::BaseController
   def create
     @post = HtmlPage.new(html_page_params)
     if @post.save
-      redirect_to edit_writing_html_page_url(@post)
+      redirect_to edit_polymorphic_url([ :writing, @post ])
     else
       render :new, status: :unprocessable_entity
     end
@@ -33,10 +33,10 @@ class Writing::HtmlPagesController < Writing::BaseController
   # loop buys nothing, so saving is an explicit act and there's no X-Autosave contract to
   # honour. Every save lands back on the editor — and because the URL is built from the
   # record, renaming the slug moves the editor with it rather than stranding the author on
-  # a dead address.
+  # a dead address. Polymorphic, so the explorable subclass lands on its own editor.
   def update
     if @post.update(html_page_params)
-      redirect_to edit_writing_html_page_url(@post), notice: "Saved."
+      redirect_to edit_polymorphic_url([ :writing, @post ]), notice: "Saved."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -49,7 +49,8 @@ class Writing::HtmlPagesController < Writing::BaseController
 
   private
     def set_html_page
-      @post = HtmlPage.find_by!(slug: params[:id])
+      # Exact kind: an explorable is an HtmlPage too, but it has its own editor and route.
+      @post = HtmlPage.where(type: "HtmlPage").find_by!(slug: params[:id])
     end
 
     # Title and slug are the record's own identity; raw_html is the document. Nothing else

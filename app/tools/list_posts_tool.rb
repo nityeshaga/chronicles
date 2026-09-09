@@ -18,7 +18,7 @@ class ListPostsTool < ActionTool::Base
 
   arguments do
     optional(:status).filled(:string).description("Filter by status: 'draft', 'scheduled' (a draft with a future publish time), or 'published'.")
-    optional(:kind).filled(:string).description("Filter by kind: 'article' (a blog post), 'page' (a standalone page like About) or 'html_page' (a whole hand-authored HTML document).")
+    optional(:kind).filled(:string).description("Filter by kind: 'article' (a blog post), 'page' (a standalone page like About), 'html_page' (a whole hand-authored HTML document) or 'explorable' (a bundle of files under one slug).")
     optional(:tag).filled(:string).description("Filter by tag slug.")
     optional(:query).filled(:string).description("Case-insensitive substring match on the title.")
     optional(:limit).filled(:integer).description("Max results (default: #{DEFAULT_LIMIT}, max: #{MAX_LIMIT}).")
@@ -38,6 +38,7 @@ class ListPostsTool < ActionTool::Base
     # that inherit from it — they answer to their own kind and their own tools.
     scope = scope.where(type: "Page") if kind == "page"
     scope = scope.where(type: "HtmlPage") if kind == "html_page"
+    scope = scope.where(type: "Explorable") if kind == "explorable"
 
     now = Time.current
     case status

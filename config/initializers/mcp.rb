@@ -84,6 +84,10 @@ Rails.application.config.after_initialize do
     server.register_tool(CreateHtmlPageTool)
     server.register_tool(UpdateHtmlPageTool)
 
+    # Explorables: a directory of files under one slug. index.html is an HTML page; the rest are assets.
+    server.register_tool(CreateExplorableTool)
+    server.register_tool(UpdateExplorableTool)
+
     # Image + embed tools (stage 4)
     server.register_tool(UploadImageTool)
     server.register_tool(CreateEmbedTool)

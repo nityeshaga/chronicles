@@ -20,6 +20,11 @@ class Post < ApplicationRecord
   # sitemaps and the writing index all want articles only; naming it keeps the
   # type discriminator out of controllers.
   scope :articles, -> { where(type: "Post") }
+  # What a request may read. The public sees what's published. A signed-in writer also
+  # sees draft explorables at their real URL — a bundle's only honest preview is the
+  # bundle itself, at the address its relative links resolve against. Other drafts keep
+  # their editor preview; nothing else changes for the writer.
+  scope :viewable, ->(writer:) { writer ? published.or(where(type: "Explorable")) : published }
 
   # Title and subtitle are single-line by design; squish out any newline that sneaks
   # past the editor (paste, older clients) so headlines never carry hard breaks.

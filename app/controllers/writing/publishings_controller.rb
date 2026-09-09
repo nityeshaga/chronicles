@@ -14,11 +14,11 @@ class Writing::PublishingsController < Writing::BaseController
   end
 
   private
-    # Nested under posts, pages and HTML pages; the resource is found by slug whichever
+    # Nested under posts, pages, HTML pages and explorables; the resource is found by slug whichever
     # parent it arrived under, and the redirect is polymorphic so it lands back on the
     # right editor.
     def set_post
-      @post = Post.find_by!(slug: params[:post_id] || params[:page_id] || params[:html_page_id])
+      @post = Post.find_by!(slug: params[:post_id] || params[:page_id] || params[:html_page_id] || params[:explorable_id])
     end
 
     # Back to the editor with the publish popover already open. The writer asked a

@@ -29,6 +29,7 @@ class UpdateHtmlPageTool < ActionTool::Base
     page = resolve_post(id_or_slug)
     return ToolErrors::POST_NOT_FOUND unless page
     return ToolErrors::NOT_AN_HTML_PAGE unless page.is_a?(HtmlPage)
+    return ToolErrors::IS_AN_EXPLORABLE if page.is_a?(Explorable)
 
     return { error: "html and html_patches are mutually exclusive. Pass html for a full replacement or html_patches for surgical edits, not both." } if html.present? && html_patches.present?
 
