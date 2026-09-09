@@ -21,6 +21,20 @@ class ExplorablesControllerTest < ActionDispatch::IntegrationTest
     assert_equal INDEX, response.body
   end
 
+  test "index.html by name is just another file, and so is the root" do
+    get "/hotwire/index.html"
+    assert_response :success
+    assert_equal INDEX, response.body
+  end
+
+  test "a changed file changes the front door's ETag" do
+    get "/hotwire/"
+    etag = response.headers["ETag"]
+    @explorable.write_files([ { path: "shared/style.css", content: "body{color:blue}" } ])
+    get "/hotwire/", headers: { "If-None-Match" => etag }
+    assert_response :success
+  end
+
   test "every file answers at its authored path with its own content type" do
     get "/hotwire/shared/style.css"
     assert_response :success

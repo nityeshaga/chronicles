@@ -23,7 +23,8 @@ class ExplorableTest < ActiveSupport::TestCase
     ])
 
     assert_includes @explorable.reload.raw_html, "explored again"
-    assert_equal %w[ decks/10-drive.html shared/style.css ], @explorable.assets.order(:path).pluck(:path)
+    assert_equal %w[ decks/10-drive.html index.html shared/style.css ], @explorable.assets.order(:path).pluck(:path)
+    assert_nil @explorable.read_attribute(:raw_html), "the column stays empty — the asset is the document"
     assert_equal "text/css", @explorable.assets.find_by(path: "shared/style.css").content_type
     assert_equal "text/html", @explorable.assets.find_by(path: "decks/10-drive.html").content_type
   end
@@ -32,12 +33,15 @@ class ExplorableTest < ActiveSupport::TestCase
     @explorable.write_files([ { path: "shared/style.css", content: "v1" } ])
     @explorable.write_files([ { path: "shared/style.css", content: "v2" } ])
 
-    assert_equal 1, @explorable.assets.count
-    assert_equal "v2", @explorable.assets.sole.content
+    assert_equal 2, @explorable.assets.count
+    assert_equal "v2", @explorable.assets.find_by(path: "shared/style.css").content
   end
 
-  test "asset_at answers a file, or a directory's index" do
+  test "asset_at answers a file, or a directory's index — the root and index.html included" do
     @explorable.write_files([ { path: "decks/index.html", content: DECK }, { path: "decks/10-drive.html", content: DECK } ])
+
+    assert_equal "index.html", @explorable.asset_at("index.html").path
+    assert_equal "index.html", @explorable.asset_at("").path
 
     assert_equal "decks/10-drive.html", @explorable.asset_at("decks/10-drive.html").path
     assert_equal "decks/index.html", @explorable.asset_at("decks").path
@@ -70,9 +74,17 @@ class ExplorableTest < ActiveSupport::TestCase
 
   test "deleting the explorable takes its files with it" do
     @explorable.write_files([ { path: "a.css", content: "" } ])
-    assert_difference -> { Explorable::Asset.count }, -1 do
+    assert_difference -> { Explorable::Asset.count }, -2 do
       @explorable.destroy
     end
+  end
+
+  test "a document with non-ASCII text round-trips as UTF-8 through the binary column" do
+    @explorable.update!(raw_html: INDEX.sub("explored", "explored — again"))
+    html = @explorable.reload.raw_html
+    assert_equal Encoding::UTF_8, html.encoding
+    assert_includes html, "explored — again"
+    assert html.match?(/<title>/) # a binary string with high bytes would raise here
   end
 
   test "it is an HTML page for everything the rest of the site asks" do

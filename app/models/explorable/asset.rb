@@ -8,7 +8,8 @@ class Explorable::Asset < ApplicationRecord
   # (post_assets); the table is named for what it holds.
   self.table_name = "explorable_assets"
 
-  belongs_to :explorable
+  # touch: the front door's ETag is the post's updated_at, and a changed file is a changed page.
+  belongs_to :explorable, touch: true
 
   MAX_BYTES = 10.megabytes
   # Plain relative segments only: no leading slash, no ".." and no ".", nothing hidden.

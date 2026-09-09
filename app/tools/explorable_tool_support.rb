@@ -36,7 +36,7 @@ module ExplorableToolSupport
         status: status_of(explorable),
         url: public_url(explorable),
         edit_url: edit_url(explorable),
-        files: [ Explorable::INDEX, *explorable.assets.order(:path).pluck(:path) ],
+        files: [ Explorable::INDEX, *explorable.assets.where.not(path: Explorable::INDEX).order(:path).pluck(:path) ],
         missing_references: explorable.missing_references.presence,
         warnings: warnings.presence
       }.compact
