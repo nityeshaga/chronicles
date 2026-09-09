@@ -10,7 +10,8 @@ module Writing::DashboardHelper
     { bucket: "scheduled", label: "Scheduled", sort: "goes-live", direction: 1 },
     { bucket: "published", label: "Published" },
     { bucket: "page", label: "Pages" },
-    { bucket: "html_page", label: "HTML pages" }
+    { bucket: "html_page", label: "HTML pages" },
+    { bucket: "explorable", label: "Explorables" }
   ].freeze
 
   def dashboard_tabs(records)

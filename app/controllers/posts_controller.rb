@@ -14,8 +14,8 @@ class PostsController < ApplicationController
   end
 
   def show
-    # Unfiltered on purpose: pages (About, etc) are served through here too.
-    @post = Post.published.find_by!(slug: params[:slug])
+    # Unfiltered on purpose: pages (About, etc) and explorables are served through here too.
+    @post = Post.viewable(writer: signed_in?).find_by!(slug: params[:slug])
     fresh_when @post
     return if performed? # fresh_when already answered a 304; rendering again would raise
 

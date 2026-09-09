@@ -68,6 +68,11 @@ Rails.application.routes.draw do
     resources :html_pages, except: %i[ index ] do
       resource :publishing, only: %i[ create destroy ]
     end
+    # Explorables are made by the MCP tools (a bundle of files is nothing to type into a
+    # form), so no new/create here — the editor edits the front document and lists the rest.
+    resources :explorables, only: %i[ show edit update destroy ] do
+      resource :publishing, only: %i[ create destroy ]
+    end
     resources :tags, only: %i[ index edit update create ]
     resources :embeds, only: %i[ create ]
     # show is one card, bare, for the writer's canvas to frame — addressed by the sgid the
@@ -100,6 +105,12 @@ Rails.application.routes.draw do
   get "page/:page", to: redirect("/", status: 301), constraints: { page: /\d+/ }
   get "tag/:slug/page/:page", to: redirect("/tag/%{slug}/", status: 301), constraints: { page: /\d+/ }
   get ":slug/amp", to: redirect("/%{slug}/", status: 301)
+
+  # A file inside an explorable, at the path it was authored under. /slug/ is the
+  # explorable's front door and goes through posts#show like every page; anything deeper
+  # is one of its files. format: false so "decks/10-drive.html" arrives whole rather than
+  # as "10-drive" in the "html" format.
+  get ":slug/*path", to: "explorables#show", as: :explorable_asset, format: false
 
   # Public post pages live at the root — same slugs Ghost served. Keep this LAST so it
   # doesn't shadow the named routes above.

@@ -54,7 +54,9 @@ module HtmlIngestGate
     # Returns { error: } when the document can't be published as it stands, otherwise
     # { html:, warnings: } — the html to store, byte-identical to what came in apart from
     # the canonical link.
-    def screen_html_document(html, canonical_url:)
+    # references: false for an explorable's index.html — there the relative paths are the
+    # point, and Explorable#missing_references judges them against the bundle instead.
+    def screen_html_document(html, canonical_url:, references: true)
       head = html[HEAD_ELEMENT, 1]
 
       unless head&.match?(TITLE_ELEMENT)
@@ -68,7 +70,7 @@ module HtmlIngestGate
 
       html, canonical_warning = resolve_canonical(html, canonical_url)
       warnings << canonical_warning if canonical_warning
-      warnings.concat(reference_warnings(html))
+      warnings.concat(reference_warnings(html)) if references
 
       { html: html, warnings: warnings }
     end

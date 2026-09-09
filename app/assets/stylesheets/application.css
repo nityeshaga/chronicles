@@ -1557,6 +1557,17 @@ body.html-card .gh-content, body.html-card .kg-card { margin: 0; }
 }
 .editor-panel > h2 { font-family: var(--font-sans); font-size: 1.5rem; font-weight: 600; padding: 1.2rem 1.6rem; border-bottom: 1px solid var(--w-line); }
 .editor-panel__danger { margin-top: 2.6rem; }
+.editor-panel__note { padding: 1.2rem 1.6rem; font-size: 1.3rem; color: var(--w-faint); }
+.editor-panel__note--warn { color: var(--w-danger); }
+.editor-panel__note code { font-size: 1.2rem; }
+
+/* Files of an explorable: path on the left, type and size on the right. */
+.file-list { list-style: none; margin: 0; padding: .4rem 0; }
+.file-list__row { display: flex; align-items: baseline; justify-content: space-between; gap: 1.6rem; padding: .7rem 1.6rem; border-top: 1px solid var(--w-line); }
+.file-list__row:first-child { border-top: 0; }
+.file-list__path { font-family: var(--font-mono); font-size: 1.3rem; text-decoration: none; }
+.file-list__path:hover { color: var(--w-accent); }
+.file-list__meta { font-size: 1.2rem; color: var(--w-faint); white-space: nowrap; }
 
 /* =========================================================================
    Form page (tag editor) + auth card
