@@ -5,8 +5,9 @@ class ExplorablesController < ApplicationController
   # bytes with no session behind them.
   skip_forgery_protection
 
-  # A companion file of an explorable, at its authored path. The front door (/slug/) is
-  # PostsController#show like every other page — this answers everything under it.
+  # A file of an explorable, at its authored path — index.html by name included. The front
+  # door (/slug/) is PostsController#show like every other page; this answers everything
+  # under it.
   # Binary because that's what was uploaded: no layout, no meta, no template — the bytes
   # and the type they were saved with, ETagged so a reload of a big deck is a 304.
   def show

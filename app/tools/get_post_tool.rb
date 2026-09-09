@@ -58,7 +58,7 @@ class GetPostTool < ActionTool::Base
       body_total_length: body_html.length,
       body_truncated: (body_offset + body_slice.length) < body_html.length,
       # An explorable is its files; the body window above is only its index.html.
-      files: (post.assets.order(:path).pluck(:path) if post.is_a?(Explorable))
+      files: (post.assets.where.not(path: Explorable::INDEX).order(:path).pluck(:path) if post.is_a?(Explorable))
     }.compact
   end
 end
