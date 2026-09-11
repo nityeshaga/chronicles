@@ -1,0 +1,45 @@
+name: Gem audit
+
+# bundler-audit checks Gemfile.lock against a live advisory database, so it can
+# go red overnight with no change to our code. Running it here (nightly) instead
+# of in PR CI keeps unrelated PRs and deploys green while a new advisory gets a
+# same-day bump PR. Brakeman stays in CI — it only tests the diff.
+on:
+  schedule:
+    - cron: "45 21 * * *" # 03:15 IST, off-peak
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  bundler_audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Scan for known security vulnerabilities in gems used
+        shell: bash
+        run: bin/bundler-audit | tee audit.txt
+
+      - name: File an issue so the advisory gets a bump PR
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          existing=$(gh issue list --state open --label gem-audit --json number --jq '.[0].number')
+          body="$(printf 'Nightly bundler-audit found advisories in Gemfile.lock:\n\n```\n%s\n```\n' "$(cat audit.txt)")"
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$body"
+          else
+            gh label create gem-audit --description "New gem security advisory" --color D93F0B || true
+            gh issue create --title "bundler-audit: new gem advisories" --label gem-audit --body "$body"
+          fi
