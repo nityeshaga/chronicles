@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_15_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_15_180000) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.text "body"
     t.datetime "created_at", null: false
@@ -198,6 +198,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_120000) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "ships", force: :cascade do |t|
+    t.text "blurb"
+    t.string "built_by", null: false
+    t.string "check_it_out_url"
+    t.datetime "created_at", null: false
+    t.integer "how_built_post_id"
+    t.string "kind", null: false
+    t.integer "number"
+    t.integer "post_id"
+    t.text "prompt"
+    t.datetime "published_at"
+    t.date "shipped_on", null: false
+    t.string "status", default: "draft", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.string "x_status_id"
+    t.index ["how_built_post_id"], name: "index_ships_on_how_built_post_id"
+    t.index ["number"], name: "index_ships_on_number", unique: true
+    t.index ["post_id"], name: "index_ships_on_post_id"
+    t.index ["status", "shipped_on"], name: "index_ships_on_status_and_shipped_on"
+  end
+
   create_table "subscribers", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", null: false
@@ -242,6 +264,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_120000) do
   add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
   add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
   add_foreign_key "sessions", "users"
+  add_foreign_key "ships", "posts", column: "how_built_post_id", on_delete: :nullify
+  add_foreign_key "ships", "posts", on_delete: :nullify
   add_foreign_key "taggings", "posts"
   add_foreign_key "taggings", "tags"
 end
