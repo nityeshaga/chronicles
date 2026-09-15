@@ -28,14 +28,7 @@ module PostToolSupport
       end
     end
 
-    def public_url(post)
-      Rails.application.routes.url_helpers.post_url(
-        post,
-        host: Setting.current.production_host,
-        protocol: "https",
-        trailing_slash: true
-      )
-    end
+    def public_url(post) = post.public_url
 
     def edit_url(post)
       helpers = Rails.application.routes.url_helpers

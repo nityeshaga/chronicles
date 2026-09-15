@@ -19,7 +19,7 @@ class UploadImageToolTest < ActiveSupport::TestCase
   end
 
   test "fetches, stores a blob, and returns url + figure_html" do
-    stub_fetch ImageFetching::FetchedImage.new(bytes: PNG, content_type: "image/png")
+    stub_fetch MediaFetching::FetchedFile.new(bytes: PNG, content_type: "image/png")
 
     result = nil
     assert_difference -> { ActiveStorage::Blob.count }, 1 do
@@ -34,14 +34,14 @@ class UploadImageToolTest < ActiveSupport::TestCase
   end
 
   test "derives the filename from the URL when not given" do
-    stub_fetch ImageFetching::FetchedImage.new(bytes: PNG, content_type: "image/png")
+    stub_fetch MediaFetching::FetchedFile.new(bytes: PNG, content_type: "image/png")
     @tool.call(source_url: "https://example.com/photos/sunset.png")
 
     assert_equal "sunset.png", ActiveStorage::Blob.order(:created_at).last.filename.to_s
   end
 
   test "derives a filename from the content type when the URL has none" do
-    stub_fetch ImageFetching::FetchedImage.new(bytes: PNG, content_type: "image/jpeg")
+    stub_fetch MediaFetching::FetchedFile.new(bytes: PNG, content_type: "image/jpeg")
     @tool.call(source_url: "https://example.com/download")
 
     assert_equal "image.jpeg", ActiveStorage::Blob.order(:created_at).last.filename.to_s
@@ -64,7 +64,7 @@ class UploadImageToolTest < ActiveSupport::TestCase
   end
 
   test "rejects an oversize image" do
-    stub_http_get http_response("image/png", "x" * (ImageFetching::MAX_BYTES + 1))
+    stub_http_get http_response("image/png", "x" * (MediaFetching::MAX_IMAGE_BYTES + 1))
     result = @tool.send(:fetch_remote_image, "https://example.com/huge.png")
     assert_match(/10 MB/, result[:error])
   end

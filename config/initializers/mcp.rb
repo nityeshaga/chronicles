@@ -58,6 +58,14 @@ MCP_SERVER_INSTRUCTIONS = -> do
   snippet of the element. Do what the note asks through the tools above (or say what it
   would take), then resolve_note with one line on what changed — it appears under the note
   on the page. Check list_notes at the start of a session.
+
+  Ships are the log's unit: one thing shipped on a day — an app, tool, explorable, comic or
+  chronicle — with a title, a blurb, who built it (nityesh, luo, together), a media preview
+  and three doors: check_it_out_url, a copyable prompt, and a how_built_post. Most ships
+  live off-site; link `post` when one announces a post, HTML page or explorable here.
+  create_ship makes a draft, upload_ship_media fetches an mp4/jpg/png into its preview (and
+  a poster for a video), update_ship revises, and publish_ship mints its № number and puts
+  it in the log. list_ships reads the log back.
   INSTRUCTIONS
 end
 
@@ -106,6 +114,13 @@ Rails.application.config.after_initialize do
     # The author's red-pen notes on live pages: read them, do the work, resolve them.
     server.register_tool(ListNotesTool)
     server.register_tool(ResolveNoteTool)
+
+    # Ships: the log's numbered entries. Logged from Slack, so every step is a tool.
+    server.register_tool(ListShipsTool)
+    server.register_tool(CreateShipTool)
+    server.register_tool(UpdateShipTool)
+    server.register_tool(PublishShipTool)
+    server.register_tool(UploadShipMediaTool)
 
     Rails.logger.info "MCP Server: Registered #{server.tools.keys.size} tools: #{server.tools.keys.join(', ')}"
   end
