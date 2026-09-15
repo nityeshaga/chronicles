@@ -28,7 +28,7 @@ gem "rouge"
 gem "fast-mcp"
 
 # OAuth 2.0 provider — lets claude.ai connect to /mcp from a pasted URL (DCR + PKCE) [https://github.com/doorkeeper-gem/doorkeeper]
-gem "doorkeeper", "~> 5.8.2"
+gem "doorkeeper", "~> 5.9.7"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
