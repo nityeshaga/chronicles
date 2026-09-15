@@ -831,7 +831,9 @@ button.door { background: transparent; color: var(--ink); cursor: pointer; }
   .mast .cta { padding: 8px 11px; font-size: 11px; }
   .mast .cta .l { display: none; }
   .mast .cta .s { display: inline; }
-  .nav { gap: 18px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 44px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 44px), transparent); }
+  /* Sideways only: the row is 1px taller than its box (the underline hangs below), and
+     without overflow-y hidden iOS lets a swipe drag the links up and down inside the strip. */
+  .nav { gap: 18px; overflow-x: auto; overflow-y: hidden; touch-action: pan-x; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 44px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 44px), transparent); }
   .nav::-webkit-scrollbar { display: none; }
   .nav .about { margin-left: 0; padding-right: 32px; }
 }
