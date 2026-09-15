@@ -12,13 +12,13 @@ class ListNotesToolTest < ActiveSupport::TestCase
   test "open notes by default, with everything the agent needs to act" do
     result = ListNotesTool.new.call
     ids = result[:notes].map { |n| n[:id] }
-    assert_includes ids, notes(:excerpt).id
-    assert_not_includes ids, notes(:image).id
+    assert_includes ids, redpen_notes(:excerpt).id
+    assert_not_includes ids, redpen_notes(:image).id
 
-    note = result[:notes].find { |n| n[:id] == notes(:excerpt).id }
+    note = result[:notes].find { |n| n[:id] == redpen_notes(:excerpt).id }
     assert_equal "/about/", note[:path]
     assert_equal "https://#{Setting.current.production_host}/about/", note[:url]
-    assert_equal notes(:excerpt).selector, note[:selector]
+    assert_equal redpen_notes(:excerpt).selector, note[:selector]
     assert_equal "I write about building", note[:snippet]
     assert_equal "This runs long. Two sentences.", note[:body]
     assert_nil note[:resolution]
@@ -26,11 +26,11 @@ class ListNotesToolTest < ActiveSupport::TestCase
 
   test "resolved, all, and a path filter" do
     resolved = ListNotesTool.new.call(status: "resolved")[:notes]
-    assert_equal [ notes(:image).id ], resolved.map { |n| n[:id] }
+    assert_equal [ redpen_notes(:image).id ], resolved.map { |n| n[:id] }
     assert_equal "Swapped via update_post.", resolved.first[:resolution]
 
-    assert_equal Note.count, ListNotesTool.new.call(status: "all")[:notes].size
-    assert_equal [ notes(:homepage).id ], ListNotesTool.new.call(path: "/")[:notes].map { |n| n[:id] }
+    assert_equal Redpen::Note.count, ListNotesTool.new.call(status: "all")[:notes].size
+    assert_equal [ redpen_notes(:homepage).id ], ListNotesTool.new.call(path: "/")[:notes].map { |n| n[:id] }
     assert ListNotesTool.new.call(status: "sideways")[:error].present?
   end
 end

@@ -46,6 +46,10 @@
       </footer>
     </div>
 
-    <%= render "writing/notes/rail" if signed_in? %>
+    <% if signed_in? %>
+      <%# The author's way back to the writing room, a pill above the red pen. Host chrome, not the gem's. %>
+      <a class="redpen-dashboard admin-link" href="/writing/">Dashboard</a>
+      <%= redpen_rail(path: requested_path) %>
+    <% end %>
   </body>
 </html>

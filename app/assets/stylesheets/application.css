@@ -15,6 +15,8 @@
   --display: "Libre Caslon Display", Georgia, serif;
   --body: "Source Serif 4", Georgia, serif;
   --mono: "Martian Mono", ui-monospace, monospace;
+  /* The red pen (redpen-rails gem) dresses in the house mono. */
+  --rp-mono: var(--mono);
   --rail: 132px; --max: 1180px;
 
   /* --- Interior-page tokens from the print-house design, retuned onto the new paper.
@@ -1719,3 +1721,13 @@ body.html-card .gh-content, body.html-card .kg-card { margin: 0; }
   .writing-dash .dash-row { flex-direction: column; gap: .8rem; }
   .writing-dash .dash-row__side { gap: 1rem; }
 }
+
+/* The author's way back to the writing room: a pill above the red-pen toggle, only ever
+   rendered for the signed-in author, so readers never see admin chrome in the nav. */
+.redpen-dashboard {
+  position: fixed; right: 18px; bottom: 60px; z-index: 2147483001;
+  font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase;
+  padding: 9px 12px; border-radius: 999px; background: #16130F; color: #F4EFE6; text-decoration: none;
+  box-shadow: 0 2px 10px rgba(0,0,0,.18);
+}
+.redpen-dashboard:hover { background: #E8471C; color: #fff; }

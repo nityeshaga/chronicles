@@ -4,10 +4,14 @@ require "test_helper"
 # that fetches it. HTML pages, served verbatim, get the rail spliced in for the author
 # only — a reader's bytes are the stored bytes.
 class RedpenRailTest < ActionDispatch::IntegrationTest
+  # Spelled out: the mounted-helper proxy mis-merges an empty script_name against a
+  # two-segment mount path inside integration tests (fine in real requests).
+  def redpen_notes_path(path) = "/writing/redpen/notes?path=#{ERB::Util.url_encode(path)}"
+
   test "a reader's post has no rail" do
     get post_url(posts(:published), trailing_slash: true)
     assert_response :success
-    assert_select "turbo-frame#notes", count: 0
+    assert_select "turbo-frame#redpen_notes", count: 0
     assert_select "link[rel=stylesheet][href*=redpen]", count: 0
     assert_select "script[type=module]", text: 'import "redpen"', count: 0
     assert_select "link[rel=modulepreload][href*=redpen]", count: 0
@@ -17,14 +21,14 @@ class RedpenRailTest < ActionDispatch::IntegrationTest
     sign_in_as users(:nityesh)
     get post_url(posts(:published), trailing_slash: true)
     assert_response :success
-    assert_select "turbo-frame#notes[src=?][data-controller=redpen]", writing_notes_path(path: "/#{posts(:published).slug}/")
+    assert_select "turbo-frame#redpen_notes[src=?][data-controller=redpen]", redpen_notes_path("/#{posts(:published).slug}/")
     assert_select "link[rel=stylesheet][href*=redpen]"
   end
 
   test "the author's homepage has the rail too" do
     sign_in_as users(:nityesh)
     get root_url
-    assert_select "turbo-frame#notes[src=?]", writing_notes_path(path: "/")
+    assert_select "turbo-frame#redpen_notes[src=?]", redpen_notes_path("/")
   end
 
   test "an HTML page is served byte-for-byte to a reader" do
@@ -36,7 +40,7 @@ class RedpenRailTest < ActionDispatch::IntegrationTest
     sign_in_as users(:nityesh)
     get post_url(posts(:html_page), trailing_slash: true)
     assert_response :success
-    assert_select "turbo-frame#notes[src=?]", writing_notes_path(path: "/#{posts(:html_page).slug}/")
+    assert_select "turbo-frame#redpen_notes[src=?]", redpen_notes_path("/#{posts(:html_page).slug}/")
     assert_select "link[rel=stylesheet][href*=redpen]"
     assert_select "script[type=importmap]"
     assert_select "script[type=module]", text: 'import "redpen"'
@@ -50,6 +54,6 @@ class RedpenRailTest < ActionDispatch::IntegrationTest
     page.publish_now
     get post_url(page, trailing_slash: true)
     assert response.body.start_with?(page.raw_html)
-    assert_select "turbo-frame#notes"
+    assert_select "turbo-frame#redpen_notes"
   end
 end
