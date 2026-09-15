@@ -25,6 +25,10 @@ class Post < ApplicationRecord
   # bundle itself, at the address its relative links resolve against. Other drafts keep
   # their editor preview; nothing else changes for the writer.
   scope :viewable, ->(writer:) { writer ? published.or(where(type: "Explorable")) : published }
+  # The essays page's "In the typewriter": drafts promised in public, by title and excerpt.
+  # An excerpt is the promise — a draft without one is a note to self, not an announcement —
+  # and a publish stamp means it once ran, or is scheduled to, which is not "unwritten".
+  scope :in_the_typewriter, -> { articles.draft.where(published_at: nil).where.not(excerpt: [ nil, "" ]).order(created_at: :desc) }
 
   # Title and subtitle are single-line by design; squish out any newline that sneaks
   # past the editor (paste, older clients) so headlines never carry hard breaks.

@@ -481,8 +481,8 @@ a:hover { opacity: .8; }
 .ink-n { color: var(--n); } .ink-l { color: var(--l); }
 ::selection { background: var(--n); color: #fff; }
 /* The homepage reads in the body face; the chrome never dims a link on hover. */
-.home-template { font-family: var(--body); font-size: 18px; line-height: 1.55; }
-.home-template a:hover, .mast a:hover, .foot a:hover { opacity: 1; }
+.home-template, .shelf-template, .page-template { font-family: var(--body); font-size: 18px; line-height: 1.55; }
+.home-template a:hover, .shelf-template a:hover, .page-template a:hover, .mast a:hover, .foot a:hover { opacity: 1; }
 
 /* ---- Masthead (site-wide): brand with the two dots, kind-coloured nav, X, the CTA ---- */
 .mast { border-bottom: 1px solid var(--rule); background: var(--paper); }
@@ -712,9 +712,91 @@ button.door { background: transparent; color: var(--ink); cursor: pointer; }
 /* The reply, in place of the form: the same mono as the fine print, in Luo's ink. */
 .cta-envelope .confirm { font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--l); margin: 0; }
 
+/* ---- The shelves: one page per kind (apps, explorables, comics), the essays, and pages ---- */
+.ph { padding: 64px 0 36px; border-bottom: 2px solid var(--ink); }
+.ph .kick { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); margin-bottom: 14px; }
+.ph h1 { font-family: var(--display); font-weight: 400; font-size: clamp(46px, 7vw, 96px); line-height: .95; letter-spacing: -.025em; margin: 0 0 18px; max-width: 14ch; }
+.ph p { font-size: 21px; color: var(--ink-2); max-width: 58ch; margin: 0; }
+.ph p a { border-bottom: 1.5px solid var(--ink); }
+.ph p a:hover { color: var(--n); border-color: var(--n); }
+.shelf { padding: 56px 0; }
+.shelf-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
+.shelf-head h2 { font-family: var(--display); font-weight: 400; font-size: 44px; letter-spacing: -.02em; margin: 0; }
+.shelf-head .mono { color: var(--mute); letter-spacing: .08em; }
+.shelf-head .mono.ink-n { color: var(--n); }
+#tools { margin-top: 64px; }
+.shelf-head.typewriter { margin-top: 56px; }
+
+/* Apps: a card per app in print, its preview as the art, lifting on hover. */
+.machines { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.mach { border: 1px solid var(--ink); background: #fff; position: relative; overflow: hidden; display: flex; flex-direction: column; transition: transform .25s, box-shadow .25s; }
+.mach:hover { transform: translateY(-3px); box-shadow: 0 12px 0 -6px var(--k, var(--ink)); }
+.mach .art { aspect-ratio: 16 / 9; background: #111; position: relative; overflow: hidden; display: grid; place-items: center; }
+.mach .art video, .mach .art img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.mach .art .no { font-family: var(--display); font-size: 56px; letter-spacing: -.03em; color: var(--paper-2); }
+.mach .meta { padding: 14px 16px 16px; border-top: 1px solid var(--ink); background: var(--paper); }
+.mach .meta h4 { margin: 0 0 4px; font-family: var(--display); font-weight: 400; font-size: 24px; letter-spacing: -.01em; }
+.mach:hover .meta h4 { color: var(--n); }
+.mach .meta p { margin: 0 0 8px; font-size: 15px; color: var(--ink-2); }
+.mach .meta .mono { color: var(--mute); }
+
+/* Explorables and comics: three cards, fanned, the top one carrying the ship. */
+.decks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+.deck { position: relative; height: 250px; perspective: 900px; }
+.deck .card { position: absolute; inset: 0; border: 1px solid var(--ink); background: #fff; padding: 18px; transition: transform .35s cubic-bezier(.2, .7, .2, 1); transform-origin: bottom left; }
+.deck .card:nth-child(1) { transform: rotate(-4deg) translate(-6px, 8px); background: var(--paper-2); }
+.deck .card:nth-child(2) { transform: rotate(-2deg) translate(-3px, 4px); background: #F9F6EF; }
+.deck:hover .card:nth-child(1) { transform: rotate(-9deg) translate(-14px, 10px); }
+.deck:hover .card:nth-child(2) { transform: rotate(-4deg) translate(-7px, 5px); }
+.deck:hover .card:nth-child(3) { transform: rotate(1deg) translate(4px, -6px); }
+.deck .card h4 { font-family: var(--display); font-weight: 400; font-size: 26px; margin: 0 0 6px; letter-spacing: -.01em; }
+.deck:hover .card h4 { color: var(--k, var(--n)); }
+.deck .card p { font-size: 14px; color: var(--ink-2); margin: 0; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.deck .card .foot { position: absolute; left: 18px; right: 18px; bottom: 14px; display: flex; justify-content: space-between; gap: 12px; font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); }
+
+/* Essays: the current era and the typewriter on the left, the earlier eras on the right. */
+.essays { display: grid; grid-template-columns: 1.3fr 1fr; gap: 40px; align-items: start; }
+.essay-list { border-top: 1px solid var(--ink); }
+.essay-list > a, .essay-list > span { display: grid; grid-template-columns: 110px 1fr; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
+.essay-list a:hover h4 { color: var(--n); }
+.essay-list h4 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 24px; letter-spacing: -.01em; line-height: 1.15; }
+.essay-list p { margin: 4px 0 0; font-size: 15px; color: var(--ink-2); }
+.essay-list .mono { color: var(--mute); }
+.eras { display: flex; flex-direction: column; gap: 8px; }
+.era { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 16px; border: 1px solid var(--ink); background: var(--paper-2); font-family: var(--display); font-size: 20px; transition: all .15s; }
+.era:hover { background: var(--ink); color: var(--paper); }
+.era .mono { opacity: .7; white-space: nowrap; }
+.essays .aside { font-size: 15px; color: var(--mute); margin: 18px 0 0; }
+
+/* A page: its prose on the left, the house's numbers on the right. */
+.prose { max-width: 66ch; font-size: 19px; margin: 0; }
+.prose > * + * { margin-top: 1em; }
+.prose h2, .prose h3 { font-family: var(--display); font-weight: 400; font-size: 34px; letter-spacing: -.02em; margin: 40px 0 10px; line-height: 1.05; }
+.prose h3 { font-size: 26px; }
+.prose > h2:first-child, .prose > h3:first-child { margin-top: 0; }
+.prose a { color: inherit; text-decoration: none; border-bottom: 1.5px solid var(--ink); }
+.prose a:hover { color: var(--n); border-color: var(--n); opacity: 1; }
+.prose em { color: var(--mute); }
+.lineage { padding: 22px; border: 1px solid var(--ink); background: var(--paper-2); }
+.lineage.elsewhere { margin-top: 18px; }
+.lineage .k { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--mute); margin-bottom: 10px; }
+.lineage a { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--rule); font-family: var(--display); font-size: 20px; }
+.lineage a:last-child { border: 0; }
+.lineage a:hover { color: var(--n); }
+
 /* ---- Responsive ---- */
 @media (max-width: 860px) {
   :root { --rail: 58px; }
+  .machines, .decks, .essays { grid-template-columns: 1fr; }
+  .ph { padding: 44px 0 28px; }
+  .ph p { font-size: 18px; }
+  .shelf { padding: 40px 0; }
+  .shelf-head h2 { font-size: 34px; }
+  .essay-list > a, .essay-list > span { grid-template-columns: 84px 1fr; gap: 12px; }
+  .essay-list h4 { font-size: 21px; }
+  .era { font-size: 18px; }
+  .prose { font-size: 17px; }
+  .prose h2 { font-size: 28px; }
   .nav { gap: 14px; }
   .nav a:not(.cta):not(.admin-link) { display: none; }
   .hero .wrap { grid-template-columns: 1fr; }

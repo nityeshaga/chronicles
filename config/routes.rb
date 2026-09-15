@@ -22,6 +22,17 @@ Rails.application.routes.draw do
 
   get "tag/:slug", to: "tags#show", as: :tag
 
+  # One page per kind of thing shipped, and the essays by era. Named here, above the
+  # root catch-alls, which is also what reserves these names: Slug asks the router.
+  get "apps",        to: "shelves#apps",        as: :apps
+  get "explorables", to: "shelves#explorables", as: :explorables
+  get "comics",      to: "shelves#comics",      as: :comics
+  get "essays",      to: "shelves#essays",      as: :essays
+  # Tools are the second half of the apps page. Through the controller rather than a
+  # route-level redirect, because Slug asks the router which names are taken and the
+  # router doesn't recognize a redirect: a post could have quietly taken /tools/.
+  get "tools", to: "shelves#tools", as: :tools
+
   # Email signups from the homepage's subscribe section. Public + unauthenticated, so
   # it must sit above the catch-all root-slug route at the bottom.
   resources :subscribers, only: :create

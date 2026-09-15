@@ -28,6 +28,8 @@ class Ship < ApplicationRecord
   # What the reader sees: everything live, newest first. Same-day ships keep their
   # numbering order, so a batch shipped together reads top-down as it was logged.
   scope :log, -> { published.ordered }
+  # Skills and parts: the tools whose door one opens a repository.
+  scope :on_github, -> { where("check_it_out_url LIKE ?", "https://github.com/%") }
 
   def self.by_month = log.group_by { |ship| ship.shipped_on.beginning_of_month }
 

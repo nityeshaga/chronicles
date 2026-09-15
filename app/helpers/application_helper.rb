@@ -11,6 +11,10 @@ module ApplicationHelper
   def public_tag_path(tag)   = tag_path(tag, trailing_slash: true)
   def public_tag_url(tag)    = tag_url(tag, trailing_slash: true)
 
+  # The masthead underlines the page it is on. Compared without the trailing slash, which
+  # the request carries and the route helpers don't.
+  def on_page?(path) = request.path.chomp("/") == path.chomp("/")
+
   # Ghost rendered ~265 words/minute; match its "X min read" label. The editor bar counts
   # the same words at the same speed, so the number the writer watches climb is the number
   # the reader is promised — the speed rides onto the bar as data rather than being typed

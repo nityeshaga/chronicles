@@ -5,6 +5,10 @@ xml.urlset "xmlns" => "http://www.sitemaps.org/schemas/sitemap/0.9",
     xml.loc root_url
     xml.lastmod ghost_time(@home_lastmod) if @home_lastmod
   end
+  # The shelves: one page per kind, and the essays by era.
+  [ apps_url, explorables_url, comics_url, essays_url ].each do |shelf|
+    xml.url { xml.loc "#{shelf}/" }
+  end
   @pages.each do |page|
     xml.url do
       xml.loc public_post_url(page)

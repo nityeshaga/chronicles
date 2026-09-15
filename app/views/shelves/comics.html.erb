@@ -1,0 +1,14 @@
+<% content_for :body_class, "shelf-template" %>
+<% content_for :meta_title, "Comics — #{Setting.current.author_name}" %>
+
+<section class="ph"><div class="wrap">
+  <div class="kick">Comics · <%= pluralize @ships.size, "comic" %> · drawn with image models</div>
+  <h1>Ideas that deserve pictures.</h1>
+  <p>Graphic novels and tutorial comics, drawn with GPT-image-2 and friends, written by me. The first one is the reason this site got rebuilt: my blog could hold a post about it, but not the comic.</p>
+</div></section>
+
+<section class="shelf"><div class="wrap">
+  <div class="decks"><%= render partial: "shelves/deck", collection: @ships, as: :ship %></div>
+</div></section>
+
+<%= render "ships/subscribe" %>
