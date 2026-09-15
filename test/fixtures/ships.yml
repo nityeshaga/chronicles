@@ -30,3 +30,49 @@ drafted:
   title: A drafted ship
   built_by: luo
   status: draft
+
+# The shelves: an app with the log's oldest date and its newest number, a tool that lives on
+# X rather than GitHub, an explorable and a comic.
+cc:
+  number: 23
+  shipped_on: 2024-07-14
+  kind: app
+  title: Curated Connections.
+  blurb: Self-driving community software.
+  built_by: together
+  check_it_out_url: https://curatedconnections.io
+  status: published
+  published_at: <%= 1.day.ago.to_fs(:db) %>
+
+clock:
+  number: 11
+  shipped_on: 2026-07-23
+  kind: tool
+  title: A 24-hour clock for everything Luo does on its own.
+  built_by: luo
+  check_it_out_url: https://x.com/nityeshaga/status/2080289107377545423
+  x_status_id: "2080289107377545423"
+  status: published
+  published_at: <%= 3.weeks.ago.to_fs(:db) %>
+
+hotwire:
+  number: 20
+  shipped_on: 2026-09-09
+  kind: explorable
+  title: Hotwire, explored.
+  blurb: A deck you play, not a post you scroll.
+  built_by: together
+  check_it_out_url: https://nityesh.com/hotwire/
+  status: published
+  published_at: <%= 5.days.ago.to_fs(:db) %>
+
+markdown:
+  number: 1
+  shipped_on: 2026-04-27
+  kind: comic
+  title: The origins of Markdown, as a graphic novel.
+  built_by: nityesh
+  check_it_out_url: https://x.com/nityeshaga/status/2048679740895371348
+  x_status_id: "2048679740895371348"
+  status: published
+  published_at: <%= 4.months.ago.to_fs(:db) %>

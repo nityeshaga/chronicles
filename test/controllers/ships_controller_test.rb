@@ -6,7 +6,7 @@ class ShipsControllerTest < ActionDispatch::IntegrationTest
   test "the log lists published ships newest-first with their numbers, and no drafts" do
     get root_url
     assert_response :success
-    assert_equal [ "ship_#{ships(:phone).id}", "ship_#{ships(:essay).id}" ], css_select("article.ship").map { |a| a["id"] }
+    assert_equal %i[ phone hotwire essay clock markdown cc ].map { |name| "ship_#{ships(name).id}" }, css_select("article.ship").map { |a| a["id"] }
     assert_select "article.ship .when .no", text: "№ 019"
     assert_select "article.ship .when .no", text: "№ 016"
     assert_select "article.ship h3 a", text: ships(:drafted).title, count: 0
@@ -16,7 +16,9 @@ class ShipsControllerTest < ActionDispatch::IntegrationTest
     get root_url
     assert_select ".month h2", text: "Sep 2026"
     assert_select ".month h2", text: "Aug 2026"
-    assert_select ".month .count", text: "1 thing", count: 2
+    assert_select ".month h2", text: "Jul 2024"
+    assert_select ".month .count", text: "2 things", count: 1
+    assert_select ".month .count", text: "1 thing", count: 4
   end
 
   test "a ship wears its kind and links its title to where it lives" do
@@ -100,8 +102,8 @@ class ShipsControllerTest < ActionDispatch::IntegrationTest
       get root_url
     end
     assert_select ".hero .stat .big", text: /4\s*days ago/
-    assert_select ".hero .stat .big", text: /2\s*things/
-    assert_select ".hero .stat .big", text: Machine.all.size.to_s
+    assert_select ".hero .stat .big", text: /5\s*things/
+    assert_select ".hero .stat .big", text: "1"
   end
 
   # The old masthead forbade nav links because they were in-page anchors dressed as

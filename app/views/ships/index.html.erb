@@ -9,7 +9,7 @@
       <div class="stat"><div class="lab"><span class="tick"></span>Last one</div><div class="big"><%= days %><span class="unit"><%= "day".pluralize(days) %> ago</span></div></div>
     <% end %>
     <div class="stat"><div class="lab">In the last 6 months</div><div class="big"><%= @ships.count { |ship| ship.shipped_on >= 6.months.ago.to_date } %><span class="unit">things</span></div></div>
-    <div class="stat"><div class="lab">Apps running</div><div class="big"><%= Machine.all.size %></div></div>
+    <div class="stat"><div class="lab">Apps running</div><div class="big"><%= @ships.count(&:app?) %></div></div>
   </div>
 </div></section>
 

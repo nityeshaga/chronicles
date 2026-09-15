@@ -1,4 +1,4 @@
-# The first 22 ships, from db/seeds/ships.yml, with their media from a directory on disk.
+# The first 23 ships, from db/seeds/ships.yml, with their media from a directory on disk.
 #
 #   bin/rails ships:backfill MEDIA_DIR=/path/to/media
 #
@@ -6,7 +6,7 @@
 # that has since appeared, attaches media that was missing, and never mints a second copy.
 # Media already attached is left alone.
 namespace :ships do
-  desc "Create and publish the first 22 ships from db/seeds/ships.yml, attaching media from MEDIA_DIR"
+  desc "Create and publish the first 23 ships from db/seeds/ships.yml, attaching media from MEDIA_DIR"
   task backfill: :environment do
     media_dir = Pathname(ENV.fetch("MEDIA_DIR", "/Users/luo/work/nityesh-com-v2/media"))
     entries = YAML.load_file(Rails.root.join("db/seeds/ships.yml"))
