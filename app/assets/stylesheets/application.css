@@ -484,27 +484,28 @@ a:hover { opacity: .8; }
 .home-template, .shelf-template, .page-template { font-family: var(--body); font-size: 18px; line-height: 1.55; }
 .home-template a:hover, .shelf-template a:hover, .page-template a:hover, .mast a:hover, .foot a:hover { opacity: 1; }
 
-/* ---- Masthead (site-wide): brand with the two dots, kind-coloured nav, X, the CTA ---- */
-.mast { border-bottom: 1px solid var(--rule); background: var(--paper); }
-.mast .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+/* ---- Masthead (site-wide), two tiers: the brand and the CTA on one line, the kinds on a
+   quiet shelf below. It sticks to the top on frosted paper; under the writer's preview
+   strip it sticks just beneath the strip instead. ---- */
+.mast { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--paper) 92%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-bottom: 1px solid var(--ink); }
+body:has(.preview-strip) .mast { top: 40px; }
+.mast .top { display: flex; align-items: center; justify-content: space-between; height: 60px; }
 .brand { font-family: var(--display); font-size: 22px; letter-spacing: -.01em; display: flex; align-items: center; gap: 12px; white-space: nowrap; }
 .brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--n); box-shadow: 14px 0 0 var(--l); }
-.nav { display: flex; gap: 18px; align-items: center; white-space: nowrap; font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
-.nav a { padding: 6px 0; border-bottom: 2px solid transparent; color: var(--ink-2); white-space: nowrap; }
-.nav a.on { border-color: var(--ink); color: var(--ink); }
-.nav a:hover { color: var(--n); }
-.nav a[data-k] { border-bottom-width: 3px; }
-.nav a[data-k]:hover, .nav a[data-k].on { border-color: var(--k); color: var(--ink); }
-.nav a .ki { display: inline-block; width: 9px; height: 9px; border-radius: 2px; background: var(--k); margin-right: 7px; vertical-align: -1px; }
+.mast .cta { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; background: var(--ink); color: var(--paper); padding: 9px 14px; border-radius: 2px; white-space: nowrap; transition: background .15s; }
+.mast .cta:hover { background: var(--n); color: #fff; }
+.mast .cta .s { display: none; }
+.mast .tier2 { border-top: 1px solid var(--rule); }
+.nav { display: flex; gap: 22px; height: 38px; align-items: stretch; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+.nav a { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-2); white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .15s; }
+.nav a:hover { color: var(--ink); }
+.nav a.on { color: var(--ink); border-color: var(--k, var(--ink)); }
+.nav a[data-k]:hover { border-color: var(--k); }
+.nav .ki { display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: var(--k); }
 .nav a[data-k="explorable"] .ki { border-radius: 50%; }
-.nav a[data-k="tool"] .ki { transform: rotate(45deg); border-radius: 1px; }
-.nav a[data-k="chronicle"] .ki { width: 12px; height: 3px; border-radius: 2px; vertical-align: 2px; }
 .nav a[data-k="comic"] .ki { background: repeating-linear-gradient(90deg, var(--k) 0 3px, transparent 3px 5px), repeating-linear-gradient(0deg, var(--k) 0 3px, transparent 3px 5px); background-color: var(--k); }
-.nav .xlink { font-size: 15px; padding: 4px 6px; border-bottom: 2px solid transparent; }
-.nav .xlink:hover { color: var(--ink); border-color: var(--ink); }
-.nav .cta { background: var(--ink); color: var(--paper); padding: 8px 12px; border-radius: 2px; border: 0; }
-.nav .cta:hover { background: var(--n); color: #fff; }
-@media (max-width: 1180px) { .nav { gap: 12px; font-size: 11px; } }
+.nav a[data-k="chronicle"] .ki { width: 11px; height: 3px; border-radius: 2px; }
+.nav .about { margin-left: auto; color: var(--mute); }
 
 /* The kinds, each with a colour. An element inside .k-<kind> reads its own colour as --k. */
 .k-app { --k: var(--k-app); } .k-tool { --k: var(--k-tool); } .k-explorable { --k: var(--k-explorable); } .k-comic { --k: var(--k-comic); } .k-chronicle { --k: var(--k-chronicle); }
@@ -797,8 +798,6 @@ button.door { background: transparent; color: var(--ink); cursor: pointer; }
   .era { font-size: 18px; }
   .prose { font-size: 17px; }
   .prose h2 { font-size: 28px; }
-  .nav { gap: 14px; }
-  .nav a:not(.cta):not(.admin-link) { display: none; }
   .hero .wrap { grid-template-columns: 1fr; }
   .hero .stats { justify-content: flex-start; }
   .log .wrap, .month, .ship { column-gap: 22px; }
@@ -824,13 +823,18 @@ button.door { background: transparent; color: var(--ink); cursor: pointer; }
   .cta-envelope input { font-size: 18px; }
   .cta-envelope button { width: 100%; margin-top: 6px; }
 }
-/* A phone can't seat the brand and the CTA side by side (the prototype clipped the
-   wordmark under the button and spilled 11px past the viewport). Let the masthead
-   wrap: the brand takes its row, the CTA sits right on the next. */
-@media (max-width: 480px) {
-  .mast .wrap { height: auto; flex-wrap: wrap; row-gap: 10px; padding-top: 14px; padding-bottom: 14px; }
-  .brand { flex: 1 1 auto; }
-  .nav { margin-left: auto; }
+/* A phone shortens the CTA to one word so the brand keeps its line, and the shelf
+   scrolls sideways under a fade at the right edge — nothing hidden, nothing wrapped,
+   nothing spilling past the viewport. */
+@media (max-width: 600px) {
+  .mast .top { height: 56px; }
+  .brand { font-size: 20px; }
+  .mast .cta { padding: 8px 11px; font-size: 11px; }
+  .mast .cta .l { display: none; }
+  .mast .cta .s { display: inline; }
+  .nav { gap: 18px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 44px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 44px), transparent); }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav .about { margin-left: 0; padding-right: 32px; }
 }
 
 /* =========================================================================
