@@ -43,6 +43,12 @@ class Ship < ApplicationRecord
     super.presence || post&.public_url
   end
 
+  # The X post that announced it. The log's media frame opens here, because the preview
+  # is a trim of the full video that lives on X.
+  def x_url
+    "https://x.com/#{Setting.current.twitter_handle.delete_prefix("@")}/status/#{x_status_id}" if x_status_id.present?
+  end
+
   # What the log frames for this ship: a looping video, a still, the linked post's cover,
   # or nothing. The preview's own bytes decide, so the same attachment serves either way.
   def media_kind

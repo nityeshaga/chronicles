@@ -1,0 +1,36 @@
+<%# The airmail envelope: the subscribe form addressed in the two inks, postmarked the
+    first time someone writes on it. %>
+<section class="cta-envelope" id="subscribe"><div class="wrap">
+  <div class="env" data-controller="postmark" data-action="focusin->postmark#mark">
+    <div class="from">From<br><b>Nityesh &amp; Luo</b><br>nityesh.com · India</div>
+    <div class="stamps" aria-hidden="true">
+      <div class="pstamp n"><div class="face"><span>N</span><small>nityesh</small></div></div>
+      <div class="pstamp l"><div class="face"><span>L</span><small>luo</small></div></div>
+    </div>
+    <div class="postmark" aria-hidden="true">
+      <svg viewBox="0 0 132 132">
+        <circle cx="66" cy="66" r="62" fill="none" stroke="currentColor" stroke-width="2.2"/>
+        <circle cx="66" cy="66" r="44" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <defs><path id="pm-arc" d="M66 66 m-53 0 a53 53 0 1 1 106 0 a53 53 0 1 1 -106 0"/></defs>
+        <text><textPath href="#pm-arc" startOffset="2%">Sent when ready · nityesh.com · one email at a time ·</textPath></text>
+        <text class="mid" x="66" y="64" text-anchor="middle">N + L</text>
+        <text x="66" y="84" text-anchor="middle" style="font-size:8px">India</text>
+        <path class="waves" d="M-58 46 q14 -6 28 0 q14 6 26 0 M-58 66 q14 -6 28 0 q14 6 26 0 M-58 86 q14 -6 28 0 q14 6 26 0"/>
+      </svg>
+    </div>
+    <div class="addr">
+      <h2>Want the next one in your inbox?</h2>
+      <p>When a few new things pile up, I send one email with all of them. Something to use, something to read, and how it got made. No schedule, no fluff.</p>
+      <% if flash[:notice].present? %>
+        <%# HTML fallback for a JS-less signup — Turbo handles the happy path in-place. %>
+        <div id="subscribe_form">
+          <p class="confirm"><%= flash[:notice] %></p>
+          <div class="fine">One email at a time · unsubscribe anytime</div>
+        </div>
+      <% else %>
+        <% if flash[:alert].present? %><p class="fine error"><%= flash[:alert] %></p><% end %>
+        <%= render "subscribers/form" %>
+      <% end %>
+    </div>
+  </div>
+</div></section>
