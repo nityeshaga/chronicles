@@ -1,6 +1,7 @@
 <% content_for :body_class, @post.body_class %>
 
-<%= render "posts/post", post: @post %>
+<%# By kind: posts/_post for an article, pages/_page for a page. %>
+<%= render @post %>
 
 <%# Outside the fragment cache above — the pill must never be baked into the
     copy an anonymous reader is served. %>

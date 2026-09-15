@@ -1,0 +1,28 @@
+<%# A page (About, and any other): the title and excerpt as the page header, the body as
+    prose beside the house's numbers. No fragment cache — the numbers move on their own,
+    and they are in the ETag (see PostsController#show). %>
+<section class="ph"><div class="wrap">
+  <div class="kick">About this house</div>
+  <h1><%= page.title %></h1>
+  <% if page.excerpt.present? %><p><%= page.excerpt %></p><% end %>
+</div></section>
+
+<section class="shelf"><div class="wrap"><div class="essays">
+  <main class="prose gh-content" id="<%= dom_id page %>">
+    <%= HtmlCard.expand(CodeHighlighting.add(HeadingAnchors.add(page.body.to_s, ghost_version: page.ghost_version))) %>
+  </main>
+  <% numbers = page.house_numbers %>
+  <div>
+    <div class="lineage"><div class="k">The house, by the numbers</div>
+      <a href="<%= root_path %>"><span>Ships</span><span class="mono"><%= numbers[:ships] %></span></a>
+      <a href="/apps/"><span>Apps in print</span><span class="mono"><%= numbers[:apps] %></span></a>
+      <a href="/explorables/"><span>Explorables</span><span class="mono"><%= numbers[:explorables] %></span></a>
+      <a href="/essays/"><span>Essays, <%= pluralize numbers[:eras], "era" %></span><span class="mono"><%= numbers[:essays] %></span></a>
+      <a href="https://github.com/nityeshaga/chronicles"><span>Lines of Rails running this</span><span class="mono"><%= number_with_delimiter numbers[:lines] %></span></a>
+    </div>
+    <div class="lineage elsewhere"><div class="k">Elsewhere</div>
+      <a href="https://x.com/nityeshaga"><span>X · where ships get announced first</span><span class="mono">→</span></a>
+      <a href="https://github.com/nityeshaga"><span>GitHub</span><span class="mono">→</span></a>
+    </div>
+  </div>
+</div></div></section>
