@@ -1,0 +1,22 @@
+excerpt:
+  user: nityesh
+  path: /about/
+  selector: "#about > p:nth-of-type(1)"
+  snippet: "I write about building"
+  body: "This runs long. Two sentences."
+
+image:
+  user: nityesh
+  path: /about/
+  selector: "#about > img:nth-of-type(1)"
+  snippet: ""
+  body: "Swap for the newer headshot."
+  resolved_at: <%= 1.day.ago.iso8601 %>
+  resolution: "Swapped via update_post."
+
+homepage:
+  user: nityesh
+  path: /
+  selector: "body > header:nth-of-type(1)"
+  snippet: "Chronicles"
+  body: "Masthead feels cramped."

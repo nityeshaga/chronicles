@@ -24,6 +24,17 @@ class PostsController < ApplicationController
     # we add is a byte that wasn't in the design. html_safe is the point, not a hole:
     # raw_html is writable only by an authenticated writer, the same trust boundary
     # the Action Text body already sits behind. fresh_when above still ETags it.
-    render html: @post.raw_html.html_safe, layout: false if @post.is_a?(HtmlPage)
+    render html: html_page_document.html_safe, layout: false if @post.is_a?(HtmlPage)
   end
+
+  private
+    # The author gets the red pen on HTML pages too. The document owns its own <head>, so
+    # the rail is spliced in before </body> (or appended, if the document has none) — and
+    # only on the author's copy; a reader's bytes are the stored bytes.
+    def html_page_document
+      return @post.raw_html unless signed_in?
+
+      document, rail = @post.raw_html, render_to_string(partial: "writing/notes/standalone", formats: :html)
+      document.match?(%r{</body>}i) ? document.sub(%r{</body>}i) { "#{rail}</body>" } : document + rail
+    end
 end

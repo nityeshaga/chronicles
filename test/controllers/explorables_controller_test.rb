@@ -95,7 +95,9 @@ class ExplorablesControllerTest < ActionDispatch::IntegrationTest
 
     get "/hotwire/"
     assert_response :success
-    assert_equal INDEX, response.body
+    # The writer's copy carries the red pen spliced before </body>; the document itself is untouched.
+    assert response.body.start_with?(INDEX.split("</body>").first)
+    assert response.body.end_with?("</body></html>\n")
     get "/hotwire/shared/style.css"
     assert_response :success
   end

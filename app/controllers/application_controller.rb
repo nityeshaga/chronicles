@@ -35,11 +35,17 @@ class ApplicationController < ActionController::Base
       response.set_header("X-Robots-Tag", "noindex") unless request.host == Setting.current.production_host
     end
 
+    # The path as the browser sent it. Rack strips the trailing slash from PATH_INFO;
+    # ORIGINAL_FULLPATH keeps it — and the slash is canonical here, so anything that
+    # names a page (a red-pen note, the slash redirect) reads this, not request.path.
+    def requested_path
+      (request.env["ORIGINAL_FULLPATH"] || request.fullpath).split("?", 2).first
+    end
+    helper_method :requested_path
+
     def redirect_to_trailing_slash
       return unless request.get? || request.head?
-      # Rack strips the trailing slash from PATH_INFO; ORIGINAL_FULLPATH keeps it, so
-      # detect the raw form there but redirect using the normalized request.path.
-      raw_path = (request.env["ORIGINAL_FULLPATH"] || request.fullpath).split("?", 2).first
+      raw_path = requested_path
       return if raw_path == "/" || raw_path.end_with?("/") || File.extname(raw_path).present?
 
       path = request.path

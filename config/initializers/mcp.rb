@@ -52,6 +52,12 @@ MCP_SERVER_INSTRUCTIONS = -> do
   another site is left alone and reported, and a rename keeps a self-referential one
   correct). Documents saved through the writing UI are never screened or injected — this
   MCP path is the only one that touches the bytes.
+
+  The author leaves red-pen notes on the live site: feedback pinned to one element of one
+  page. list_notes returns the open ones with the page path, a CSS selector and a text
+  snippet of the element. Do what the note asks through the tools above (or say what it
+  would take), then resolve_note with one line on what changed — it appears under the note
+  on the page. Check list_notes at the start of a session.
   INSTRUCTIONS
 end
 
@@ -96,6 +102,10 @@ Rails.application.config.after_initialize do
     # their own — so unlike an embed, a card is still addressable after it lands in a post.
     server.register_tool(CreateHtmlCardTool)
     server.register_tool(UpdateHtmlCardTool)
+
+    # The author's red-pen notes on live pages: read them, do the work, resolve them.
+    server.register_tool(ListNotesTool)
+    server.register_tool(ResolveNoteTool)
 
     Rails.logger.info "MCP Server: Registered #{server.tools.keys.size} tools: #{server.tools.keys.join(', ')}"
   end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_10_060000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_15_120000) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.text "body"
     t.datetime "created_at", null: false
@@ -87,6 +87,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_10_060000) do
     t.integer "user_id", null: false
     t.index ["last_activity_at"], name: "index_mcp_sessions_on_last_activity_at"
     t.index ["user_id"], name: "index_mcp_sessions_on_user_id"
+  end
+
+  create_table "notes", force: :cascade do |t|
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.string "path", null: false
+    t.text "resolution"
+    t.datetime "resolved_at"
+    t.string "selector", null: false
+    t.string "snippet"
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["user_id", "path"], name: "index_notes_on_user_id_and_path"
+    t.index ["user_id"], name: "index_notes_on_user_id"
   end
 
   create_table "oauth_access_grants", force: :cascade do |t|
@@ -224,6 +238,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_10_060000) do
   add_foreign_key "api_tokens", "users"
   add_foreign_key "explorable_assets", "posts", column: "explorable_id"
   add_foreign_key "mcp_sessions", "users"
+  add_foreign_key "notes", "users"
   add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
   add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
   add_foreign_key "sessions", "users"
