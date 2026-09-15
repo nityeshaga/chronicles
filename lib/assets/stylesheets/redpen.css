@@ -113,3 +113,13 @@
   .redpen-toggle { right: 12px; bottom: 12px; }
   .redpen-orphans { right: 12px; left: 12px; width: auto; }
 }
+
+/* The author's way back to the writing room: a pill above the red-pen toggle, only ever
+   rendered for the signed-in author, so readers never see admin chrome in the nav. */
+.redpen-dashboard {
+  position: fixed; right: 18px; bottom: 60px; z-index: 2147483001;
+  font: 600 11px/1 ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase;
+  padding: 9px 12px; border-radius: 999px; background: #16130F; color: #F4EFE6; text-decoration: none;
+  box-shadow: 0 2px 10px rgba(0,0,0,.18);
+}
+.redpen-dashboard:hover { background: #E8471C; color: #fff; }

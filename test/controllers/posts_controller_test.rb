@@ -1,13 +1,14 @@
 require "test_helper"
 
 class PostsControllerTest < ActionDispatch::IntegrationTest
-  test "the masthead offers the dashboard to the signed-in writer only" do
+  test "the dashboard pill sits with the red pen, for the signed-in writer only" do
     get root_url
-    assert_select ".nav a[href=?]", "/writing/", count: 0
+    assert_select "a[href=?]", "/writing/", count: 0
 
     sign_in_as users(:nityesh)
     get root_url
-    assert_select ".nav a[href=?]", "/writing/"
+    assert_select ".nav a[href=?]", "/writing/", count: 0
+    assert_select "a.redpen-dashboard[href=?]", "/writing/"
   end
 
   test "an article offers its editor to the signed-in writer only" do
@@ -25,7 +26,7 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:nityesh)
 
     get root_url
-    assert_select ".nav a.admin-link[href=?]", "/writing/"
+    assert_select "a.redpen-dashboard.admin-link[href=?]", "/writing/"
 
     get "/a-published-post/"
     assert_select "a.edit-pill.admin-link[href=?]", edit_writing_post_path(posts(:published))

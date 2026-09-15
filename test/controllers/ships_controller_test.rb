@@ -7,8 +7,7 @@ class ShipsControllerTest < ActionDispatch::IntegrationTest
     get root_url
     assert_response :success
     assert_equal %i[ phone hotwire essay clock markdown cc ].map { |name| "ship_#{ships(name).id}" }, css_select("article.ship").map { |a| a["id"] }
-    assert_select "article.ship .when .no", text: "No. 019"
-    assert_select "article.ship .when .no", text: "No. 016"
+    assert_select "article.ship .when .no", count: 0
     assert_select "article.ship h3 a", text: ships(:drafted).title, count: 0
   end
 
@@ -71,7 +70,11 @@ class ShipsControllerTest < ActionDispatch::IntegrationTest
 
   test "the how-I-built-this door is dashed until the post exists, then opens it" do
     get root_url
-    assert_select "#ship_#{ships(:phone).id} .door.empty", text: "How I built this"
+    assert_select "#ship_#{ships(:phone).id} .door.empty", count: 0   # a reader never sees the gap
+
+    sign_in_as users(:nityesh)
+    get root_url
+    assert_select "#ship_#{ships(:phone).id} .door.empty.admin-link", text: "How I built this"
 
     ships(:phone).update!(how_built_post: posts(:published))
     get root_url
