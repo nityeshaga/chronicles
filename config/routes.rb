@@ -116,7 +116,10 @@ Rails.application.routes.draw do
   # explorable's front door and goes through posts#show like every page; anything deeper
   # is one of its files. format: false so "decks/10-drive.html" arrives whole rather than
   # as "10-drive" in the "html" format.
-  get ":slug/*path", to: "explorables#show", as: :explorable_asset, format: false
+  # Active Storage draws its own routes after these, so the slug must never be "rails":
+  # otherwise /rails/active_storage/... lands here and every upload 404s.
+  get ":slug/*path", to: "explorables#show", as: :explorable_asset, format: false,
+    constraints: { slug: /(?!rails\z)[^\/]+/ }
 
   # Public post pages live at the root — same slugs Ghost served. Keep this LAST so it
   # doesn't shadow the named routes above.
