@@ -4,7 +4,8 @@
 #
 # Idempotent: a ship is found by its number, so a re-run updates the fields, links a post
 # that has since appeared, attaches media that was missing, and never mints a second copy.
-# Media already attached is left alone.
+# Media already attached is left alone unless REPLACE_MEDIA=1, which re-attaches every
+# preview and poster named in the seeds — the way to roll out a better encode.
 namespace :ships do
   desc "Create and publish the first 23 ships from db/seeds/ships.yml, attaching media from MEDIA_DIR"
   task backfill: :environment do
@@ -17,15 +18,16 @@ namespace :ships do
 
       if entry["post"]
         ship.post = Post.find_by(slug: entry["post"])
-        warn "№ #{entry["number"]}: no post with slug #{entry["post"]} yet — left unlinked" unless ship.post
+        warn "No. #{entry["number"]}: no post with slug #{entry["post"]} yet — left unlinked" unless ship.post
       end
 
       ship.save!
-      attach(ship.preview, media_dir.join(entry["preview"])) if entry["preview"] && !ship.preview.attached?
-      attach(ship.poster, media_dir.join(entry["poster"])) if entry["poster"] && !ship.poster.attached?
+      replace = ENV["REPLACE_MEDIA"] == "1"
+      attach(ship.preview, media_dir.join(entry["preview"])) if entry["preview"] && (replace || !ship.preview.attached?)
+      attach(ship.poster, media_dir.join(entry["poster"])) if entry["poster"] && (replace || !ship.poster.attached?)
       ship.publish if ship.draft?
 
-      puts format("№ %03d  %-10s  %-8s  %s", ship.number, ship.kind, ship.media_kind, ship.title)
+      puts format("No. %03d  %-10s  %-8s  %s", ship.number, ship.kind, ship.media_kind, ship.title)
     end
 
     ships = Ship.where(number: entries.map { |e| e["number"] })

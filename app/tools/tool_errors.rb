@@ -10,6 +10,6 @@ module ToolErrors
   IS_AN_EXPLORABLE = { error: "That's an explorable: a bundle of files, not one document. Use update_explorable (send index.html in files to change the front document)." }.freeze
   NOT_AN_EXPLORABLE = { error: "That's not an explorable. Use update_html_page for an HTML page, or update_post for a post or page." }.freeze
   NOT_AN_HTML_PAGE = { error: "That's a regular post or page, not an HTML page. Use update_post to edit it." }.freeze
-  SHIP_NOT_FOUND = { error: "Ship not found. Use list_ships to find the id (the id, not the № number)." }.freeze
+  SHIP_NOT_FOUND = { error: "Ship not found. Use list_ships to find the id (the id, not the No. number)." }.freeze
   IS_AN_HTML_PAGE = { error: "That's an HTML page: its body is a whole stored HTML document, not Action Text. Use update_html_page to edit it." }.freeze
 end

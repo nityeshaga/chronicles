@@ -7,8 +7,8 @@ class ShipsControllerTest < ActionDispatch::IntegrationTest
     get root_url
     assert_response :success
     assert_equal %i[ phone hotwire essay clock markdown cc ].map { |name| "ship_#{ships(name).id}" }, css_select("article.ship").map { |a| a["id"] }
-    assert_select "article.ship .when .no", text: "№ 019"
-    assert_select "article.ship .when .no", text: "№ 016"
+    assert_select "article.ship .when .no", text: "No. 019"
+    assert_select "article.ship .when .no", text: "No. 016"
     assert_select "article.ship h3 a", text: ships(:drafted).title, count: 0
   end
 
@@ -34,7 +34,7 @@ class ShipsControllerTest < ActionDispatch::IntegrationTest
 
     get root_url
     assert_select "a.frame[href=?]", "https://x.com/nityeshaga/status/2098484853939597670" do
-      assert_select "video[autoplay][muted][loop][playsinline][src=?][poster=?]", ship.preview_path, ship.poster_path
+      assert_select "video[muted][loop][playsinline][preload=none][data-controller=lazy-video][data-src=?][poster=?]", ship.preview_path, ship.poster_path
       assert_select ".watch", text: "Watch the full one on X"
     end
   end

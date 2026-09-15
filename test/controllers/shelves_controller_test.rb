@@ -10,7 +10,7 @@ class ShelvesControllerTest < ActionDispatch::IntegrationTest
     assert_select ".machines a.mach[href=?]", "https://curatedconnections.io" do
       assert_select ".meta h4", text: "Curated Connections."
       assert_select ".meta p", text: "Self-driving community software."
-      assert_select ".meta .mono", text: "Shipped 14 Jul 2024 · № 023"
+      assert_select ".meta .mono", text: "Shipped 14 Jul 2024 · No. 023"
     end
     assert_select ".machines a.mach", count: 1
     assert_select ".machines", text: /#{ships(:drafted).title}/, count: 0
@@ -18,11 +18,11 @@ class ShelvesControllerTest < ActionDispatch::IntegrationTest
 
   test "an app card's art is its preview, or its number when it has none" do
     get "/apps/"
-    assert_select "#ship_#{ships(:cc).id} .art .no", text: "№ 023"
+    assert_select "#ship_#{ships(:cc).id} .art .no", text: "No. 023"
 
     ships(:cc).preview.attach(io: StringIO.new("mp4".b), filename: "loop.mp4", content_type: "video/mp4")
     get "/apps/"
-    assert_select "#ship_#{ships(:cc).id} .art video[autoplay][muted][loop][playsinline][src=?]", ships(:cc).preview_path
+    assert_select "#ship_#{ships(:cc).id} .art video[muted][loop][playsinline][preload=none][data-controller=lazy-video][data-src=?]", ships(:cc).preview_path
   end
 
   test "skills and parts are the tools that live on GitHub, each pointing at its log entry" do
@@ -30,7 +30,7 @@ class ShelvesControllerTest < ActionDispatch::IntegrationTest
     assert_select "#tools h2", text: "Skills & parts."
     assert_select "#tools + .essay-list a", count: 1
     assert_select "#tools + .essay-list a[href=?]", "/#ship_#{ships(:phone).id}" do
-      assert_select ".mono", text: "№ 019"
+      assert_select ".mono", text: "No. 019"
       assert_select "h4", text: ships(:phone).title
     end
     assert_select "#tools + .essay-list", text: /#{ships(:clock).title}/, count: 0
@@ -51,7 +51,7 @@ class ShelvesControllerTest < ActionDispatch::IntegrationTest
     assert_select ".decks a.deck[href=?]", "https://nityesh.com/hotwire/" do
       assert_select ".card", count: 3
       assert_select ".card h4", text: "Hotwire, explored."
-      assert_select ".card .foot span", text: "Deck · № 020"
+      assert_select ".card .foot span", text: "Deck · No. 020"
       assert_select ".card .foot span", text: "9 Sep 2026"
     end
     assert_select ".decks a.deck", count: 1
@@ -63,7 +63,7 @@ class ShelvesControllerTest < ActionDispatch::IntegrationTest
     assert_select ".ph .kick", text: "Comics · 1 comic · drawn with image models"
     assert_select ".decks a.deck[href=?]", ships(:markdown).check_it_out_url do
       assert_select ".card h4", text: ships(:markdown).title
-      assert_select ".card .foot span", text: "Comic · № 001"
+      assert_select ".card .foot span", text: "Comic · No. 001"
     end
     assert_select ".decks a.deck", count: 1
   end
