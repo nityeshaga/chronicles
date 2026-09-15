@@ -5,6 +5,6 @@
   <div class="card">
     <h4><%= ship.title %></h4>
     <% if ship.blurb.present? %><p><%= ship.blurb %></p><% end %>
-    <div class="foot"><span><%= ship.explorable? ? "Deck" : "Comic" %> · No. <%= format "%03d", ship.number %></span><span><%= ship.shipped_on.strftime("%-d %b %Y") %></span></div>
+    <div class="foot"><span><%= ship.explorable? ? "Deck" : "Comic" %></span><span><%= ship.shipped_on.strftime("%-d %b %Y") %></span></div>
   </div>
 </a>

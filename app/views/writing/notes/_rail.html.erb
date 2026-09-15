@@ -4,6 +4,7 @@
     re-render of its contents. %>
 <%= stylesheet_link_tag "redpen" %>
 <%= javascript_import_module_tag "redpen" %>
+<a class="redpen-dashboard admin-link" href="/writing/">Dashboard</a>
 <turbo-frame id="notes" src="<%= writing_notes_path(path: requested_path) %>" class="redpen"
              data-controller="redpen"
              data-action="turbo:frame-load->redpen#pin resize@window->redpen#pin keydown@document->redpen#keydown">

@@ -1,7 +1,6 @@
 <%# locals: (ship:, age:) %>
 <article class="ship rise k-<%= ship.kind %>" id="<%= dom_id ship %>" style="--age:<%= age %>">
   <div class="when">
-    <div class="no">No. <%= format "%03d", ship.number %></div>
     <div class="d"><%= ship.shipped_on.day %></div>
     <div class="m"><%= ship.shipped_on.strftime("%b %Y") %></div>
   </div>
@@ -44,7 +43,7 @@
       <% if ship.how_built_post %>
         <a class="door" href="<%= public_post_path(ship.how_built_post) %>">How I built this <span class="arr">→</span></a>
       <% elsif !ship.chronicle? %>
-        <span class="door empty">How I built this</span>
+        <% if signed_in? %><span class="door empty admin-link">How I built this</span><% end %>
       <% end %>
       <span class="by">
         <%= built_by_label(ship) %>

@@ -32,7 +32,6 @@
             <a href="/comics/" class="k-comic <%= "on" if on_page?(comics_path) %>" data-k="comic"><span class="ki"></span>Comics</a>
             <a href="/essays/" class="k-chronicle <%= "on" if on_page?(essays_path) %>" data-k="chronicle"><span class="ki"></span>Essays</a>
             <a href="/about/" class="<%= "on" if on_page?("/about") %>">About</a>
-            <% if signed_in? %><a class="admin-link" href="/writing/">Dashboard</a><% end %>
             <a href="https://x.com/nityeshaga" class="xlink" title="@nityeshaga on X">𝕏</a>
             <a class="cta" href="/#subscribe">Get new stuff by email</a>
           </nav>

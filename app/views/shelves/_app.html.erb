@@ -10,12 +10,12 @@
     <% when :cover %>
       <img src="<%= ship.post.feature_image_url %>" alt="">
     <% else %>
-      <span class="no">No. <%= format "%03d", ship.number %></span>
+      <span class="no"><%= ship.kind.titleize %></span>
     <% end %>
   </div>
   <div class="meta">
     <h4><%= ship.title %></h4>
     <% if ship.blurb.present? %><p><%= ship.blurb %></p><% end %>
-    <span class="mono">Shipped <%= ship.shipped_on.strftime("%-d %b %Y") %> · No. <%= format "%03d", ship.number %></span>
+    <span class="mono">Shipped <%= ship.shipped_on.strftime("%-d %b %Y") %></span>
   </div>
 </a>
