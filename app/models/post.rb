@@ -57,6 +57,17 @@ class Post < ApplicationRecord
 
   def to_param = slug
 
+  # The address a reader visits: absolute, on the production host, with the trailing
+  # slash Ghost served and the site still 301s to.
+  def public_url
+    Rails.application.routes.url_helpers.post_url(
+      self,
+      host: Setting.current.production_host,
+      protocol: "https",
+      trailing_slash: true
+    )
+  end
+
   # Came over from Ghost: the importer is the only writer of raw_source. What an imported
   # post still owes the world is its old anchors, and which Ghost minted them decides their
   # shape — see HeadingAnchors. Ghost's renderer read a missing version as 4.0; so do we.

@@ -1,0 +1,32 @@
+# Three ships: a live tool with a video-style entry, a live chronicle that points at a
+# post (so its door and cover derive from the post), and a draft with no number yet.
+phone:
+  number: 19
+  shipped_on: 2026-09-11
+  kind: tool
+  title: Luo can take a phone call now.
+  blurb: I used GPT-Live-1 to give Luo a voice.
+  built_by: together
+  check_it_out_url: https://github.com/nityeshaga/claude-home-base
+  prompt: Read how Nityesh gave his agent a phone line and propose the smallest version I could run.
+  x_status_id: "2098484853939597670"
+  status: published
+  published_at: <%= 4.days.ago.to_fs(:db) %>
+
+essay:
+  number: 16
+  shipped_on: 2026-08-29
+  kind: chronicle
+  title: One line that made Opus 5 usable for me.
+  blurb: The three magic words.
+  built_by: nityesh
+  post: published
+  status: published
+  published_at: <%= 2.weeks.ago.to_fs(:db) %>
+
+drafted:
+  shipped_on: 2026-09-14
+  kind: app
+  title: A drafted ship
+  built_by: luo
+  status: draft
