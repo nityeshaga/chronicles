@@ -39,6 +39,7 @@ class ExplorablesControllerTest < ActionDispatch::IntegrationTest
     get "/hotwire/shared/style.css"
     assert_response :success
     assert_equal "text/css", response.media_type
+    assert_equal "text/css; charset=utf-8", response.content_type
     assert_equal "body{color:red}", response.body
 
     get "/hotwire/decks/10-drive.html"
@@ -52,7 +53,7 @@ class ExplorablesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "text/javascript", response.media_type
 
     get "/hotwire/img/pixel.png"
-    assert_equal "image/png", response.media_type
+    assert_equal "image/png", response.content_type
     assert_equal "\x89PNG\r\n\x1a\n".b, response.body.b
   end
 

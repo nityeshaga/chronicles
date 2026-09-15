@@ -16,6 +16,6 @@ class ExplorablesController < ApplicationController
     fresh_when asset
     return if performed?
 
-    send_data asset.content, type: asset.content_type, disposition: :inline
+    send_data asset.content, type: asset.mime_type, disposition: :inline
   end
 end

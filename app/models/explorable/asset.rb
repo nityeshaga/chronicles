@@ -28,6 +28,16 @@ class Explorable::Asset < ApplicationRecord
 
   def size = content.to_s.bytesize
 
+  # What goes in the Content-Type header. Text is declared UTF-8 — a deck or a script with
+  # a curly quote in it must not depend on the browser guessing, and nosniff is on.
+  def mime_type
+    text? ? "#{content_type}; charset=utf-8" : content_type
+  end
+
+  def text?
+    content_type.start_with?("text/") || content_type.in?(%w[ application/json application/javascript image/svg+xml application/manifest+json ])
+  end
+
   private
     def derive_content_type
       self.content_type = Marcel::MimeType.for(name: File.basename(path.to_s), declared_type: content_type)
