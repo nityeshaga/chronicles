@@ -10,6 +10,17 @@
       "line": 17,
       "confidence": "Weak",
       "note": "Intended. An HtmlCard's content is the author's own hand-written markup, served bare so the editor canvas can frame it \u2014 the same trust boundary PostsController already extends to HtmlPage#raw_html (render html: ... .html_safe). The action is auth-gated (Writing::BaseController), the sgid lookup is restricted to HtmlCard, and the frame is sandboxed without allow-same-origin with a CSP sandbox directive on the response. See html_card.rb's header: the boundary is who can write, not what renders."
+    },
+    {
+      "warning_type": "Cross-Site Scripting",
+      "warning_code": 4,
+      "fingerprint": "e1600646a68860015377039102e4dfec084672f1e7705d45f63e2ed87308a71a",
+      "check_name": "LinkToHref",
+      "message": "Potentially unsafe model attribute in `link_to` href",
+      "file": "app/views/ships/_ship.html.erb",
+      "line": 10,
+      "confidence": "Weak",
+      "note": "Intended. A ship's check_it_out_url is where the thing shipped lives, written by the author over an auth-gated MCP tool, never by a reader. The real guard is in the model: Ship validates the URL as http(s) with a host, so a javascript: or data: scheme cannot be saved (test/models/ship_test.rb). Same trust boundary as HtmlPage#raw_html."
     }
   ],
   "brakeman_version": "8.0.6"

@@ -21,6 +21,8 @@ class Ship < ApplicationRecord
 
   validates :title, :shipped_on, presence: true
   validates :number, uniqueness: true, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
+  # Door 1 is rendered straight into an href, so only a web address may be saved there.
+  validates :check_it_out_url, format: { with: %r{\Ahttps?://[^\s/]+\S*\z}i, message: "must start with http:// or https://" }, allow_blank: true
 
   scope :ordered, -> { order(shipped_on: :desc, number: :desc, id: :desc) }
   # What the reader sees: everything live, newest first. Same-day ships keep their

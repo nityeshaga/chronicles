@@ -102,3 +102,18 @@ class ShipTest < ActiveSupport::TestCase
     assert ship.errors[:title].any? && ship.errors[:shipped_on].any? && ship.errors[:kind].any? && ship.errors[:built_by].any?
   end
 end
+
+class ShipCheckItOutUrlTest < ActiveSupport::TestCase
+  test "door one only takes a web address" do
+    ship = Ship.new(title: "A thing", shipped_on: Date.new(2026, 9, 15), kind: "tool", built_by: "luo")
+    ship.check_it_out_url = "javascript:alert(1)"
+    assert_not ship.valid?
+    assert_includes ship.errors[:check_it_out_url], "must start with http:// or https://"
+
+    ship.check_it_out_url = "https://github.com/nityeshaga/claude-home-base"
+    assert ship.valid?
+
+    ship.check_it_out_url = ""
+    assert ship.valid?
+  end
+end
