@@ -109,18 +109,26 @@ class ShipsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".hero .stat .big", text: "1"
   end
 
-  # The old masthead forbade nav links because they were in-page anchors dressed as
-  # destinations. Now they are destinations — one page per kind — so the test flips:
-  # the log's masthead names every shelf. (PR C fills the pages behind them.)
-  test "the masthead nav names the shelves, X, and the email CTA" do
+  # The masthead is two tiers: the brand and the email CTA on the first line, the
+  # shelf of kinds on the second with About parked at its far end. Tools lives on
+  # the apps page and X in the footer, so neither gets a masthead link.
+  test "the masthead carries the brand and the email CTA above a shelf of the kinds" do
     get root_url
-    assert_select ".nav a[href=?]", "/", text: "Latest"
-    assert_select ".nav a.on", text: "Latest"
-    %w[ /apps/ /apps/#tools /explorables/ /comics/ /essays/ /about/ ].each do |href|
-      assert_select ".nav a[href=?]", href
+    assert_select ".mast .top a.brand[href=?]", "/"
+    assert_select ".mast .top a.cta[href=?]", "/#subscribe" do
+      assert_select ".l", text: "Get new stuff by email"
+      assert_select ".s", text: "Subscribe"
     end
-    assert_select ".nav a.xlink[href=?]", "https://x.com/nityeshaga"
-    assert_select ".nav a.cta[href=?]", "/#subscribe"
+    assert_select ".mast .nav a", count: 6
+    assert_select ".nav a[href=?]", "/", text: "Latest"
+    assert_select ".nav a.on", count: 1
+    assert_select ".nav a.on", text: "Latest"
+    %w[ /apps/ /explorables/ /comics/ /essays/ ].each do |href|
+      assert_select ".nav a[data-k][href=?] .ki", href
+    end
+    assert_select ".nav a.about[href=?]", "/about/"
+    assert_select ".mast a[href=?]", "/apps/#tools", count: 0
+    assert_select ".mast a[href^=?]", "https://x.com", count: 0
   end
 
   test "the footer links the feed and the source" do
