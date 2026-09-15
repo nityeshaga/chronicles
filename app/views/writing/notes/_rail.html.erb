@@ -1,0 +1,10 @@
+<%# The red pen. Rendered only for the signed-in author; the frame pulls the page's
+    notes on its own, so the reader's copy of the page carries none of this — not the
+    stylesheet, not the module. The controller lives on the frame, which survives every
+    re-render of its contents. %>
+<%= stylesheet_link_tag "redpen" %>
+<%= javascript_import_module_tag "redpen" %>
+<turbo-frame id="notes" src="<%= writing_notes_path(path: requested_path) %>" class="redpen"
+             data-controller="redpen"
+             data-action="turbo:frame-load->redpen#pin resize@window->redpen#pin keydown@document->redpen#keydown">
+</turbo-frame>

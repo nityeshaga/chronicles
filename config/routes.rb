@@ -90,6 +90,12 @@ Rails.application.routes.draw do
     resources :api_tokens, only: %i[ create destroy ]
     resources :connected_apps, only: %i[ destroy ]
     resources :subscribers, only: %i[ index ]
+    # The red pen: notes pinned to elements of public pages, read back by the agent over
+    # MCP. Under /writing so no post can lose its slug to them. Resolve/reopen is CRUD on
+    # a resolution, not a verb on the note.
+    resources :notes, only: %i[ index create destroy ] do
+      resource :resolution, only: %i[ create destroy ]
+    end
   end
 
   # Ghost's author archive had ~zero traffic; keep old inbound links resolving.

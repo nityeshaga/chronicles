@@ -1,0 +1,15 @@
+<%# The composer. Hidden until the controller captures a click, which fills the selector
+    and snippet fields; the author only ever types the body. A plain Rails form — Turbo
+    submits it and the redirect repaints the frame. %>
+<%= form_with model: [ :writing, note ], class: "redpen-composer", data: { redpen_target: "composer" } do |form| %>
+  <%= form.hidden_field :path %>
+  <%= form.hidden_field :selector, data: { redpen_target: "selector" } %>
+  <%= form.hidden_field :snippet,  data: { redpen_target: "snippet" } %>
+  <div class="redpen-composer__target" data-redpen-target="composerTarget"></div>
+  <%= form.text_area :body, required: true, rows: 3, placeholder: "What should change here?",
+        data: { redpen_target: "body", action: "keydown.meta+enter->redpen#submit keydown.ctrl+enter->redpen#submit" } %>
+  <div class="redpen-note__actions">
+    <button type="button" class="redpen-btn redpen-btn--quiet" data-action="redpen#close">Cancel</button>
+    <%= form.submit "Save", class: "redpen-btn redpen-btn--primary" %>
+  </div>
+<% end %>
