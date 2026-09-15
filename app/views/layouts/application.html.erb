@@ -26,7 +26,7 @@
           <h1 class="wordmark"><a href="<%= root_path %>"><%= wordmark(Setting.current.site_title) %></a></h1>
           <nav class="mast-nav">
             <% if signed_in? %><a class="admin-link" href="/writing/">Dashboard</a><% end %>
-            <a class="mast-subscribe" href="/#subscribe">Get the next launch</a>
+            <a class="mast-subscribe" href="/#subscribe">Subscribe</a>
           </nav>
         </div>
       </header>
@@ -35,7 +35,7 @@
 
       <footer class="site-footer">
         <div class="wrap">
-          <div class="foot-kicker mono">Est. 2017 · Written, drawn &amp; compiled in Kolkata</div>
+          <div class="foot-kicker mono">Est. 2017 · Written, drawn &amp; compiled in India</div>
           <div class="mono">❦ <%= Setting.current.author_name %> · built with Luo, my AI agent, on a spare MacBook Air</div>
           <div class="links mono">
             <a href="https://myspool.xyz">Spool</a>

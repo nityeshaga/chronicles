@@ -14,7 +14,7 @@
   <div class="wrap hero-grid">
     <figure class="portrait rise" style="--d:1">
       <%= image_tag "/content/images/2024/12/nityesh-headshot-1.jpeg", alt: Setting.current.author_name, class: "photo" %>
-      <figcaption>The proprietor, at his desk.</figcaption>
+      <figcaption>Me, at my desk.</figcaption>
     </figure>
     <div class="hero-copy rise" style="--d:2">
       <p class="lead">Hi, I'm Nityesh. I build software with a lot of help from AI. This website is my experiment in the next shape of personal publishing: a publishing house with one employee and no deadlines.</p>
@@ -37,7 +37,7 @@
   </div>
   <div class="wrap">
     <div class="sec-label rise">The writing</div>
-    <h2 class="rise">Fresh off the press.</h2>
+    <h2 class="rise">Latest posts.</h2>
     <div class="press-list rise">
       <% @posts.first(3).each_with_index do |post, i| %>
         <article class="press-item">
