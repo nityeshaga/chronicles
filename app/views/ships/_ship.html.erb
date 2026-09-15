@@ -1,0 +1,56 @@
+<%# locals: (ship:, age:) %>
+<article class="ship rise k-<%= ship.kind %>" id="<%= dom_id ship %>" style="--age:<%= age %>">
+  <div class="when">
+    <div class="no">№ <%= format "%03d", ship.number %></div>
+    <div class="d"><%= ship.shipped_on.day %></div>
+    <div class="m"><%= ship.shipped_on.strftime("%b %Y") %></div>
+  </div>
+  <div class="body">
+    <span class="kind"><i></i><%= ship.kind.titleize %></span>
+    <h3><%= link_to ship.title, ship.check_it_out_url || ship.x_url %></h3>
+    <% if ship.blurb.present? %><p><%= ship.blurb %></p><% end %>
+
+    <%# The frame. A ship that announces something on this site shows a screenshot and
+        opens it; one that lives on X shows its trim and opens the full post there. %>
+    <% case ship.media_kind
+       when :video %>
+      <a class="frame" href="<%= ship.x_url || ship.check_it_out_url %>" target="_blank" rel="noopener">
+        <video autoplay muted loop playsinline<% if ship.poster_path %> poster="<%= ship.poster_path %>"<% end %> src="<%= ship.preview_path %>"></video>
+        <span class="watch"><%= ship.x_url ? "Watch the full one on X" : "Open it" %></span>
+      </a>
+    <% when :image %>
+      <% if ship.post %>
+        <a class="frame" href="<%= ship.check_it_out_url %>" target="_blank" rel="noopener">
+          <img class="media shot" src="<%= ship.preview_path %>" alt="">
+          <span class="watch">Open it</span>
+        </a>
+      <% else %>
+        <a class="frame" href="<%= ship.x_url || ship.check_it_out_url %>" target="_blank" rel="noopener">
+          <img class="media" src="<%= ship.preview_path %>" alt="">
+        </a>
+      <% end %>
+    <% when :cover %>
+      <a class="frame" href="<%= ship.check_it_out_url %>">
+        <img class="media cover" src="<%= ship.post.feature_image_url %>" alt="">
+      </a>
+    <% end %>
+
+    <div class="doors" data-controller="clipboard" data-clipboard-copied-value="Copied · paste it to your agent" data-clipboard-duration-value="2600" data-clipboard-done-class="done">
+      <a class="door primary" href="<%= ship.check_it_out_url %>">Check it out <span class="arr">→</span></a>
+      <% if ship.prompt.present? %>
+        <span hidden data-clipboard-target="source"><%= ship.prompt %></span>
+        <button class="door copy" type="button" data-action="clipboard#copy" data-clipboard-target="button">Copy prompt <span class="ico">⧉</span></button>
+      <% end %>
+      <% if ship.how_built_post %>
+        <a class="door" href="<%= public_post_path(ship.how_built_post) %>">How I built this <span class="arr">→</span></a>
+      <% elsif !ship.chronicle? %>
+        <span class="door empty">How I built this</span>
+      <% end %>
+      <span class="by">
+        <%= built_by_label(ship) %>
+        <% unless ship.built_by_luo? %><span class="stamp n">N</span><% end %>
+        <% unless ship.built_by_nityesh? %><span class="stamp l">L</span><% end %>
+      </span>
+    </div>
+  </div>
+</article>

@@ -1,50 +1,13 @@
 require "test_helper"
 
 class PostsControllerTest < ActionDispatch::IntegrationTest
-  test "index renders the homepage sections without auth" do
-    get root_url
-    assert_response :success
-    assert_select "section#apps"
-    assert_select "section#library"
-    assert_select "section#subscribe"
-  end
-
-  test "index shelves every machine newest-updated first, each shot linking out" do
-    get root_url
-    shots = css_select(".machine .machine-shot").map { |a| a["href"] }
-    assert_equal Machine.all.map(&:url), shots
-  end
-
-  test "the workshop section is gone — open source shelves with everything else" do
-    get root_url
-    assert_select "section#source", count: 0
-    assert_select ".machine-title a[href=?]", "https://github.com/nityeshaga/claude-home-base"
-  end
-
-  test "index leads with the latest published articles" do
-    get root_url
-    assert_select "#press .press-title a[href=?]", "/#{posts(:published).slug}/", text: posts(:published).title
-    # Drafts stay off the press strip.
-    assert_select "#press .press-title a", text: posts(:draft).title, count: 0
-  end
-
-  # The masthead nav advertises destinations, not scroll positions: an in-page
-  # anchor dressed as a site section is a lie the reader only catches after
-  # clicking. About isn't there either — the homepage already sends readers to it.
-  test "the masthead nav offers real destinations only" do
-    get root_url
-    assert_select ".mast-nav a[href=?]", "/about/", count: 0
-    assert_select ".mast-nav a[href=?]", "/#apps", count: 0
-    assert_select ".mast-nav a[href=?]", "/#library", count: 0
-  end
-
   test "the masthead offers the dashboard to the signed-in writer only" do
     get root_url
-    assert_select ".mast-nav a[href=?]", "/writing/", count: 0
+    assert_select ".nav a[href=?]", "/writing/", count: 0
 
     sign_in_as users(:nityesh)
     get root_url
-    assert_select ".mast-nav a[href=?]", "/writing/"
+    assert_select ".nav a[href=?]", "/writing/"
   end
 
   test "an article offers its editor to the signed-in writer only" do
@@ -62,7 +25,7 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:nityesh)
 
     get root_url
-    assert_select ".mast-nav a.admin-link[href=?]", "/writing/"
+    assert_select ".nav a.admin-link[href=?]", "/writing/"
 
     get "/a-published-post/"
     assert_select "a.edit-pill.admin-link[href=?]", edit_writing_post_path(posts(:published))
@@ -81,18 +44,6 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:nityesh)
     get "/a-published-post/", headers: { "If-None-Match" => etag }
     assert_response :success
-  end
-
-  test "index shelves eras that have published articles, linking to their tag pages" do
-    get root_url
-    # chronicles is an era fixture with a published article → a book on the shelf.
-    assert_select ".shelf-books a.book[href=?]", "/tag/chronicles/"
-  end
-
-  test "index omits eras with no published articles" do
-    get root_url
-    # past-life is an era fixture but has no published article → no book.
-    assert_select ".shelf-books a.book[href=?]", "/tag/past-life/", count: 0
   end
 
   test "show renders a published post" do

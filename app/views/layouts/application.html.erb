@@ -21,29 +21,29 @@
 
   <body class="<%= content_for(:body_class) %> has-serif-title has-serif-body" data-controller="reveal">
     <div class="gh-viewport">
-      <header class="masthead-print">
-        <div class="wrap mast-band">
-          <h1 class="wordmark"><a href="<%= root_path %>"><%= wordmark(Setting.current.site_title) %></a></h1>
-          <nav class="mast-nav">
+      <header class="mast">
+        <div class="wrap">
+          <a class="brand" href="<%= root_path %>"><span class="dot"></span>&nbsp;&nbsp;<%= Setting.current.author_name %></a>
+          <nav class="nav">
+            <a href="<%= root_path %>" class="<%= "on" if current_page?(root_path) %>">Latest</a>
+            <a href="/apps/" class="k-app" data-k="app"><span class="ki"></span>Apps</a>
+            <a href="/apps/#tools" class="k-tool" data-k="tool"><span class="ki"></span>Tools</a>
+            <a href="/explorables/" class="k-explorable" data-k="explorable"><span class="ki"></span>Explorables</a>
+            <a href="/comics/" class="k-comic" data-k="comic"><span class="ki"></span>Comics</a>
+            <a href="/essays/" class="k-chronicle" data-k="chronicle"><span class="ki"></span>Essays</a>
+            <a href="/about/">About</a>
             <% if signed_in? %><a class="admin-link" href="/writing/">Dashboard</a><% end %>
-            <a class="mast-subscribe" href="/#subscribe">Subscribe</a>
+            <a href="https://x.com/nityeshaga" class="xlink" title="@nityeshaga on X">𝕏</a>
+            <a class="cta" href="/#subscribe">Get new stuff by email</a>
           </nav>
         </div>
       </header>
 
       <%= yield %>
 
-      <footer class="site-footer">
-        <div class="wrap">
-          <div class="foot-kicker mono">Est. 2017 · Written, drawn &amp; compiled in India</div>
-          <div class="mono">❦ <%= Setting.current.author_name %> · built with Luo, my AI agent, on a spare MacBook Air</div>
-          <div class="links mono">
-            <a href="https://myspool.xyz">Spool</a>
-            <a href="https://teachmesomething.xyz">Teach Me Something</a>
-            <a href="https://curatedconnections.io">Curated Connections</a>
-            <a href="https://github.com/nityeshaga">GitHub</a>
-          </div>
-        </div>
+      <footer class="foot wrap">
+        <span>Est. 2017 · India · <span class="ink-n">■</span> Nityesh <span class="ink-l">■</span> Luo</span>
+        <span><a href="https://x.com/nityeshaga">X</a> &nbsp;·&nbsp; <a href="https://github.com/nityeshaga">GitHub</a> &nbsp;·&nbsp; <a href="/rss/">RSS</a> &nbsp;·&nbsp; <a href="https://github.com/nityeshaga/chronicles">This site's source</a></span>
       </footer>
     </div>
 

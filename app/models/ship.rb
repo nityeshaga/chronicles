@@ -21,6 +21,8 @@ class Ship < ApplicationRecord
 
   validates :title, :shipped_on, presence: true
   validates :number, uniqueness: true, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
+  # Door 1 is rendered straight into an href, so only a web address may be saved there.
+  validates :check_it_out_url, format: { with: %r{\Ahttps?://[^\s/]+\S*\z}i, message: "must start with http:// or https://" }, allow_blank: true
 
   scope :ordered, -> { order(shipped_on: :desc, number: :desc, id: :desc) }
   # What the reader sees: everything live, newest first. Same-day ships keep their
@@ -41,6 +43,12 @@ class Ship < ApplicationRecord
   # Door 1. An explicit URL wins; a ship that announces something on this site opens there.
   def check_it_out_url
     super.presence || post&.public_url
+  end
+
+  # The X post that announced it. The log's media frame opens here, because the preview
+  # is a trim of the full video that lives on X.
+  def x_url
+    "https://x.com/#{Setting.current.twitter_handle.delete_prefix("@")}/status/#{x_status_id}" if x_status_id.present?
   end
 
   # What the log frames for this ship: a looping video, a still, the linked post's cover,

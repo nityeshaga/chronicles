@@ -1,16 +1,11 @@
 class PostsController < ApplicationController
   allow_unauthenticated_access
 
+  # The article feed at /rss (index.rss.erb). The HTML homepage is the ship log now
+  # (ships#index); this action has no HTML template.
   def index
-    # The whole feed for RSS (index.rss.erb); the HTML homepage takes only the top
-    # three for its "latest from the press" strip and shelves the eras below that.
     @posts = Post.articles.published.ordered
-    @eras = Tag.eras.select { |era| era.published_article_count.positive? }
-    @machines = Machine.all
-    # A signup redirect carries a one-time flash; skip conditional-GET so a cached
-    # ETag can't 304 the confirmation/error away before it's seen. The machines
-    # digest is in the ETag because the shelf reshuffles without any post changing.
-    fresh_when etag: [ @posts, Machine.cache_key ], last_modified: @posts.maximum(:updated_at) unless flash.any?
+    fresh_when etag: @posts, last_modified: @posts.maximum(:updated_at)
   end
 
   def show

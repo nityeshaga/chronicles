@@ -7,7 +7,8 @@ Rails.application.routes.draw do
     get "(*path)", to: redirect(status: 301) { |_params, req| "https://#{Setting.current.production_host}#{req.original_fullpath}" }
   end
 
-  root "posts#index"
+  # The homepage is the ship log; the article feed keeps its Ghost-era address.
+  root "ships#index"
 
   get "rss", to: "posts#index", defaults: { format: "rss" }, as: :rss
 

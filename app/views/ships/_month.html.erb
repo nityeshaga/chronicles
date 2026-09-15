@@ -1,0 +1,6 @@
+<%# locals: (month:, ships:, age:) %>
+<div class="month" style="--age:<%= age %>">
+  <div class="count"><%= pluralize ships.size, "thing" %></div>
+  <h2><%= month.strftime("%b %Y") %></h2>
+</div>
+<%= render partial: "ships/ship", collection: ships, locals: { age: } %>
