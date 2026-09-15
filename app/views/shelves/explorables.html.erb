@@ -1,0 +1,14 @@
+<% content_for :body_class, "shelf-template" %>
+<% content_for :meta_title, "Explorables — #{Setting.current.author_name}" %>
+
+<section class="ph"><div class="wrap">
+  <div class="kick">Explorables · <%= pluralize @ships.size, "deck" %></div>
+  <h1>Explainers you can play.</h1>
+  <p>Not articles, not slides. A tree of short decks with a little game inside each one, so you learn the idea by poking it. Made with the <a href="/apps/#tools"><u>explorable-explanations skill</u></a>.</p>
+</div></section>
+
+<section class="shelf"><div class="wrap">
+  <div class="decks"><%= render partial: "shelves/deck", collection: @ships, as: :ship %></div>
+</div></section>
+
+<%= render "ships/subscribe" %>

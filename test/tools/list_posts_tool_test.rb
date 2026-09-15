@@ -39,7 +39,7 @@ class ListPostsToolTest < ActiveSupport::TestCase
     result = ListPostsTool.new.call(status: "draft")
     slugs = result[:posts].map { |p| p[:slug] }
 
-    assert_equal [ "a-draft-post" ], slugs
+    assert_equal [ "a-draft-post", "better-macbook" ], slugs.sort
   end
 
   test "scheduled status returns future-dated drafts with derived status" do

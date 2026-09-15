@@ -11,7 +11,8 @@ class PostsController < ApplicationController
   def show
     # Unfiltered on purpose: pages (About, etc) and explorables are served through here too.
     @post = Post.viewable(writer: signed_in?).find_by!(slug: params[:slug])
-    fresh_when @post
+    # A page shows the house's numbers beside its prose, so they validate it too.
+    fresh_when etag: [ @post, *@post.try(:house_numbers)&.values ], last_modified: @post.updated_at
     return if performed? # fresh_when already answered a 304; rendering again would raise
 
     # An HTML page IS its response: no layout, so no masthead, footer, app CSS/JS or

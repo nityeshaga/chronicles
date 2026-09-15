@@ -4,14 +4,14 @@ class ShipTest < ActiveSupport::TestCase
   test "the log is the published ships, newest first, same day by number" do
     older = Ship.create!(title: "Older", kind: "tool", built_by: "luo", shipped_on: "2026-09-11", number: 18, status: :published)
 
-    assert_equal [ ships(:phone), older, ships(:essay) ], Ship.log.to_a
+    assert_equal [ ships(:phone), older, ships(:hotwire), ships(:essay), ships(:clock), ships(:markdown), ships(:cc) ], Ship.log.to_a
     assert_not_includes Ship.log, ships(:drafted)
   end
 
   test "by_month groups the log by the month it shipped" do
     months = Ship.by_month
-    assert_equal [ Date.new(2026, 9, 1), Date.new(2026, 8, 1) ], months.keys
-    assert_equal [ ships(:phone) ], months[Date.new(2026, 9, 1)]
+    assert_equal [ Date.new(2026, 9, 1), Date.new(2026, 8, 1), Date.new(2026, 7, 1), Date.new(2026, 4, 1), Date.new(2024, 7, 1) ], months.keys
+    assert_equal [ ships(:phone), ships(:hotwire) ], months[Date.new(2026, 9, 1)]
   end
 
   test "publishing mints the next number and stamps the time" do
@@ -20,14 +20,14 @@ class ShipTest < ActiveSupport::TestCase
 
     ship.publish
     assert ship.published?
-    assert_equal 20, ship.number
+    assert_equal 24, ship.number
     assert_in_delta Time.current, ship.published_at, 5
   end
 
   test "publishing keeps a number already given" do
-    ship = Ship.create!(title: "Backfilled", kind: "comic", built_by: "nityesh", shipped_on: "2026-04-27", number: 1)
+    ship = Ship.create!(title: "Backfilled", kind: "comic", built_by: "nityesh", shipped_on: "2026-04-27", number: 2)
     ship.publish
-    assert_equal 1, ship.reload.number
+    assert_equal 2, ship.reload.number
   end
 
   test "a number is given once" do

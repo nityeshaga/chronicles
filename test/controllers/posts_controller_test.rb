@@ -57,9 +57,39 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "a page does not render the internal-name article title" do
+  # A page is laid out as the house's front matter, not as an article: its title heads the
+  # page, its prose sits beside the numbers, and none of the article chrome shows.
+  test "a page renders its title in the page header, not as an article title" do
     get post_url(posts(:about), trailing_slash: true)
+    assert_select ".ph h1", text: posts(:about).title
+    assert_select ".ph .kick", text: "About this house"
     assert_select "h1.gh-article-title", count: 0
+    assert_select ".gh-article-meta", count: 0
+  end
+
+  test "a page shows the house by the numbers beside its prose" do
+    get post_url(posts(:about), trailing_slash: true)
+    assert_select ".essays main.prose#page_#{posts(:about).id}"
+    assert_select ".lineage a[href=?]", "/", text: /Ships\s*6/
+    assert_select ".lineage a[href=?]", "/apps/", text: /Apps in print\s*1/
+    assert_select ".lineage a[href=?]", "/explorables/", text: /Explorables\s*1/
+    assert_select ".lineage a[href=?]", "/essays/", text: /Essays, 2 eras\s*1/
+    assert_select ".lineage a[href=?]", "https://github.com/nityeshaga/chronicles", text: /Lines of Rails running this\s*[\d,]+/
+    assert_select ".lineage.elsewhere a", count: 2
+    assert_select ".lineage.elsewhere a[href=?]", "https://x.com/nityeshaga"
+    assert_select ".lineage.elsewhere a[href=?]", "https://github.com/nityeshaga"
+  end
+
+  # A ship logged tonight changes the about page without touching the page.
+  test "a page's ETag moves with the house's numbers" do
+    get post_url(posts(:about), trailing_slash: true)
+    etag = response.headers["ETag"]
+    get post_url(posts(:about), trailing_slash: true), headers: { "If-None-Match" => etag }
+    assert_response :not_modified
+
+    ships(:drafted).publish
+    get post_url(posts(:about), trailing_slash: true), headers: { "If-None-Match" => etag }
+    assert_response :success
   end
 
   test "an article still renders its article title" do

@@ -45,3 +45,11 @@ html_page:
     <head><title>Hands on Deck</title><style>body{margin:0}</style></head>
     <body><h1 class="landing-hero">Hands on Deck</h1></body>
     </html>
+
+# A draft announced by its excerpt: what the essays page lists under "In the typewriter".
+promised:
+  type: Post
+  title: I gave my AI employee the better MacBook
+  slug: better-macbook
+  status: draft
+  excerpt: Why the machine the human uses is the wrong one to be the nice one.

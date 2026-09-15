@@ -1,4 +1,4 @@
-# The first 22 ships, as logged on the v2 prototype, for `bin/rails ships:backfill`.
+# The first 23 ships: the 22 logged on the v2 prototype, plus Curated Connections, for `bin/rails ships:backfill`.
 # Numbers are fixed here so the log matches what was announced; `post` is a slug on this
 # site the ship announces (linked when that post exists); preview/poster are filenames in
 # MEDIA_DIR — a muted mp4 loop with its poster, or a still.
@@ -234,3 +234,13 @@
   prompt: Open https://nityesh.com/navier-stokes/ and walk me through it one deck at a time. Explain the blow-up problem to me like I'm twelve, then like I'm a physics grad.
   post: navier-stokes
   preview: shot-navier-stokes.jpg
+# Minted after the prototype's 22, so it wears № 023 even though it shipped first: numbers
+# are the order things were logged, the log itself sorts by date.
+- number: 23
+  shipped_on: '2024-07-14'
+  kind: app
+  built_by: together
+  title: Curated Connections.
+  blurb: Self-driving community software. Meaningful 1-on-1 connections, on autopilot. Built with my brother Piyush.
+  check_it_out_url: https://curatedconnections.io
+  preview: shot-curated-connections.jpg

@@ -13,8 +13,8 @@ class PublishShipToolTest < ActiveSupport::TestCase
     result = PublishShipTool.new.call(id: ships(:drafted).id)
 
     assert_equal "published", result[:status]
-    assert_equal 20, result[:number]
-    assert_includes result[:message], "№ 020"
+    assert_equal 24, result[:number]
+    assert_includes result[:message], "№ 024"
     assert ships(:drafted).reload.published?
     assert_includes Ship.log, ships(:drafted)
   end

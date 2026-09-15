@@ -12,8 +12,8 @@ class ListShipsToolTest < ActiveSupport::TestCase
   test "everything newest first, with every field the agent needs" do
     result = ListShipsTool.new.call
 
-    assert_equal [ ships(:drafted), ships(:phone), ships(:essay) ].map(&:id), result[:ships].map { |s| s[:id] }
-    assert_equal 3, result[:total_count]
+    assert_equal %i[ drafted phone hotwire essay clock markdown cc ].map { |name| ships(name).id }, result[:ships].map { |s| s[:id] }
+    assert_equal 7, result[:total_count]
 
     phone = result[:ships].find { |s| s[:id] == ships(:phone).id }
     assert_equal 19, phone[:number]
