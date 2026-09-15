@@ -4,18 +4,18 @@
   <div class="art">
     <% case ship.media_kind
        when :video %>
-      <video autoplay muted loop playsinline<% if ship.poster_path %> poster="<%= ship.poster_path %>"<% end %> src="<%= ship.preview_path %>"></video>
+      <video muted loop playsinline preload="none" data-controller="lazy-video" data-src="<%= ship.preview_path %>"<% if ship.poster_path %> poster="<%= ship.poster_path %>"<% end %>></video>
     <% when :image %>
       <img src="<%= ship.preview_path %>" alt="">
     <% when :cover %>
       <img src="<%= ship.post.feature_image_url %>" alt="">
     <% else %>
-      <span class="no">№ <%= format "%03d", ship.number %></span>
+      <span class="no">No. <%= format "%03d", ship.number %></span>
     <% end %>
   </div>
   <div class="meta">
     <h4><%= ship.title %></h4>
     <% if ship.blurb.present? %><p><%= ship.blurb %></p><% end %>
-    <span class="mono">Shipped <%= ship.shipped_on.strftime("%-d %b %Y") %> · № <%= format "%03d", ship.number %></span>
+    <span class="mono">Shipped <%= ship.shipped_on.strftime("%-d %b %Y") %> · No. <%= format "%03d", ship.number %></span>
   </div>
 </a>

@@ -1,7 +1,7 @@
 <%# locals: (ship:, age:) %>
 <article class="ship rise k-<%= ship.kind %>" id="<%= dom_id ship %>" style="--age:<%= age %>">
   <div class="when">
-    <div class="no">№ <%= format "%03d", ship.number %></div>
+    <div class="no">No. <%= format "%03d", ship.number %></div>
     <div class="d"><%= ship.shipped_on.day %></div>
     <div class="m"><%= ship.shipped_on.strftime("%b %Y") %></div>
   </div>
@@ -15,7 +15,7 @@
     <% case ship.media_kind
        when :video %>
       <a class="frame" href="<%= ship.x_url || ship.check_it_out_url %>" target="_blank" rel="noopener">
-        <video autoplay muted loop playsinline<% if ship.poster_path %> poster="<%= ship.poster_path %>"<% end %> src="<%= ship.preview_path %>"></video>
+        <video muted loop playsinline preload="none" data-controller="lazy-video" data-src="<%= ship.preview_path %>"<% if ship.poster_path %> poster="<%= ship.poster_path %>"<% end %>></video>
         <span class="watch"><%= ship.x_url ? "Watch the full one on X" : "Open it" %></span>
       </a>
     <% when :image %>

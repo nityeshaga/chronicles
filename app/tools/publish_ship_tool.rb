@@ -4,7 +4,7 @@ class PublishShipTool < ActionTool::Base
   include ShipToolSupport
 
   tool_name "publish_ship"
-  description "Put a drafted ship in the log. Mints its № number (the next in sequence) the first time; re-publishing keeps it."
+  description "Put a drafted ship in the log. Mints its No. number (the next in sequence) the first time; re-publishing keeps it."
   annotations(
     title: "Publish Ship",
     read_only_hint: false,
@@ -25,7 +25,7 @@ class PublishShipTool < ActionTool::Base
     return ToolErrors::SHIP_NOT_FOUND unless ship
 
     ship.publish
-    serialize(ship).merge(message: "Published as № #{format("%03d", ship.number)}.")
+    serialize(ship).merge(message: "Published as No. #{format("%03d", ship.number)}.")
   rescue ActiveRecord::RecordInvalid => e
     { error: e.record.errors.full_messages.to_sentence }
   end

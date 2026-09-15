@@ -3,7 +3,7 @@
 # not a Post. It is its own numbered entry in the log that may point at a post, an HTML page
 # or an explorable here (post), and at the post that tells how it was built (how_built_post).
 #
-# The number is the ship's public name (№ 017) and is minted when it goes live, so drafts
+# The number is the ship's public name (No. 017) and is minted when it goes live, so drafts
 # never hold a slot in the sequence and the log has no gaps.
 class Ship < ApplicationRecord
   belongs_to :post, optional: true

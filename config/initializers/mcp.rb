@@ -64,7 +64,7 @@ MCP_SERVER_INSTRUCTIONS = -> do
   and three doors: check_it_out_url, a copyable prompt, and a how_built_post. Most ships
   live off-site; link `post` when one announces a post, HTML page or explorable here.
   create_ship makes a draft, upload_ship_media fetches an mp4/jpg/png into its preview (and
-  a poster for a video), update_ship revises, and publish_ship mints its № number and puts
+  a poster for a video), update_ship revises, and publish_ship mints its No. number and puts
   it in the log. list_ships reads the log back.
   INSTRUCTIONS
 end

@@ -16,7 +16,7 @@
   <div class="shelf-head" id="tools"><h2>Skills &amp; parts.</h2><span class="mono">Open source · on GitHub</span></div>
   <div class="essay-list">
     <% @tools.each do |ship| %>
-      <a class="rise" href="<%= root_path %>#<%= dom_id ship %>"><span class="mono">№ <%= format "%03d", ship.number %></span><div><h4><%= ship.title %></h4><% if ship.blurb.present? %><p><%= ship.blurb %></p><% end %></div></a>
+      <a class="rise" href="<%= root_path %>#<%= dom_id ship %>"><span class="mono">No. <%= format "%03d", ship.number %></span><div><h4><%= ship.title %></h4><% if ship.blurb.present? %><p><%= ship.blurb %></p><% end %></div></a>
     <% end %>
   </div>
 </div></section>

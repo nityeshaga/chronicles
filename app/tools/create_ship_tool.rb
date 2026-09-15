@@ -4,7 +4,7 @@ class CreateShipTool < ActionTool::Base
   include ShipToolSupport
 
   tool_name "create_ship"
-  description "Log a new ship as a DRAFT — one thing shipped on a day. Publishing is a separate step (publish_ship) and is what mints its № number. Attach a preview with upload_ship_media. Link `post` when the ship announces something on this site (its URL then defaults to the post's)."
+  description "Log a new ship as a DRAFT — one thing shipped on a day. Publishing is a separate step (publish_ship) and is what mints its No. number. Attach a preview with upload_ship_media. Link `post` when the ship announces something on this site (its URL then defaults to the post's)."
   annotations(
     title: "Create Ship",
     read_only_hint: false,

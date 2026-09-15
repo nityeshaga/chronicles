@@ -234,7 +234,7 @@
   prompt: Open https://nityesh.com/navier-stokes/ and walk me through it one deck at a time. Explain the blow-up problem to me like I'm twelve, then like I'm a physics grad.
   post: navier-stokes
   preview: shot-navier-stokes.jpg
-# Minted after the prototype's 22, so it wears № 023 even though it shipped first: numbers
+# Minted after the prototype's 22, so it wears No. 023 even though it shipped first: numbers
 # are the order things were logged, the log itself sorts by date.
 - number: 23
   shipped_on: '2024-07-14'
