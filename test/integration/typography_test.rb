@@ -10,7 +10,7 @@ class TypographyTest < ActionDispatch::IntegrationTest
     get post_url(posts(:published), trailing_slash: true)
     reader_fonts = css_select(FONTS).map { |link| link["href"] }
     assert_equal 1, reader_fonts.size
-    assert_match(/Fraunces.*Newsreader.*IBM\+Plex\+Mono/, reader_fonts.first)
+    assert_match(/Libre\+Caslon\+Display.*Source\+Serif\+4.*Martian\+Mono/, reader_fonts.first)
 
     sign_in_as users(:nityesh)
     get edit_writing_post_url(posts(:published))

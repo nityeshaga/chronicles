@@ -2,30 +2,6 @@ module ApplicationHelper
   # Site identity (title, author, host, social/OG/JSON-LD fields) lives in the
   # single Setting row — read it via Setting.current.
 
-  # The print masthead italicises the connector word of the site title (e.g. a
-  # title of "Foo of Bar" renders "Foo <em>of</em> Bar"); the rest renders verbatim.
-  # Only the title is deployer data (from Setting) — the typographic treatment is
-  # bespoke chrome. Escapes first, then injects literal <em> tags, so a Setting
-  # value can't smuggle markup through.
-  def wordmark(title)
-    raw ERB::Util.html_escape(title).sub(/(\s)(of|the|and)(\s)/i) { "#{$1}<em>#{$2}</em>#{$3}" }
-  end
-
-  # The homepage library shelf: each era tag renders as a book (a coloured spine).
-  # The visual treatment — width, colour, the tilted current-era book with its reading
-  # ribbon — is keyed by slug so a rename can't reshuffle the shelf. A future sixth era
-  # with an unknown slug falls back to a plain wooden spine.
-  ERA_STYLES = {
-    "past-life"                => { book: "b-ml" },
-    "writing-era"              => { book: "b-writing" },
-    "chronicles"               => { book: "b-comm" },
-    "bootstrapped-founder-era" => { book: "b-boot" },
-    "ai"                       => { book: "b-agi", ribbon: true }
-  }.freeze
-  ERA_STYLE_DEFAULT = { book: "b-era" }.freeze
-
-  def era_style(tag) = ERA_STYLES.fetch(tag.slug, ERA_STYLE_DEFAULT)
-
   # Public post/tag URLs canonically carry a trailing slash (Ghost parity, enforced by
   # ApplicationController#redirect_to_trailing_slash). Bake it in so no call site has to
   # remember `trailing_slash: true` — one forgotten flag serves a link that eats a 301.
