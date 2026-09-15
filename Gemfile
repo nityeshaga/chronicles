@@ -16,7 +16,7 @@ gem "turbo-rails"
 gem "stimulus-rails"
 
 # The red pen: notes pinned to elements of live pages, extracted from here [https://github.com/nityeshaga/redpen]
-gem "redpen-rails", github: "nityeshaga/redpen"
+gem "redpen-rails", "~> 0.1.0"
 
 # Rich text editor for Action Text — Trix's successor from 37signals [https://github.com/basecamp/lexxy]
 gem "lexxy", "~> 0.9.31"
