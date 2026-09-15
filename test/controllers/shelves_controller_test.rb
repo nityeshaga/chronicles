@@ -3,10 +3,13 @@ require "test_helper"
 # The shelves: one page per kind of thing in the log, and the essays by era. Each reads
 # the same published ships the homepage does, so a draft never reaches a shelf either.
 class ShelvesControllerTest < ActionDispatch::IntegrationTest
-  test "the apps page shelves the app ships as cards, with their line from the log" do
+  test "the apps page is the workbench: every app ship as a card" do
     get "/apps/"
     assert_response :success
-    assert_select ".ph .kick", text: "The catalogue · 1 app in print"
+    assert_select ".ph .kick", text: "The Workbench"
+    assert_select ".ph h1", text: "1 software tool I built for myself"
+    assert_select ".ph p", count: 0
+    assert_select "#tools", count: 0
     assert_select ".machines a.mach[href=?]", "https://curatedconnections.io" do
       assert_select ".meta h4", text: "Curated Connections."
       assert_select ".meta p", text: "Self-driving community software."
@@ -14,9 +17,10 @@ class ShelvesControllerTest < ActionDispatch::IntegrationTest
     end
     assert_select ".machines a.mach", count: 1
     assert_select ".machines", text: /#{ships(:drafted).title}/, count: 0
+    assert_select ".machines", text: /#{ships(:phone).title}/, count: 0
   end
 
-  test "an app card's art is its preview, or its number when it has none" do
+  test "an app card's art is its preview, or its kind when it has none" do
     get "/apps/"
     assert_select "#ship_#{ships(:cc).id} .art .no", text: "App"
 
@@ -25,50 +29,41 @@ class ShelvesControllerTest < ActionDispatch::IntegrationTest
     assert_select "#ship_#{ships(:cc).id} .art video[muted][loop][playsinline][preload=none][data-controller=lazy-video][data-src=?]", ships(:cc).preview_path
   end
 
-  test "skills and parts are the tools that live on GitHub, each pointing at its log entry" do
-    get "/apps/"
-    assert_select "#tools h2", text: "Skills & parts."
-    assert_select "#tools + .essay-list a", count: 1
-    assert_select "#tools + .essay-list a[href=?]", "/#ship_#{ships(:phone).id}" do
-      assert_select ".mono", text: "Sep 2026"
-      assert_select "h4", text: ships(:phone).title
-    end
-    assert_select "#tools + .essay-list", text: /#{ships(:clock).title}/, count: 0
-  end
-
-  test "the tools shelf is the second half of the apps page" do
+  test "/tools goes to the apps page" do
     get "/tools/"
     assert_response :moved_permanently
-    assert_redirected_to "/apps/#tools"
+    assert_redirected_to "/apps/"
     get "/tools"
-    assert_redirected_to "/apps/#tools"
+    assert_redirected_to "/apps/"
   end
 
-  test "the explorables page deals each explorable as a deck that opens it" do
+  test "the explorables page stacks each explorable with its front page as the picture" do
+    ships(:hotwire).preview.attach(io: StringIO.new("jpg".b), filename: "shot-hotwire.jpg", content_type: "image/jpeg")
     get "/explorables/"
     assert_response :success
     assert_select ".ph .kick", text: "Explorables · 1 deck"
-    assert_select ".decks a.deck[href=?]", "https://nityesh.com/hotwire/" do
-      assert_select ".card", count: 3
-      assert_select ".card h4", text: "Hotwire, explored."
-      assert_select ".card .foot span", text: "Deck"
-      assert_select ".card .foot span", text: "9 Sep 2026"
+    assert_select ".rows a.row[href=?]", "https://nityesh.com/hotwire/" do
+      assert_select ".art img[src=?]", ships(:hotwire).preview_path
+      assert_select ".meta h4", text: "Hotwire, explored."
+      assert_select ".meta .mono", text: "Explorable · 9 Sep 2026"
     end
-    assert_select ".decks a.deck", count: 1
+    assert_select ".rows a.row", count: 1
   end
 
-  test "the comics page deals each comic as a deck" do
+  test "the comics page stacks each comic with its first page as the picture" do
+    ships(:markdown).preview.attach(io: StringIO.new("jpg".b), filename: "page-1.jpg", content_type: "image/jpeg")
     get "/comics/"
     assert_response :success
     assert_select ".ph .kick", text: "Comics · 1 comic · drawn with image models"
-    assert_select ".decks a.deck[href=?]", ships(:markdown).check_it_out_url do
-      assert_select ".card h4", text: ships(:markdown).title
-      assert_select ".card .foot span", text: "Comic"
+    assert_select ".rows a.row[href=?]", ships(:markdown).check_it_out_url do
+      assert_select ".art img[src=?]", ships(:markdown).preview_path
+      assert_select ".meta h4", text: ships(:markdown).title
+      assert_select ".meta .mono", text: /Comic/
     end
-    assert_select ".decks a.deck", count: 1
+    assert_select ".rows a.row", count: 1
   end
 
-  test "the essays page lists the current era's articles, then the drafts in the typewriter" do
+  test "the essays page lists the current era's articles, then the earlier eras beneath" do
     get "/essays/"
     assert_response :success
     assert_select ".ph .kick", text: "The library · 1 essay · 2 eras"
@@ -80,22 +75,9 @@ class ShelvesControllerTest < ActionDispatch::IntegrationTest
       assert_select ".mono", text: posts(:published).published_at.strftime("%-d %b %Y")
     end
     assert_select "#current a", count: 1
-
-    assert_select "#typewriter span.rise", count: 1 do
-      assert_select ".mono", text: "Draft"
-      assert_select "h4", text: posts(:promised).title
-      assert_select "p", text: posts(:promised).excerpt
-    end
-    assert_select "#typewriter a", count: 0
-  end
-
-  # A draft is announced by its excerpt; the rest stay private. A published article is
-  # never a draft, and a scheduled one is already on its way.
-  test "only drafts with an excerpt and no publish stamp reach the typewriter" do
-    get "/essays/"
-    assert_select "#typewriter", text: /#{posts(:draft).title}/, count: 0
-    assert_select "#typewriter", text: /#{posts(:scheduled).title}/, count: 0
-    assert_select "#current", text: /#{posts(:promised).title}/, count: 0
+    assert_select "#typewriter", count: 0
+    assert_select ".essays", text: /#{posts(:promised).title}/, count: 0
+    assert_select "#current ~ .shelf-head.earlier h2", text: "Earlier eras"
   end
 
   test "the earlier eras link their archives with years and counts" do
