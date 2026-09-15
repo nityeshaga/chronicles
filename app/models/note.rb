@@ -8,7 +8,7 @@ class Note < ApplicationRecord
   belongs_to :user, default: -> { Current.user }
 
   validates :path, :selector, :body, presence: true
-  validates :path, format: { with: %r{\A/}, message: "must be a site path" }
+  validates :path, format: { with: %r{\A/\S*\z}, message: "must be a site path" }
 
   scope :open,     -> { where(resolved_at: nil) }
   scope :resolved, -> { where.not(resolved_at: nil) }
