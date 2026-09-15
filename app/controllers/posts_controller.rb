@@ -25,12 +25,9 @@ class PostsController < ApplicationController
 
   private
     # The author gets the red pen on HTML pages too. The document owns its own <head>, so
-    # the rail is spliced in before </body> (or appended, if the document has none) — and
-    # only on the author's copy; a reader's bytes are the stored bytes.
+    # the gem splices the rail in before </body> (or appends it, if the document has none),
+    # and only on the author's copy; a reader's bytes are the stored bytes.
     def html_page_document
-      return @post.raw_html unless signed_in?
-
-      document, rail = @post.raw_html, render_to_string(partial: "writing/notes/standalone", formats: :html)
-      document.match?(%r{</body>}i) ? document.sub(%r{</body>}i) { "#{rail}</body>" } : document + rail
+      signed_in? ? helpers.redpen_inject(@post.raw_html, path: requested_path) : @post.raw_html
     end
 end

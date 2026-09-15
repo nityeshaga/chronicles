@@ -21,9 +21,9 @@ class ListNotesTool < ActionTool::Base
     return ToolErrors::AUTH_REQUIRED unless user
 
     scope = case status
-    when "open"     then Note.open
-    when "resolved" then Note.resolved
-    when "all"      then Note.all
+    when "open"     then Redpen::Note.open
+    when "resolved" then Redpen::Note.resolved
+    when "all"      then Redpen::Note.all
     else return { error: "status must be 'open', 'resolved' or 'all'." }
     end
     scope = scope.on(path) if path.present?

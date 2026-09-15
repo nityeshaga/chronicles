@@ -20,7 +20,7 @@ class ResolveNoteTool < ActionTool::Base
     user = Thread.current[:mcp_current_user]
     return ToolErrors::AUTH_REQUIRED unless user
 
-    note = Note.find_by(id: id)
+    note = Redpen::Note.find_by(id: id)
     return { error: "No note with id #{id}. Call list_notes for the current ids." } unless note
 
     note.resolve(resolution)

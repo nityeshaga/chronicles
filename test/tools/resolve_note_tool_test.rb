@@ -6,14 +6,14 @@ class ResolveNoteToolTest < ActiveSupport::TestCase
 
   test "requires authentication" do
     Thread.current[:mcp_current_user] = nil
-    assert_equal ToolErrors::AUTH_REQUIRED, ResolveNoteTool.new.call(id: notes(:excerpt).id, resolution: "x")
+    assert_equal ToolErrors::AUTH_REQUIRED, ResolveNoteTool.new.call(id: redpen_notes(:excerpt).id, resolution: "x")
   end
 
   test "resolves with the line that will show on the page" do
-    result = ResolveNoteTool.new.call(id: notes(:excerpt).id, resolution: "Trimmed to two sentences.")
+    result = ResolveNoteTool.new.call(id: redpen_notes(:excerpt).id, resolution: "Trimmed to two sentences.")
     assert_equal "Trimmed to two sentences.", result[:resolution]
-    assert notes(:excerpt).reload.resolved?
-    assert_equal "Trimmed to two sentences.", notes(:excerpt).resolution
+    assert redpen_notes(:excerpt).reload.resolved?
+    assert_equal "Trimmed to two sentences.", redpen_notes(:excerpt).resolution
   end
 
   test "an unknown id is an error, not an exception" do

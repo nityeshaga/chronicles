@@ -8,10 +8,6 @@ pin_all_from "app/javascript/controllers", under: "controllers"
 # The preview strip's controller, registered by the preview page alone: it renders in the
 # public layout, so it can't ride the writing entry, and it mustn't ride the public one.
 pin "preview", preload: false
-# The red pen: the author's notes on public pages. Its rail imports the entry; no reader
-# page preloads it.
-pin "redpen", preload: false
-pin "redpen_controller", preload: false
 
 # The writing room's entry and its controllers. Preloaded only behind that entry point,
 # so a public page's <head> never asks the browser to fetch the editor.

@@ -1,12 +1,12 @@
 excerpt:
-  user: nityesh
+  author: nityesh (User)
   path: /about/
   selector: "#about > p:nth-of-type(1)"
   snippet: "I write about building"
   body: "This runs long. Two sentences."
 
 image:
-  user: nityesh
+  author: nityesh (User)
   path: /about/
   selector: "#about > img:nth-of-type(1)"
   snippet: ""
@@ -15,7 +15,7 @@ image:
   resolution: "Swapped via update_post."
 
 homepage:
-  user: nityesh
+  author: nityesh (User)
   path: /
   selector: "body > header:nth-of-type(1)"
   snippet: "Chronicles"
