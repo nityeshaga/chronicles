@@ -7,36 +7,23 @@
   <p>The current era is about building with an AI employee. The earlier ones are kept in print because they still bring people here, and because I was a good writer then too.</p>
 </div></section>
 
-<section class="shelf"><div class="wrap"><div class="essays">
-  <div>
-    <% if @current %>
-      <div class="shelf-head"><h2><%= @current.name %></h2><span class="mono ink-n"><%= @current.era_years %> · the current era</span></div>
-      <div class="essay-list" id="current">
-        <% @articles.each do |post| %>
-          <a class="rise" href="<%= public_post_path(post) %>"><span class="mono"><%= post.published_at.strftime("%-d %b %Y") %></span><div><h4><%= post.title %></h4><% if post.excerpt.present? %><p><%= post.excerpt %></p><% end %></div></a>
-        <% end %>
-      </div>
-    <% end %>
-
-    <%# The drafts, by title only: a promise in public, with nothing to open yet. %>
-    <% if @drafts.any? %>
-      <div class="shelf-head typewriter"><h2>In the typewriter</h2><span class="mono">Drafts · promised, unwritten</span></div>
-      <div class="essay-list" id="typewriter">
-        <% @drafts.each do |post| %>
-          <span class="rise"><span class="mono">Draft</span><div><h4><%= post.title %></h4><% if post.excerpt.present? %><p><%= post.excerpt %></p><% end %></div></span>
-        <% end %>
-      </div>
-    <% end %>
-  </div>
-  <div>
-    <div class="shelf-head"><h2>Earlier eras</h2></div>
-    <div class="eras">
-      <% @eras.each do |era| %>
-        <a class="era" href="<%= public_tag_path(era) %>"><%= era.name %> <span class="mono"><%= era.era_years %> · <%= era.published_article_count %></span></a>
+<section class="shelf"><div class="wrap essays">
+  <% if @current %>
+    <div class="shelf-head"><h2><%= @current.name %></h2><span class="mono ink-n"><%= @current.era_years %> · the current era</span></div>
+    <div class="essay-list" id="current">
+      <% @articles.each do |post| %>
+        <a class="rise" href="<%= public_post_path(post) %>"><span class="mono"><%= post.published_at.strftime("%-d %b %Y") %></span><div><h4><%= post.title %></h4><% if post.excerpt.present? %><p><%= post.excerpt %></p><% end %></div></a>
       <% end %>
     </div>
-    <p class="aside">Every URL from the Ghost years still resolves.</p>
+  <% end %>
+
+  <div class="shelf-head earlier"><h2>Earlier eras</h2></div>
+  <div class="eras">
+    <% @eras.each do |era| %>
+      <a class="era" href="<%= public_tag_path(era) %>"><%= era.name %> <span class="mono"><%= era.era_years %> · <%= era.published_article_count %></span></a>
+    <% end %>
   </div>
-</div></div></section>
+  <p class="aside">Every URL from the Ghost years still resolves.</p>
+</div></section>
 
 <%= render "ships/subscribe" %>

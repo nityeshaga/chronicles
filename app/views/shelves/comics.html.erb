@@ -8,7 +8,7 @@
 </div></section>
 
 <section class="shelf"><div class="wrap">
-  <div class="decks"><%= render partial: "shelves/deck", collection: @ships, as: :ship %></div>
+  <div class="rows"><%= render partial: "shelves/row", collection: @ships, as: :ship %></div>
 </div></section>
 
 <%= render "ships/subscribe" %>
