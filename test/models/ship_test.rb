@@ -2,7 +2,7 @@ require "test_helper"
 
 class ShipTest < ActiveSupport::TestCase
   test "the log is the published ships, newest first, same day by number" do
-    older = Ship.create!(title: "Older", kind: "tool", built_by: "luo", shipped_on: "2026-09-11", number: 18, status: :published)
+    older = Ship.create!(title: "Older", kind: "skill", built_by: "luo", shipped_on: "2026-09-11", number: 18, status: :published)
 
     assert_equal [ ships(:phone), older, ships(:hotwire), ships(:essay), ships(:clock), ships(:markdown), ships(:cc) ], Ship.log.to_a
     assert_not_includes Ship.log, ships(:drafted)
@@ -12,6 +12,22 @@ class ShipTest < ActiveSupport::TestCase
     months = Ship.by_month
     assert_equal [ Date.new(2026, 9, 1), Date.new(2026, 8, 1), Date.new(2026, 7, 1), Date.new(2026, 4, 1), Date.new(2024, 7, 1) ], months.keys
     assert_equal [ ships(:phone), ships(:hotwire) ], months[Date.new(2026, 9, 1)]
+  end
+
+  test "the kinds are ordered by their latest ship, kinds nothing has shipped in last" do
+    assert_equal %w[ skill explorable chronicle comic app ], Ship.kinds_by_recency
+
+    Ship.skill.delete_all
+    assert_equal %w[ explorable chronicle comic app skill ], Ship.kinds_by_recency
+
+    Ship.delete_all
+    assert_equal Ship.kinds.keys, Ship.kinds_by_recency
+  end
+
+  test "a draft does not move its kind up the order" do
+    assert_equal "app", Ship.kinds_by_recency.last
+    ships(:drafted).publish
+    assert_equal "app", Ship.kinds_by_recency.first
   end
 
   test "publishing mints the next number and stamps the time" do
@@ -31,7 +47,7 @@ class ShipTest < ActiveSupport::TestCase
   end
 
   test "a number is given once" do
-    dup = Ship.new(title: "Twin", kind: "tool", built_by: "luo", shipped_on: "2026-09-11", number: 19)
+    dup = Ship.new(title: "Twin", kind: "skill", built_by: "luo", shipped_on: "2026-09-11", number: 19)
     assert_not dup.valid?
     assert dup.errors[:number].any?
   end
@@ -105,7 +121,7 @@ end
 
 class ShipCheckItOutUrlTest < ActiveSupport::TestCase
   test "door one only takes a web address" do
-    ship = Ship.new(title: "A thing", shipped_on: Date.new(2026, 9, 15), kind: "tool", built_by: "luo")
+    ship = Ship.new(title: "A thing", shipped_on: Date.new(2026, 9, 15), kind: "skill", built_by: "luo")
     ship.check_it_out_url = "javascript:alert(1)"
     assert_not ship.valid?
     assert_includes ship.errors[:check_it_out_url], "must start with http:// or https://"

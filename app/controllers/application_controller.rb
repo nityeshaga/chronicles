@@ -14,6 +14,12 @@ class ApplicationController < ActionController::Base
   # in; without this, a browser holding the anonymous copy would 304 it away.
   etag { signed_in? }
 
+  # The masthead orders the shelves by whichever kind shipped last, on every page. A
+  # shelf's own ETag only knows its own kind, so the order rides in here too: publishing
+  # a comic must reorder the nav on a cached /apps/. One query per request, shared with
+  # the layout.
+  etag { kinds_by_recency }
+
   rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
 
   # Ghost served every URL with a trailing slash and 301'd the bare form; match it
@@ -42,6 +48,11 @@ class ApplicationController < ActionController::Base
       (request.env["ORIGINAL_FULLPATH"] || request.fullpath).split("?", 2).first
     end
     helper_method :requested_path
+
+    def kinds_by_recency
+      @kinds_by_recency ||= Ship.kinds_by_recency
+    end
+    helper_method :kinds_by_recency
 
     def redirect_to_trailing_slash
       return unless request.get? || request.head?

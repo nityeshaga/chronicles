@@ -1,5 +1,5 @@
 <%# locals: (ship:) %>
-<%# One thing per row, its picture first: an explorable's front page, a comic's first page. %>
+<%# One thing per row, its picture first: an explorable's front page, a comic's first page, a skill's poster. %>
 <a class="row rise k-<%= ship.kind %>" id="<%= dom_id ship %>" href="<%= ship.check_it_out_url %>">
   <div class="art">
     <% case ship.media_kind
@@ -12,7 +12,7 @@
     <% end %>
   </div>
   <div class="meta">
-    <span class="mono"><%= ship.explorable? ? "Explorable" : "Comic" %> · <%= ship.shipped_on.strftime("%-d %b %Y") %></span>
+    <span class="mono"><%= ship.kind.titleize %> · <%= ship.shipped_on.strftime("%-d %b %Y") %></span>
     <h4><%= ship.title %></h4>
     <% if ship.blurb.present? %><p><%= ship.blurb %></p><% end %>
     <span class="open">Open it <span class="arr">→</span></span>

@@ -15,6 +15,11 @@ class ShelvesController < ApplicationController
     redirect_to "#{apps_path}/", status: :moved_permanently
   end
 
+  def skills
+    @ships = Ship.log.skill.with_attached_preview.with_attached_poster.includes(:post)
+    fresh_when etag: @ships
+  end
+
   def explorables
     @ships = Ship.log.explorable.with_attached_preview.with_attached_poster.includes(:post)
     fresh_when etag: @ships

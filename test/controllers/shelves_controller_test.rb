@@ -37,6 +37,24 @@ class ShelvesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to "/apps/"
   end
 
+  test "the skills page stacks each skill with its poster as the picture, and no drafts" do
+    ships(:phone).preview.attach(io: StringIO.new("mp4".b), filename: "loop.mp4", content_type: "video/mp4")
+    ships(:phone).poster.attach(io: StringIO.new("jpg".b), filename: "poster.jpg", content_type: "image/jpeg")
+    get "/skills/"
+    assert_response :success
+    assert_select ".ph .kick", text: "Skills · 2 skills"
+    assert_select ".ph h1", text: "Things I taught my AI employee."
+    assert_select ".ph p a[href=?]", "https://github.com/nityeshaga/claude-home-base"
+    assert_select ".rows a.row[href=?]", "https://github.com/nityeshaga/claude-home-base" do
+      assert_select ".art img[src=?]", ships(:phone).poster_path
+      assert_select ".meta h4", text: "Luo can take a phone call now."
+      assert_select ".meta .mono", text: "Skill · 11 Sep 2026"
+    end
+    assert_equal [ ships(:phone), ships(:clock) ].map { |ship| "ship_#{ship.id}" }, css_select(".rows a.row").map { |a| a["id"] }
+    assert_select ".rows", text: /#{ships(:drafted).title}/, count: 0
+    assert_select "title", text: "Skills — Nityesh Agarwal"
+  end
+
   test "the explorables page stacks each explorable with its front page as the picture" do
     ships(:hotwire).preview.attach(io: StringIO.new("jpg".b), filename: "shot-hotwire.jpg", content_type: "image/jpeg")
     get "/explorables/"
@@ -88,7 +106,7 @@ class ShelvesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "the masthead underlines the shelf it is on" do
-    { "/apps/" => "Apps", "/explorables/" => "Explorables", "/comics/" => "Comics", "/essays/" => "Essays", "/about/" => "About" }.each do |path, label|
+    { "/apps/" => "Apps", "/skills/" => "Skills", "/explorables/" => "Explorables", "/comics/" => "Comics", "/essays/" => "Essays", "/about/" => "About" }.each do |path, label|
       get path
       assert_select ".nav a.on", count: 1
       assert_select ".nav a.on", text: label
@@ -118,7 +136,7 @@ class ShelvesControllerTest < ActionDispatch::IntegrationTest
 
   # The shelves live at the root beside the posts, so their names can't be a post's slug.
   test "a shelf's name is reserved, not available to a post" do
-    %w[ apps tools explorables comics essays ].each do |name|
+    %w[ apps skills tools explorables comics essays ].each do |name|
       assert_equal :reserved, Slug.new(name).state, name
     end
   end
@@ -128,7 +146,7 @@ class ShelvesControllerTest < ActionDispatch::IntegrationTest
     doc = Nokogiri::XML(response.body)
     doc.remove_namespaces!
     locs = doc.xpath("//url/loc").map(&:text)
-    %w[ apps explorables comics essays ].each do |shelf|
+    %w[ apps skills explorables comics essays ].each do |shelf|
       assert_includes locs, "http://www.example.com/#{shelf}/"
     end
   end

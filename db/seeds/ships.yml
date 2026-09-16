@@ -23,7 +23,7 @@
   post: stop-designing-ai-interfaces-just-use-slack-and-asana
 - number: 3
   shipped_on: '2026-05-18'
-  kind: tool
+  kind: skill
   built_by: together
   title: How far can GitHub Pages actually go?
   blurb: 'The fastest way from zero to production for a semi-technical person. Seven working apps on a static host to find the ceiling: a synthesizer, a podcast player, a whiteboard.'
@@ -68,7 +68,7 @@
   poster: poster-2069900616986759195.jpg
 - number: 7
   shipped_on: '2026-06-26'
-  kind: tool
+  kind: skill
   built_by: together
   title: Elon's algorithm, run by a swarm of agents.
   blurb: Question every requirement, delete, simplify. Codified as a skill where a swarm of agents debates every cut. The way to make Opus 5 work on your prompts is subtraction, and this is the knife.
@@ -112,7 +112,7 @@
   preview: shot-chronicles.jpg
 - number: 11
   shipped_on: '2026-07-23'
-  kind: tool
+  kind: skill
   built_by: luo
   title: A 24-hour clock for everything Luo does on its own.
   blurb: Twenty-three scheduled jobs, one clock face. Which ran, which failed, and a button to edit the prompt of any of them.
@@ -122,7 +122,7 @@
   preview: 2080289107377545423-0.jpg
 - number: 12
   shipped_on: '2026-08-13'
-  kind: tool
+  kind: skill
   built_by: together
   title: 'Chad Review: I gave my AI a bullshit detector.'
   blurb: 'The newest, most capable models slop the worst. Not padding any more: the clever word, the metaphor, the invented caveat. Chad is the reader who can''t be impressed, and he reads every draft before the real world does.'
@@ -133,7 +133,7 @@
   poster: poster-2087855745006199247.jpg
 - number: 13
   shipped_on: '2026-08-14'
-  kind: tool
+  kind: skill
   built_by: luo
   title: Luo built itself a battery alarm.
   blurb: Unprompted, Luo made a job that pings me when its MacBook gets unplugged. Today a cleaner unplugged it, and I got the notification. All to keep its trust battery with me charged.
@@ -153,7 +153,7 @@
   preview: 2088894013130829918-0.jpg
 - number: 15
   shipped_on: '2026-08-19'
-  kind: tool
+  kind: skill
   built_by: luo
   title: Per-channel prompts, and Figma-style comments on any HTML page.
   blurb: 'Two abilities built in one conversation: set the prompt and effort per Slack channel, and mark up a landing page like Figma so I can leave comments and ask Luo to fix them.'
@@ -173,7 +173,7 @@
   post: i-have-adhd-opus-5
 - number: 17
   shipped_on: '2026-09-09'
-  kind: tool
+  kind: skill
   built_by: together
   title: 'Explorable Explanations: a skill that makes decks you can play.'
   blurb: AI is great at one-page HTML. I wanted a deck of interconnected pages that feels like an immersive lesson, with little JavaScript games so you learn by exploring. A week of work with Luo, shipped as a skill for Fable 5.1. The three explorables below were made with it.
@@ -184,7 +184,7 @@
   poster: poster-2097765678854062241.jpg
 - number: 18
   shipped_on: '2026-09-10'
-  kind: tool
+  kind: skill
   built_by: together
   title: A git toolbar whose buttons spawn subagents.
   blurb: I built a git toolbar into my AI employee's file browser, then wired each button to spawn a little subagent that does the work. Fetch, pull, push, stash, and halfway through I realised the old VS Code buttons had a ceiling this doesn't.
@@ -195,7 +195,7 @@
   poster: poster-2098121473798139946.jpg
 - number: 19
   shipped_on: '2026-09-11'
-  kind: tool
+  kind: skill
   built_by: together
   title: Luo can take a phone call now.
   blurb: I used GPT-Live-1 to give Luo, my AI employee, a voice. I can call it from Telegram while driving or on a walk, and it does real work across every project. Easily the biggest capability lift in my AI work.

@@ -29,10 +29,7 @@
         <div class="tier2">
           <nav class="wrap nav">
             <a href="<%= root_path %>" class="<%= "on" if current_page?(root_path) %>">Latest</a>
-            <a href="/apps/" class="k-app <%= "on" if on_page?(apps_path) %>" data-k="app"><span class="ki"></span>Apps</a>
-            <a href="/explorables/" class="k-explorable <%= "on" if on_page?(explorables_path) %>" data-k="explorable"><span class="ki"></span>Explorables</a>
-            <a href="/comics/" class="k-comic <%= "on" if on_page?(comics_path) %>" data-k="comic"><span class="ki"></span>Comics</a>
-            <a href="/essays/" class="k-chronicle <%= "on" if on_page?(essays_path) %>" data-k="chronicle"><span class="ki"></span>Essays</a>
+            <%= render "shelves/nav_links", kinds: kinds_by_recency %>
             <a href="/about/" class="about <%= "on" if on_page?("/about") %>">About</a>
           </nav>
         </div>

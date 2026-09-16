@@ -21,7 +21,7 @@ class CreateShipToolTest < ActiveSupport::TestCase
     assert_equal "draft", result[:status]
     assert_includes result[:message], "publish_ship"
 
-    dated = CreateShipTool.new.call(title: "Dated", kind: "tool", built_by: "luo", shipped_on: "2026-09-01")
+    dated = CreateShipTool.new.call(title: "Dated", kind: "skill", built_by: "luo", shipped_on: "2026-09-01")
     assert_equal Date.new(2026, 9, 1), Ship.find(dated[:id]).shipped_on
   end
 

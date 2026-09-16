@@ -1,0 +1,7 @@
+<%# locals: (kinds:) %>
+<%# The shelf of kinds in the masthead, freshest kind first — the order Ship.kinds_by_recency gives. %>
+<% shelves = { "app" => [ "Apps", apps_path ], "skill" => [ "Skills", skills_path ], "explorable" => [ "Explorables", explorables_path ], "comic" => [ "Comics", comics_path ], "chronicle" => [ "Essays", essays_path ] } %>
+<% kinds.each do |kind| %>
+  <% label, path = shelves.fetch(kind) %>
+  <a href="<%= path %>/" class="k-<%= kind %> <%= "on" if on_page?(path) %>" data-k="<%= kind %>"><span class="ki"></span><%= label %></a>
+<% end %>
