@@ -1,9 +1,9 @@
-# Three ships: a live tool with a video-style entry, a live chronicle that points at a
+# Three ships: a live skill with a video-style entry, a live chronicle that points at a
 # post (so its door and cover derive from the post), and a draft with no number yet.
 phone:
   number: 19
   shipped_on: 2026-09-11
-  kind: tool
+  kind: skill
   title: Luo can take a phone call now.
   blurb: I used GPT-Live-1 to give Luo a voice.
   built_by: together
@@ -31,7 +31,7 @@ drafted:
   built_by: luo
   status: draft
 
-# The shelves: an app with the log's oldest date and its newest number, a tool that lives on
+# The shelves: an app with the log's oldest date and its newest number, a skill that lives on
 # X rather than GitHub, an explorable and a comic.
 cc:
   number: 23
@@ -47,7 +47,7 @@ cc:
 clock:
   number: 11
   shipped_on: 2026-07-23
-  kind: tool
+  kind: skill
   title: A 24-hour clock for everything Luo does on its own.
   built_by: luo
   check_it_out_url: https://x.com/nityeshaga/status/2080289107377545423

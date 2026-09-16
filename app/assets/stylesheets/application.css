@@ -11,7 +11,7 @@
   --paper: #F4EFE6; --paper-2: #EBE4D6; --ink: #16130F; --ink-2: #3A342C; --mute: #7A7063; --rule: #D8CFC0;
   --n: #E8471C;   /* Nityesh — vermilion */
   --l: #1D3FE0;   /* Luo — cobalt */
-  --k-app: #E8471C; --k-tool: #1D3FE0; --k-explorable: #D9A400; --k-comic: #D6336C; --k-chronicle: #1F7A4D;
+  --k-app: #E8471C; --k-skill: #1D3FE0; --k-explorable: #D9A400; --k-comic: #D6336C; --k-chronicle: #1F7A4D;
   --display: "Libre Caslon Display", Georgia, serif;
   --body: "Source Serif 4", Georgia, serif;
   --mono: "Martian Mono", ui-monospace, monospace;
@@ -504,13 +504,14 @@ body:has(.preview-strip) .mast { top: 40px; }
 .nav a.on { color: var(--ink); border-color: var(--k, var(--ink)); }
 .nav a[data-k]:hover { border-color: var(--k); }
 .nav .ki { display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: var(--k); }
+.nav a[data-k="skill"] .ki { transform: rotate(45deg); }
 .nav a[data-k="explorable"] .ki { border-radius: 50%; }
 .nav a[data-k="comic"] .ki { background: repeating-linear-gradient(90deg, var(--k) 0 3px, transparent 3px 5px), repeating-linear-gradient(0deg, var(--k) 0 3px, transparent 3px 5px); background-color: var(--k); }
 .nav a[data-k="chronicle"] .ki { width: 11px; height: 3px; border-radius: 2px; }
 .nav .about { margin-left: auto; color: var(--mute); }
 
 /* The kinds, each with a colour. An element inside .k-<kind> reads its own colour as --k. */
-.k-app { --k: var(--k-app); } .k-tool { --k: var(--k-tool); } .k-explorable { --k: var(--k-explorable); } .k-comic { --k: var(--k-comic); } .k-chronicle { --k: var(--k-chronicle); }
+.k-app { --k: var(--k-app); } .k-skill { --k: var(--k-skill); } .k-explorable { --k: var(--k-explorable); } .k-comic { --k: var(--k-comic); } .k-chronicle { --k: var(--k-chronicle); }
 /* The writer's shortcut from a published page into its editor. Floats clear of
    the article so the reading design stays untouched; its looks come from
    .admin-link below, like every other back-office control. */
@@ -627,12 +628,12 @@ html.preview-phone .preview-frame {
 .ship h3 a:hover { color: var(--n); }
 .ship p { margin: 0 0 18px; max-width: 64ch; color: var(--ink-2); }
 
-/* The kind pill, with its glyph: square for apps, diamond for tools, dot for explorables,
+/* The kind pill, with its glyph: square for apps, diamond for skills, dot for explorables,
    halftone for comics, a dash for chronicles. */
 .kind { display: flex; width: max-content; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #fff; background: var(--k); padding: 5px 10px 5px 8px; border-radius: 999px; margin-bottom: 12px; }
 .kind i { width: 8px; height: 8px; background: #fff; display: inline-block; border-radius: 2px; }
 .k-explorable .kind i { border-radius: 50%; }
-.k-tool .kind i { transform: rotate(45deg); }
+.k-skill .kind i { transform: rotate(45deg); }
 .k-chronicle .kind i { width: 12px; height: 3px; }
 .k-comic .kind i { background: repeating-linear-gradient(90deg, #fff 0 3px, transparent 3px 4px), repeating-linear-gradient(0deg, #fff 0 3px, transparent 3px 4px); background-color: #fff; }
 
@@ -727,7 +728,6 @@ button.door { background: transparent; color: var(--ink); cursor: pointer; }
 .shelf-head h2 { font-family: var(--display); font-weight: 400; font-size: 44px; letter-spacing: -.02em; margin: 0; }
 .shelf-head .mono { color: var(--mute); letter-spacing: .08em; }
 .shelf-head .mono.ink-n { color: var(--n); }
-#tools { margin-top: 64px; }
 
 /* Apps: a card per app in print, its preview as the art, lifting on hover. */
 .machines { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }

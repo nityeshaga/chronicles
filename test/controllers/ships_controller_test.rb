@@ -22,7 +22,7 @@ class ShipsControllerTest < ActionDispatch::IntegrationTest
 
   test "a ship wears its kind and links its title to where it lives" do
     get root_url
-    assert_select "article.ship.k-tool .kind", text: "Tool"
+    assert_select "article.ship.k-skill .kind", text: "Skill"
     assert_select "article.ship h3 a[href=?]", ships(:phone).check_it_out_url, text: ships(:phone).title
   end
 
@@ -110,8 +110,8 @@ class ShipsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # The masthead is two tiers: the brand and the email CTA on the first line, the
-  # shelf of kinds on the second with About parked at its far end. Tools lives on
-  # the apps page and X in the footer, so neither gets a masthead link.
+  # shelf of kinds on the second with About parked at its far end. X lives in the
+  # footer, so it gets no masthead link.
   test "the masthead carries the brand and the email CTA above a shelf of the kinds" do
     get root_url
     assert_select ".mast .top a.brand[href=?]", "/"
@@ -119,16 +119,34 @@ class ShipsControllerTest < ActionDispatch::IntegrationTest
       assert_select ".l", text: "Get new stuff by email"
       assert_select ".s", text: "Subscribe"
     end
-    assert_select ".mast .nav a", count: 6
+    assert_select ".mast .nav a", count: 7
     assert_select ".nav a[href=?]", "/", text: "Latest"
     assert_select ".nav a.on", count: 1
     assert_select ".nav a.on", text: "Latest"
-    %w[ /apps/ /explorables/ /comics/ /essays/ ].each do |href|
+    %w[ /apps/ /skills/ /explorables/ /comics/ /essays/ ].each do |href|
       assert_select ".nav a[data-k][href=?] .ki", href
     end
     assert_select ".nav a.about[href=?]", "/about/"
-    assert_select ".mast a[href=?]", "/apps/#tools", count: 0
     assert_select ".mast a[href^=?]", "https://x.com", count: 0
+  end
+
+  # Latest first, About last; between them the kinds, whichever shipped most recently
+  # first. The fixtures ship a skill on 11 Sep, an explorable on 9 Sep, a chronicle on
+  # 29 Aug, a comic in April and the app back in 2024.
+  test "the masthead lists the kinds by their latest ship" do
+    get root_url
+    assert_equal %w[ Latest Skills Explorables Essays Comics Apps About ], nav_labels
+  end
+
+  test "publishing a ship of a stale kind reorders the masthead on the next request, cached or not" do
+    get "/comics/"
+    etag = response.headers["ETag"]
+    assert_equal "Apps", nav_labels[-2]
+
+    ships(:drafted).publish   # an app, shipped 14 Sep: the app shelf is now the freshest
+    get "/comics/", headers: { "If-None-Match" => etag }
+    assert_response :success
+    assert_equal %w[ Latest Apps Skills Explorables Essays Comics About ], nav_labels
   end
 
   test "the footer links the feed and the source" do
@@ -164,4 +182,9 @@ class ShipsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "application/rss+xml", response.media_type
     assert_match posts(:published).title, response.body
   end
+
+  private
+    def nav_labels
+      css_select(".nav a").map { |a| a.text.strip }
+    end
 end

@@ -59,7 +59,7 @@ MCP_SERVER_INSTRUCTIONS = -> do
   would take), then resolve_note with one line on what changed — it appears under the note
   on the page. Check list_notes at the start of a session.
 
-  Ships are the log's unit: one thing shipped on a day — an app, tool, explorable, comic or
+  Ships are the log's unit: one thing shipped on a day — an app, skill, explorable, comic or
   chronicle — with a title, a blurb, who built it (nityesh, luo, together), a media preview
   and three doors: check_it_out_url, a copyable prompt, and a how_built_post. Most ships
   live off-site; link `post` when one announces a post, HTML page or explorable here.

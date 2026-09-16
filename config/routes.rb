@@ -25,6 +25,7 @@ Rails.application.routes.draw do
   # One page per kind of thing shipped, and the essays by era. Named here, above the
   # root catch-alls, which is also what reserves these names: Slug asks the router.
   get "apps",        to: "shelves#apps",        as: :apps
+  get "skills",      to: "shelves#skills",      as: :skills
   get "explorables", to: "shelves#explorables", as: :explorables
   get "comics",      to: "shelves#comics",      as: :comics
   get "essays",      to: "shelves#essays",      as: :essays

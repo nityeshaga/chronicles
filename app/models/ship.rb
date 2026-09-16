@@ -1,4 +1,4 @@
-# One thing shipped, the day it shipped: an app, a tool, an explorable, a comic or a
+# One thing shipped, the day it shipped: an app, a skill, an explorable, a comic or a
 # chronicle. Most of them live off-site — on X, on GitHub, on another domain — so a ship is
 # not a Post. It is its own numbered entry in the log that may point at a post, an HTML page
 # or an explorable here (post), and at the post that tells how it was built (how_built_post).
@@ -13,7 +13,7 @@ class Ship < ApplicationRecord
   has_one_attached :preview
   has_one_attached :poster
 
-  enum :kind, %w[ app tool explorable comic chronicle ].index_by(&:itself), validate: true
+  enum :kind, %w[ app skill explorable comic chronicle ].index_by(&:itself), validate: true
   enum :built_by, %w[ nityesh luo together ].index_by(&:itself), validate: true, prefix: true
   enum :status, %w[ draft published ].index_by(&:itself), default: :draft
 
@@ -28,9 +28,14 @@ class Ship < ApplicationRecord
   # What the reader sees: everything live, newest first. Same-day ships keep their
   # numbering order, so a batch shipped together reads top-down as it was logged.
   scope :log, -> { published.ordered }
-  # Skills and parts: the tools whose door one opens a repository.
-
   def self.by_month = log.group_by { |ship| ship.shipped_on.beginning_of_month }
+
+  # The kinds in the order the masthead lists them: whichever shipped most recently first.
+  # One grouped query. A kind nothing has shipped in yet goes last, in the enum's order.
+  def self.kinds_by_recency
+    latest = published.group(:kind).maximum(:shipped_on)
+    kinds.keys.each_with_index.sort_by { |kind, index| [ -(latest[kind]&.jd || 0), index ] }.map(&:first)
+  end
 
   # Take a draft live, minting its number on the way if it hasn't one. A number, once
   # given, is never given again — the unique index is the guard.

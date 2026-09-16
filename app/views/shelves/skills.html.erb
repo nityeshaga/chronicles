@@ -1,0 +1,14 @@
+<% content_for :body_class, "shelf-template" %>
+<% content_for :meta_title, "Skills — #{Setting.current.author_name}" %>
+
+<section class="ph"><div class="wrap">
+  <div class="kick">Skills · <%= pluralize @ships.size, "skill" %></div>
+  <h1>Things I taught my AI employee.</h1>
+  <p>Skills, prompts and abilities built with Luo, most of them open source in <a href="https://github.com/nityeshaga/claude-home-base">claude-home-base</a>. Copy the prompt on any one of them and hand it to your own agent.</p>
+</div></section>
+
+<section class="shelf"><div class="wrap">
+  <div class="rows"><%= render partial: "shelves/row", collection: @ships, as: :ship %></div>
+</div></section>
+
+<%= render "ships/subscribe" %>

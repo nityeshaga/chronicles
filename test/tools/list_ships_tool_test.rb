@@ -19,7 +19,7 @@ class ListShipsToolTest < ActiveSupport::TestCase
     assert_equal 19, phone[:number]
     assert_equal "published", phone[:status]
     assert_equal "2026-09-11", phone[:shipped_on]
-    assert_equal "tool", phone[:kind]
+    assert_equal "skill", phone[:kind]
     assert_equal "together", phone[:built_by]
     assert_equal "https://github.com/nityeshaga/claude-home-base", phone[:check_it_out_url]
     assert_equal "2098484853939597670", phone[:x_status_id]

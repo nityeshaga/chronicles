@@ -7,7 +7,7 @@ class ListShipsTool < ActionTool::Base
   MAX_LIMIT = 200
 
   tool_name "list_ships"
-  description "List the ship log — everything shipped, newest first — with optional status and kind filters. A ship is one thing shipped on a day (app, tool, explorable, comic, chronicle) with its blurb, media, and doors. Returns every field; there is no separate get."
+  description "List the ship log — everything shipped, newest first — with optional status and kind filters. A ship is one thing shipped on a day (app, skill, explorable, comic, chronicle) with its blurb, media, and doors. Returns every field; there is no separate get."
   annotations(
     title: "List Ships",
     read_only_hint: true,
