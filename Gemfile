@@ -19,7 +19,7 @@ gem "stimulus-rails"
 gem "redpen-rails", github: "nityeshaga/redpen"
 
 # Rich text editor for Action Text — Trix's successor from 37signals [https://github.com/basecamp/lexxy]
-gem "lexxy", "~> 0.9.31"
+gem "lexxy", "~> 0.9.32"
 
 # Syntax highlighting at render, so readers get coloured code without downloading the editor [https://github.com/rouge-ruby/rouge]
 gem "rouge"
