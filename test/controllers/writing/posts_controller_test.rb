@@ -75,7 +75,8 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     posts(:about).touch
     get writing_posts_url
 
-    assert_equal Post.order(updated_at: :desc, id: :desc).map { |record| "/#{record.slug}/" },
+    # A doc has no URL to show, so the URL column is every record that could have a reader.
+    assert_equal Post.order(updated_at: :desc, id: :desc).select(&:publishable?).map { |record| "/#{record.slug}/" },
       css_select(".dash-row__url").map(&:text)
     assert_equal "/about/", css_select(".dash-row__url").first.text
   end
@@ -88,7 +89,7 @@ class Writing::PostsControllerTest < ActionDispatch::IntegrationTest
     Post.update_all(updated_at: 1.year.ago)
     get writing_posts_url
 
-    assert_equal Post.order(id: :desc).map { |record| "/#{record.slug}/" },
+    assert_equal Post.order(id: :desc).select(&:publishable?).map { |record| "/#{record.slug}/" },
       css_select(".dash-row__url").map(&:text)
   end
 

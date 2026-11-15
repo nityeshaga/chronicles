@@ -4,7 +4,7 @@ class CreatePostTool < ActionTool::Base
   include PostToolSupport
 
   tool_name "create_post"
-  description "Create a new post or page. ALWAYS creates a draft — publishing is a separate step (call publish_post afterward). Title and excerpt are squished to one line; slug auto-generates from the title unless you pass one. Returns the id, slug, and edit URL."
+  description "Create a new post, page or doc. ALWAYS creates a draft — publishing is a separate step (call publish_post afterward). A doc is the author's private working paper: it is never published, he edits it in the same editor, and the two of you talk in its margin (list_comments, add_comment, resolve_comment). Title and excerpt are squished to one line; slug auto-generates from the title unless you pass one. Returns the id, slug, and edit URL."
   annotations(
     title: "Create Post",
     read_only_hint: false,
@@ -15,7 +15,7 @@ class CreatePostTool < ActionTool::Base
 
   arguments do
     required(:title).filled(:string).description("The post title.")
-    optional(:kind).filled(:string).description("'article' (a blog post, the default) or 'page' (a standalone page like About). A whole-document HTML page is not a kind here — it has its own tool, create_html_page.")
+    optional(:kind).filled(:string).description("'article' (a blog post, the default), 'page' (a standalone page like About) or 'doc' (a private working document with a comment margin — only title and body apply). A whole-document HTML page is not a kind here — it has its own tool, create_html_page.")
     optional(:body).filled(:string).description("Body HTML. For images/embeds use Ghost-parity kg-* card markup — call upload_image/create_embed rather than hand-writing it. Markup that must be served exactly as written (a CSS grid, a chart that draws itself) is an HTML card: call create_html_card and paste the attachment element it returns, because a <style> or <script> written into the body itself is sanitized away. A real <table> needs no card — tables are ordinary prose here and render natively in Gmail.")
     optional(:excerpt).filled(:string).description("The standfirst shown under the title, on the home feed, and in social cards.")
     optional(:slug).filled(:string).description("Explicit URL slug. Omit to auto-generate from the title.")
@@ -32,9 +32,9 @@ class CreatePostTool < ActionTool::Base
     # Named separately from the generic kind error: an agent reaching for html_page has the
     # right intent and the wrong door, so send it to the door rather than to the kind list.
     return ToolErrors::HTML_PAGE_KIND if kind == "html_page"
-    return ToolErrors::INVALID_KIND unless %w[ article page ].include?(kind)
+    return ToolErrors::INVALID_KIND unless KINDS.key?(kind)
 
-    post = (kind == "page" ? Page : Post).new(
+    post = KINDS.fetch(kind).new(
       title: title,
       excerpt: excerpt,
       slug: slug,
@@ -52,7 +52,7 @@ class CreatePostTool < ActionTool::Base
         slug: post.slug,
         status: status_of(post),
         edit_url: edit_url(post),
-        message: "Draft created. Revise it with update_post, then take it live with publish_post."
+        message: (post.publishable? ? "Draft created. Revise it with update_post, then take it live with publish_post." : "Doc created. It is private and stays that way: revise it with update_post, and read its margin with list_comments.")
       }
     else
       { error: post.errors.full_messages.join(", ") }

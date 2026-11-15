@@ -1,0 +1,25 @@
+<%# Every thread on the doc, open ones first and each addressed by dom_id. The open ones
+    are parked beside their passage by the comments controller; the resolved ones have
+    left the prose and wait folded at the foot, where one click brings any of them back. %>
+<% open, resolved = threads.partition { |thread| !thread.resolved? } %>
+<%= turbo_frame_tag "doc_comments", class: "doc-rail__threads", data: { comments_target: "frame" } do %>
+  <% if open.any? %>
+    <button type="button" class="doc-rail__jump" data-action="comments#toThreads">
+      <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2.5 3.5h11v7h-6l-3 2.5v-2.5h-2z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      <%= pluralize(open.size, "comment") %>
+    </button>
+  <% end %>
+
+  <% if threads.empty? %>
+    <p class="doc-rail__blank">Select some text to comment on it.</p>
+  <% end %>
+
+  <%= render partial: "writing/comments/thread", collection: open, as: :thread, locals: { doc: doc } %>
+
+  <% if resolved.any? %>
+    <details class="doc-rail__resolved">
+      <summary><%= pluralize(resolved.size, "resolved thread") %></summary>
+      <%= render partial: "writing/comments/thread", collection: resolved, as: :thread, locals: { doc: doc } %>
+    </details>
+  <% end %>
+<% end %>

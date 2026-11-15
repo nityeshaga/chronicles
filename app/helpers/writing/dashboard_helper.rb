@@ -11,7 +11,8 @@ module Writing::DashboardHelper
     { bucket: "published", label: "Published" },
     { bucket: "page", label: "Pages" },
     { bucket: "html_page", label: "HTML pages" },
-    { bucket: "explorable", label: "Explorables" }
+    { bucket: "explorable", label: "Explorables" },
+    { bucket: "doc", label: "Docs" }
   ].freeze
 
   def dashboard_tabs(records)

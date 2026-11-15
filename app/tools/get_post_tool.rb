@@ -6,7 +6,7 @@ class GetPostTool < ActionTool::Base
   BODY_CHARACTER_LIMIT = 20_000
 
   tool_name "get_post"
-  description "Get a single post, page or HTML page with all authoring fields and its body HTML, windowed by body_offset/body_limit so a long essay can't blow the context. For an HTML page the window reads the stored document itself."
+  description "Get a single post, page, HTML page or doc with all authoring fields and its body HTML, windowed by body_offset/body_limit so a long essay can't blow the context. For an HTML page the window reads the stored document itself."
   annotations(
     title: "Get Post",
     read_only_hint: true,
@@ -57,6 +57,8 @@ class GetPostTool < ActionTool::Base
       body_offset: body_offset,
       body_total_length: body_html.length,
       body_truncated: (body_offset + body_slice.length) < body_html.length,
+      # A doc's margin is half the document: say how much of it is waiting to be read.
+      open_comments: (post.comments.threads.open.count if post.is_a?(Doc)),
       # An explorable is its files; the body window above is only its index.html.
       files: (post.assets.where.not(path: Explorable::INDEX).order(:path).pluck(:path) if post.is_a?(Explorable))
     }.compact

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_16_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.text "body"
     t.datetime "created_at", null: false
@@ -59,6 +59,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_090000) do
     t.integer "user_id", null: false
     t.index ["token_digest"], name: "index_api_tokens_on_token_digest", unique: true
     t.index ["user_id"], name: "index_api_tokens_on_user_id"
+  end
+
+  create_table "comments", force: :cascade do |t|
+    t.string "author_name", null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.integer "doc_id", null: false
+    t.integer "parent_id"
+    t.string "prefix"
+    t.text "quote"
+    t.datetime "resolved_at"
+    t.datetime "updated_at", null: false
+    t.index ["doc_id"], name: "index_comments_on_doc_id"
+    t.index ["parent_id"], name: "index_comments_on_parent_id"
   end
 
   create_table "explorable_assets", force: :cascade do |t|
@@ -259,6 +273,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_090000) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "api_tokens", "users"
+  add_foreign_key "comments", "comments", column: "parent_id", on_delete: :cascade
+  add_foreign_key "comments", "posts", column: "doc_id", on_delete: :cascade
   add_foreign_key "explorable_assets", "posts", column: "explorable_id"
   add_foreign_key "mcp_sessions", "users"
   add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"

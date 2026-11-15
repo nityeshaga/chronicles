@@ -7,7 +7,7 @@ class ListPostsTool < ActionTool::Base
   MAX_LIMIT = 100
 
   tool_name "list_posts"
-  description "List posts, pages and HTML pages with optional filters (status, kind, tag, title query). Paginated; returns metadata only, never bodies — call get_post for a body."
+  description "List posts, pages, HTML pages and docs with optional filters (status, kind, tag, title query). Paginated; returns metadata only, never bodies — call get_post for a body."
   annotations(
     title: "List Posts",
     read_only_hint: true,
@@ -17,8 +17,8 @@ class ListPostsTool < ActionTool::Base
   )
 
   arguments do
-    optional(:status).filled(:string).description("Filter by status: 'draft', 'scheduled' (a draft with a future publish time), or 'published'.")
-    optional(:kind).filled(:string).description("Filter by kind: 'article' (a blog post), 'page' (a standalone page like About), 'html_page' (a whole hand-authored HTML document) or 'explorable' (a bundle of files under one slug).")
+    optional(:status).filled(:string).description("Filter by status: 'draft', 'scheduled' (a draft with a future publish time), or 'published'. Docs are none of these — they report 'private' and are listed with kind: 'doc'.")
+    optional(:kind).filled(:string).description("Filter by kind: 'article' (a blog post), 'page' (a standalone page like About), 'html_page' (a whole hand-authored HTML document), 'explorable' (a bundle of files under one slug) or 'doc' (a private working document).")
     optional(:tag).filled(:string).description("Filter by tag slug.")
     optional(:query).filled(:string).description("Case-insensitive substring match on the title.")
     optional(:limit).filled(:integer).description("Max results (default: #{DEFAULT_LIMIT}, max: #{MAX_LIMIT}).")
@@ -39,12 +39,17 @@ class ListPostsTool < ActionTool::Base
     scope = scope.where(type: "Page") if kind == "page"
     scope = scope.where(type: "HtmlPage") if kind == "html_page"
     scope = scope.where(type: "Explorable") if kind == "explorable"
+    scope = scope.where(type: "Doc") if kind == "doc"
 
     now = Time.current
     case status
     when "published" then scope = scope.published
     when "scheduled" then scope = scope.draft.where("published_at > ?", now)
-    when "draft"     then scope = scope.draft.where("published_at IS NULL OR published_at <= ?", now)
+    # Drafts are what is on its way to being published, which a doc never is: one shows
+    # up here only when it was asked for by kind.
+    when "draft"
+      scope = scope.draft.where("published_at IS NULL OR published_at <= ?", now)
+      scope = scope.where.not(type: "Doc") unless kind == "doc"
     end
 
     if tag.present?
@@ -82,6 +87,6 @@ class ListPostsTool < ActionTool::Base
         published_at: post.published_at&.iso8601,
         excerpt: post.excerpt,
         tags: post.tags.map(&:slug)
-      }
+      }.tap { |summary| summary[:edit_url] = edit_url(post) if post.is_a?(Doc) }
     end
 end

@@ -19,6 +19,9 @@ class Writing::PostsController < Writing::BaseController
     # an imported batch is whatever SQLite feels like returning, and it can differ between
     # two loads of the same page.
     @records = Post.order(updated_at: :desc, id: :desc).includes(:tags)
+    # A doc's row says how many threads are waiting in its margin. One grouped count for
+    # the whole list rather than one per row.
+    @open_threads = Comment.threads.open.group(:doc_id).count
   end
 
   def show

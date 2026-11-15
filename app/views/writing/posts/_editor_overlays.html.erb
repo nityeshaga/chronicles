@@ -3,6 +3,7 @@
     They are siblings rather than children for the reason the panel's comments give — a
     nested <form> is stripped by the parser — and they live in one partial so the mint's
     turbo_stream can bring them all in at once. %>
+<% if post.publishable? %>
 <div class="publish-popover" data-editor-target="publish" role="dialog" aria-label="Publishing">
   <header class="publish-popover__head">
     <h2>Publishing</h2>
@@ -12,6 +13,7 @@
   </header>
   <%= render "writing/posts/publishing", post: post %>
 </div>
+<% end %>
 
 <%= form_with url: [ :writing, post ], method: :delete, id: "delete-post" do %><% end %>
 

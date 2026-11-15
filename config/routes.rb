@@ -86,6 +86,15 @@ Rails.application.routes.draw do
     resources :explorables, only: %i[ show edit update destroy ] do
       resource :publishing, only: %i[ create destroy ]
     end
+    # Docs are the writer's own working papers: never public, so no preview and no
+    # publishing, and listed on the writing index like everything else. Their margin is a
+    # resource of its own — a comment is created and deleted, and resolving one is creating
+    # its resolution, which reopening destroys.
+    resources :docs, except: %i[ index show ] do
+      resources :comments, only: %i[ index create destroy ] do
+        resource :resolution, only: %i[ create destroy ], module: :comments
+      end
+    end
     resources :tags, only: %i[ index edit update create ]
     resources :embeds, only: %i[ create ]
     # show is one card, bare, for the writer's canvas to frame — addressed by the sgid the

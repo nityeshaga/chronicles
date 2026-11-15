@@ -5,7 +5,9 @@ module ToolErrors
   POST_NOT_FOUND = { error: "Post not found. Use list_posts to find the right id or slug." }.freeze
   TAG_NOT_FOUND = { error: "Tag not found. Use list_tags to see the available tag slugs." }.freeze
   HTML_CARD_NOT_FOUND = { error: "HTML card not found. The id is the one create_html_card returned, and cards aren't listed anywhere else — if it's lost, create the card again and patch the new attachment_html over the old reference in the body." }.freeze
-  INVALID_KIND = { error: "kind must be 'article' or 'page'." }.freeze
+  INVALID_KIND = { error: "kind must be 'article', 'page' or 'doc'." }.freeze
+  DOC_NOT_FOUND = { error: "Doc not found. Use list_posts with kind: 'doc' to find the right id." }.freeze
+  COMMENT_NOT_FOUND = { error: "Comment not found. Call list_comments for the doc's current thread ids." }.freeze
   HTML_PAGE_KIND = { error: "kind 'html_page' isn't set here. A whole-document HTML page is created with create_html_page and edited with update_html_page." }.freeze
   IS_AN_EXPLORABLE = { error: "That's an explorable: a bundle of files, not one document. Use update_explorable (send index.html in files to change the front document)." }.freeze
   NOT_AN_EXPLORABLE = { error: "That's not an explorable. Use update_html_page for an HTML page, or update_post for a post or page." }.freeze

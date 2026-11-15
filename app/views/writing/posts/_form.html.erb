@@ -13,7 +13,10 @@
 <%# bar rides the shell rather than the bar itself: what it shows lives up here, but what
     it shows it ABOUT — the canvas title, the prose — lives down in the canvas, and a
     Stimulus target has to be a descendant. The editor controller keeps the overlays. %>
-<div class="editor-shell" data-controller="editor bar tk" data-editor-open-class="is-open"
+<%# A doc wears one more controller, for its margin: it measures the prose the way tk does
+    and never writes into it. It rides the shell because the prose is inside the form and
+    the comments cannot be — they are forms themselves. %>
+<div class="editor-shell<%= " editor-shell--doc" if post.commentable? %>" data-controller="editor bar tk<%= " comments" if post.commentable? %>" data-editor-open-class="is-open"
      data-editor-autosave-outlet=".editor-shell__form"
      data-editor-open-publish-value="<%= publishing_open? %>"
      data-bar-reading-speed-value="<%= ApplicationHelper::READING_SPEED %>"
@@ -30,7 +33,7 @@
                   resize@window->tk#scan
                   turbo:before-stream-render@document->tk#scan
                   turbo:before-cache@window->bar#beforeCache
-                  turbo:before-cache@window->tk#beforeCache">
+                  turbo:before-cache@window->tk#beforeCache<%= " " + comments_actions if post.commentable? %>">
   <div class="editor-shell__scrim" data-editor-target="backdrop" data-action="click->editor#close"></div>
 
   <%# Autosave rides the form in both states, and is the only save there is — no Save
@@ -205,9 +208,9 @@
       <div class="editor-canvas__gutter" data-tk-target="gutter" data-label="TK" aria-hidden="true"></div>
     </div>
 
-    <aside class="settings-panel" data-editor-target="settings" role="dialog" aria-label="Post settings">
+    <aside class="settings-panel" data-editor-target="settings" role="dialog" aria-label="<%= post.model_name.human %> settings">
       <header class="settings-panel__head">
-        <h2>Post settings</h2>
+        <h2><%= post.model_name.human %> settings</h2>
         <%= render "writing/posts/autosave_status", post: post %>
         <button type="button" class="panel-close" data-action="editor#close" aria-label="Close settings">
           <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -227,6 +230,7 @@
           <hr class="settings-panel__rule">
         <% end %>
 
+        <% if post.publishable? %>
         <div class="field">
           <%= form.label :feature_image, "Feature image URL" %>
           <%= form.text_field :feature_image, placeholder: "https://…" %>
@@ -256,6 +260,7 @@
         </div>
 
         <hr class="settings-panel__rule">
+        <% end %>
 
         <%# The one way into the shortcut sheet that doesn't need a shortcut. %>
         <p class="settings-panel__aside">
@@ -271,6 +276,13 @@
   <%# Outside the form on purpose (nested forms get stripped by the parser), and behind a
       stable id so the mint can bring the whole persisted-post chrome in at once. %>
   <div id="editor-overlays"><%= render "writing/posts/editor_overlays", post: post if saving %></div>
+
+  <%# The margin: a doc's comments, beside the prose they are about. Outside the form for
+      the same reason as the overlays, and empty until the doc is a record — the mint
+      brings it in with the rest of the saved chrome. %>
+  <% if post.commentable? %>
+    <div id="editor-margin"><%= render "writing/comments/rail", doc: post, threads: @threads if saving %></div>
+  <% end %>
 
   <%= render "writing/posts/shortcuts" %>
 </div>
