@@ -4,7 +4,7 @@ class UpdatePostTool < ActionTool::Base
   include PostToolSupport
 
   tool_name "update_post"
-  description "Update a post or page. Pass body for a full replacement OR body_patches for surgical find/replace edits (mutually exclusive). tags REPLACES the full tag set when given. Changing a published post's slug is allowed but 404s the old URL (no redirects) — the response warns you."
+  description "Update a post, page or doc. Pass body for a full replacement OR body_patches for surgical find/replace edits (mutually exclusive). tags REPLACES the full tag set when given. Changing a published post's slug is allowed but 404s the old URL (no redirects) — the response warns you."
   annotations(
     title: "Update Post",
     read_only_hint: false,
@@ -16,7 +16,7 @@ class UpdatePostTool < ActionTool::Base
   arguments do
     required(:id_or_slug).filled.description("The post's numeric id or its slug string.")
     optional(:title).filled(:string).description("New title.")
-    optional(:kind).filled(:string).description("Change the kind: 'article' or 'page'. HTML pages are neither — they are edited with update_html_page.")
+    optional(:kind).filled(:string).description("Change the kind: 'article', 'page' or 'doc'. Turning a doc into an article is how a working paper becomes a draft post; a published post can't become a doc. HTML pages are neither — they are edited with update_html_page.")
     optional(:body).filled(:string).description("Full replacement body HTML. Mutually exclusive with body_patches. Markup that must be served exactly as written comes from create_html_card — paste the attachment element it returns, never the markup itself, which the sanitizer strips. A real <table> needs no card: tables are ordinary prose here and render natively in Gmail.")
     optional(:body_patches).value(:array, min_size?: 1).description('Array of {"old","new"} pairs for surgical edits. Each "old" must appear exactly once in the current body. Mutually exclusive with body. A card\'s markup isn\'t in the body to patch — the body holds only its <action-text-attachment sgid="…"> reference, so change a card with update_html_card and patch here only to move, add or drop the reference.')
     optional(:excerpt).filled(:string).description("New excerpt / standfirst.")
@@ -40,7 +40,7 @@ class UpdatePostTool < ActionTool::Base
 
     return { error: "body and body_patches are mutually exclusive. Pass body for a full replacement or body_patches for surgical edits, not both." } if body.present? && body_patches.present?
     return ToolErrors::HTML_PAGE_KIND if kind == "html_page"
-    return ToolErrors::INVALID_KIND if kind.present? && !%w[ article page ].include?(kind)
+    return ToolErrors::INVALID_KIND if kind.present? && !KINDS.key?(kind)
 
     slug_was = post.slug
     was_published = post.published?
@@ -48,8 +48,12 @@ class UpdatePostTool < ActionTool::Base
     changed = []
 
     if kind.present?
-      new_type = kind == "page" ? "Page" : "Post"
+      new_type = KINDS.fetch(kind).name
       if post.type != new_type
+        # becomes!, not a bare type write: the record has to be judged by the rules of the
+        # kind it is turning into, or a live post could be saved as a "private" doc.
+        # This table spells the base class out ("Post") where becomes! would write nil.
+        post = post.becomes!(KINDS.fetch(kind))
         post.type = new_type
         kind_changed = true
         changed << "kind"

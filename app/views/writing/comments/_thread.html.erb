@@ -1,0 +1,38 @@
+<%# One thread: the comment that opened it, its replies, and the two things that can be
+    done to it. An open thread carries its quote and prefix as data — that is all the
+    controller needs to find the passage again — and shows the quote itself only when the
+    passage can no longer be found (or on a phone, where there is no margin to sit in). %>
+<article class="comment-card" id="<%= dom_id(thread) %>"
+         <% unless thread.resolved? %>
+           data-comments-target="thread" data-quote="<%= thread.quote %>" data-prefix="<%= thread.prefix %>"
+           data-action="mouseenter->comments#warm mouseleave->comments#cool focusin->comments#warm focusout->comments#cool click->comments#reveal"
+         <% end %>>
+  <% if thread.quote.present? %>
+    <blockquote class="comment-card__quote"><%= truncate(thread.quote, length: 180) %></blockquote>
+    <p class="comment-card__orphaned">This text has changed since the comment was left.</p>
+  <% end %>
+
+  <%= render "writing/comments/comment", comment: thread, doc: doc %>
+  <%= render partial: "writing/comments/comment", collection: thread.replies, as: :comment, locals: { doc: doc } %>
+
+  <% if thread.resolved? %>
+    <div class="comment-card__actions">
+      <%= button_to "Reopen", writing_doc_comment_resolution_path(doc, thread), method: :delete,
+            class: "w-btn w-btn--ghost w-btn--sm", form_class: "w-inline" %>
+    </div>
+  <% else %>
+    <%= form_with model: [ :writing, doc, Comment.new ], class: "comment-card__reply" do |form| %>
+      <%= form.hidden_field :parent_id, value: thread.id, id: nil %>
+      <%= form.label :body, "Reply", class: "sr-only", for: dom_id(thread, :reply) %>
+      <%= form.text_area :body, id: dom_id(thread, :reply), rows: 1, required: true, placeholder: "Reply…",
+            data: { controller: "autogrow", action: "input->autogrow#grow keydown.meta+enter->comments#send keydown.ctrl+enter->comments#send" } %>
+      <div class="comment-card__actions">
+        <%= form.submit "Reply", class: "w-btn w-btn--primary w-btn--sm" %>
+      </div>
+    <% end %>
+    <div class="comment-card__actions comment-card__actions--thread">
+      <%= button_to "Resolve", writing_doc_comment_resolution_path(doc, thread),
+            class: "w-btn w-btn--ghost w-btn--sm", form_class: "w-inline" %>
+    </div>
+  <% end %>
+</article>

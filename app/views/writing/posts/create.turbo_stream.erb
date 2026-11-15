@@ -31,4 +31,10 @@
       <%= render "writing/posts/tag_mint", post: post %>
     <% end %>
   <% end %>
+  <%# A doc's margin has needed a record to hang comments on, and now there is one. %>
+  <% if post.commentable? %>
+    <%= turbo_stream.update "editor-margin" do %>
+      <%= render "writing/comments/rail", doc: post, threads: [] %>
+    <% end %>
+  <% end %>
 <% end %>

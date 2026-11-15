@@ -12,7 +12,13 @@
   <%= link_to edit_polymorphic_path([ :writing, record ]), class: "dash-row__link" do %>
     <span class="dash-row__title"><%= record.title.presence || "Untitled" %></span>
     <span class="dash-row__meta">
-      <span class="dash-row__url">/<%= record.slug %>/</span>
+      <%# A doc has no address a reader could visit, so it shows what it has instead:
+          how many threads are open in its margin. %>
+      <% if record.publishable? %>
+        <span class="dash-row__url">/<%= record.slug %>/</span>
+      <% elsif (open_threads = @open_threads.to_h[record.id].to_i).positive? %>
+        <span class="dash-row__when"><%= pluralize(open_threads, "open comment") %></span>
+      <% end %>
       <% if record.scheduled? %>
         <span class="dash-row__when">· Goes live <%= zoned_stamp(record.published_at) %></span>
       <% elsif record.published? && record.published_at %>
@@ -23,7 +29,9 @@
   <% end %>
 
   <span class="dash-row__side">
-    <% if record.scheduled? %>
+    <% if !record.publishable? %>
+      <span class="status status--draft">Private</span>
+    <% elsif record.scheduled? %>
       <span class="status status--scheduled">Scheduled</span>
     <% elsif record.published? %>
       <span class="status status--published">Published</span>

@@ -2,3 +2,8 @@ published_body:
   record: published (Post)
   name: body
   body: <p>The body of a <i>published</i> post.</p>
+
+doc_body:
+  record: doc (Post)
+  name: body
+  body: <h2>Planning</h2><p>Think like a PhD advisor, not a syllabus.</p><p>Show the next three tutorials and what each unlocks.</p>

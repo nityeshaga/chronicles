@@ -59,6 +59,21 @@ MCP_SERVER_INSTRUCTIONS = -> do
   would take), then resolve_note with one line on what changed — it appears under the note
   on the page. Check list_notes at the start of a session.
 
+  Docs are the author's private working papers — a spec, a prompt, a plan — and the place
+  the two of you work on one together. A doc is a kind of post that can never be published:
+  create it with create_post(kind: "doc"), read it with get_post, and edit it with
+  update_post (body_patches for anything but a rewrite), exactly as you would a post. Its
+  body is the same HTML; only title and body apply. He edits it in the same editor, so
+  re-read with get_post before patching — his last save may be newer than yours.
+
+  The conversation lives in the doc's margin. He selects a passage and leaves a comment;
+  list_comments returns the open threads, each with the quote it is pinned to and every
+  reply. Do what a thread asks (or say why not) with add_comment(reply_to:), and close it
+  with resolve_comment and one line on what changed. Open a thread of your own with
+  add_comment and a quote copied as the words read in the doc. When he hands you a doc's
+  URL or id, list_comments is the first call. To turn a finished doc into a draft post,
+  update_post(kind: "article").
+
   Ships are the log's unit: one thing shipped on a day — an app, skill, explorable, comic or
   chronicle — with a title, a blurb, who built it (nityesh, luo, together), a media preview
   and three doors: check_it_out_url, a copyable prompt, and a how_built_post. Most ships
@@ -114,6 +129,11 @@ Rails.application.config.after_initialize do
     # The author's red-pen notes on live pages: read them, do the work, resolve them.
     server.register_tool(ListNotesTool)
     server.register_tool(ResolveNoteTool)
+
+    # A doc's margin: the threads the author and the agent keep beside a working paper.
+    server.register_tool(ListCommentsTool)
+    server.register_tool(AddCommentTool)
+    server.register_tool(ResolveCommentTool)
 
     # Ships: the log's numbered entries. Logged from Slack, so every step is a tool.
     server.register_tool(ListShipsTool)

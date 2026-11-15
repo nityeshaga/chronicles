@@ -1,0 +1,19 @@
+advisor:
+  doc: doc
+  author_name: Nityesh Agarwal
+  body: Too abstract. What does the tutor actually do differently?
+  quote: Think like a PhD advisor
+  prefix: "Planning "
+
+advisor_reply:
+  doc: doc
+  parent: advisor
+  author_name: Luo
+  body: I'd swap it for the five questions it stands for.
+
+settled:
+  doc: doc
+  author_name: Nityesh Agarwal
+  body: Say three, not "a few".
+  quote: next three tutorials
+  resolved_at: <%= 1.day.ago.to_fs(:db) %>

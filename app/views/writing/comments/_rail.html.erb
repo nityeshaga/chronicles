@@ -1,0 +1,31 @@
+<%# The margin beside a doc. Three things live here: the button a selection raises, the
+    composer it opens, and the threads — which are a frame, because the frame is what gets
+    redrawn (comments#index is its only renderer) when a comment is left, answered or
+    resolved, here or by the agent over MCP. The composer sits outside the frame so that a
+    redraw can never take a half-written comment with it. %>
+<aside class="doc-rail" aria-label="Comments" data-comments-target="rail"
+       data-comments-url-value="<%= writing_doc_comments_path(doc) %>">
+  <button type="button" class="doc-rail__add" hidden data-comments-target="add"
+          data-action="pointerdown->comments#compose:prevent" title="Comment on the selection (⌘⌥M)">
+    <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2.5 3.5h11v7h-6l-3 2.5v-2.5h-2z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+    Comment
+  </button>
+
+  <%= form_with model: [ :writing, doc, Comment.new ], class: "comment-card comment-card--composer", html: { hidden: true },
+        data: { comments_target: "composer", turbo_frame: "doc_comments",
+                action: "turbo:submit-end->comments#composed keydown.meta+enter->comments#send " \
+                        "keydown.ctrl+enter->comments#send keydown.esc->comments#cancel" } do |form| %>
+    <blockquote class="comment-card__quote" data-comments-target="composerQuote"></blockquote>
+    <%= form.hidden_field :quote, data: { comments_target: "quoteField" } %>
+    <%= form.hidden_field :prefix, data: { comments_target: "prefixField" } %>
+    <%= form.label :body, "Comment", class: "sr-only", for: "new_comment_body" %>
+    <%= form.text_area :body, id: "new_comment_body", rows: 3, required: true, placeholder: "Comment…",
+          data: { comments_target: "composerBody" } %>
+    <div class="comment-card__actions">
+      <button type="button" class="w-btn w-btn--ghost w-btn--sm" data-action="comments#cancel">Cancel</button>
+      <%= form.submit "Comment", class: "w-btn w-btn--primary w-btn--sm" %>
+    </div>
+  <% end %>
+
+  <%= render "writing/comments/threads", doc: doc, threads: threads %>
+</aside>

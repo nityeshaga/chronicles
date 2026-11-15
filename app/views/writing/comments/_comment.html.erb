@@ -1,0 +1,12 @@
+<%# One thing somebody said: who, when, what — and the way to take it back. Deleting the
+    comment that opened a thread takes the thread with it, so that one asks first. %>
+<div class="comment" id="<%= dom_id(comment, :said) %>">
+  <header class="comment__head">
+    <span class="comment__author"><%= comment.author_name %></span>
+    <%= comment_stamp(comment) %>
+    <%= button_to "Delete", writing_doc_comment_path(doc, comment), method: :delete,
+          class: "comment__delete", form_class: "w-inline",
+          data: { turbo_confirm: (comment.thread? ? "Delete this thread and its replies?" : "Delete this reply?") } %>
+  </header>
+  <div class="comment__body"><%= simple_format(comment.body) %></div>
+</div>

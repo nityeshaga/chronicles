@@ -24,7 +24,10 @@ class Post < ApplicationRecord
   # sees draft explorables at their real URL — a bundle's only honest preview is the
   # bundle itself, at the address its relative links resolve against. Other drafts keep
   # their editor preview; nothing else changes for the writer.
-  scope :viewable, ->(writer:) { writer ? published.or(where(type: "Explorable")) : published }
+  #
+  # Never a doc. Doc's own validation already keeps one from being published; this is the
+  # same promise made a second time at the only door a reader comes through.
+  scope :viewable, ->(writer:) { (writer ? published.or(where(type: "Explorable")) : published).where.not(type: "Doc") }
 
   # Title and subtitle are single-line by design; squish out any newline that sneaks
   # past the editor (paste, older clients) so headlines never carry hard breaks.
@@ -239,6 +242,11 @@ class Post < ApplicationRecord
   def newsletterable? = true
   # Tags are the era shelves the blog feed is built from, so only articles carry them.
   def taggable? = true
+  # Can this ever be read by anyone but the writer? Everything can but a Doc, and the editor
+  # asks before it draws a URL, a standfirst or a Publish button.
+  def publishable? = true
+  # Does it have a margin to leave comments in? Only a Doc.
+  def commentable? = false
 
   # Which tab of the writing dashboard this record answers to. An article splits by its
   # own publish state; the page kinds are a bucket each whatever their state, because

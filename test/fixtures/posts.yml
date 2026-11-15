@@ -53,3 +53,10 @@ promised:
   slug: better-macbook
   status: draft
   excerpt: Why the machine the human uses is the wrong one to be the nice one.
+
+# A private working paper. Never published, by validation — so the fixture is a draft.
+doc:
+  type: Doc
+  title: Teaching context
+  slug: teaching-context
+  status: draft

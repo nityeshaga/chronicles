@@ -1731,3 +1731,123 @@ body.html-card .gh-content, body.html-card .kg-card { margin: 0; }
   box-shadow: 0 2px 10px rgba(0,0,0,.18);
 }
 .redpen-dashboard:hover { background: #E8471C; color: #fff; }
+
+/* ---------- Docs: the private working papers, and their margin ---------- */
+
+/* A doc has no reader, so the canvas drops the two lines that are only ever for one: the
+   standfirst and the URL. Hidden rather than left out of the form, because the editor's
+   controllers hold them as targets and a doc is written on the post's own form. */
+.editor-shell--doc :is(.editor-canvas__subtitle, .url-line) { display: none; }
+
+/* The prose and its margin are centred as a pair. The rail is out of the flow (comments
+   are forms and the prose is inside one), so the pair is one piece of arithmetic said
+   twice: where the canvas starts, and where the rail starts beside it. */
+.editor-shell--doc { --rail: 30rem; --rail-gap: 2.4rem; --pair-start: max(0px, calc((100% - 76rem - var(--rail) - var(--rail-gap)) / 2)); min-height: max(100vh, var(--rail-height, 0px)); }
+
+.doc-rail { font-family: var(--font-sans); font-size: 1.4rem; line-height: 1.45; color: var(--w-ink); }
+.doc-rail__threads { display: flex; flex-direction: column; gap: 1rem; scroll-margin-top: 8rem; }
+.doc-rail__blank { margin: 0; color: var(--w-faint); font-size: 1.35rem; }
+
+.comment-card {
+  background: var(--w-panel); border: 1px solid var(--w-line-strong); border-radius: 10px;
+  padding: 1.2rem 1.3rem; box-shadow: 0 1px 2px rgba(0, 0, 0, .04);
+  transition: box-shadow .15s, border-color .15s, margin-left .15s;
+}
+.comment-card.is-warm, .comment-card:focus-within { border-color: var(--w-accent); box-shadow: var(--w-shadow); }
+.comment-card[hidden] { display: none; }
+
+.comment-card__quote {
+  margin: 0 0 1rem; padding: 0 0 0 1rem; border-left: 3px solid rgba(180, 83, 9, .45);
+  font-family: var(--font-serif); font-size: 1.4rem; font-style: normal; color: var(--w-muted);
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.comment-card__orphaned { display: none; margin: -.4rem 0 1rem; font-size: 1.25rem; color: var(--w-accent-ink); }
+.comment-card[data-orphaned] .comment-card__orphaned { display: block; }
+
+.comment + .comment { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--w-line); }
+.comment__head { display: flex; align-items: baseline; gap: .2rem .8rem; flex-wrap: wrap; }
+.comment__author { font-weight: 600; white-space: nowrap; }
+.comment__when { color: var(--w-faint); font-size: 1.25rem; white-space: nowrap; }
+/* Delete keeps to the corner rather than the row, so a long name and its stamp can wrap
+   without pushing the button onto a line of its own. */
+.comment { position: relative; }
+.comment__head { padding-right: 5rem; }
+.comment__head .w-inline { position: absolute; top: 0; right: 0; }
+.comment + .comment .comment__head .w-inline { top: 1rem; }
+.comment__delete {
+  appearance: none; background: none; border: 0; padding: 0; cursor: pointer;
+  font: inherit; font-size: 1.25rem; color: var(--w-faint); opacity: 0; transition: opacity .15s;
+}
+.comment:hover .comment__delete, .comment__delete:focus-visible { opacity: 1; }
+.comment__delete:hover { color: var(--w-danger); }
+.comment__body { margin-top: .3rem; overflow-wrap: anywhere; }
+.comment__body p { margin: 0; }
+.comment__body p + p { margin-top: .6rem; }
+
+.comment-card textarea {
+  display: block; width: 100%; resize: none; font: inherit; color: inherit;
+  background: #fff; border: 1px solid var(--w-line-strong); border-radius: 8px; padding: .7rem .9rem;
+}
+.comment-card textarea:focus { outline: 2px solid var(--w-accent); outline-offset: 0; border-color: transparent; }
+.comment-card__reply { margin-top: 1.1rem; }
+.comment-card__actions { display: flex; justify-content: flex-end; gap: .7rem; margin-top: .8rem; }
+/* A reply box is one quiet line until it is being written in; then its button arrives. */
+.comment-card__reply .comment-card__actions { display: none; }
+.comment-card__reply:focus-within .comment-card__actions,
+.comment-card__reply:has(textarea:not(:placeholder-shown)) .comment-card__actions { display: flex; }
+.comment-card__actions--thread { justify-content: flex-start; }
+
+.doc-rail__add {
+  appearance: none; cursor: pointer; display: inline-flex; align-items: center; gap: .6rem;
+  font: inherit; font-size: 1.3rem; font-weight: 600; color: var(--w-accent-ink);
+  background: var(--w-panel); border: 1px solid var(--w-accent); border-radius: 999px;
+  padding: .5rem 1.1rem; box-shadow: var(--w-shadow); touch-action: manipulation;
+}
+.doc-rail__add[hidden] { display: none; }
+.doc-rail__add:hover { background: #fff3e2; }
+
+.doc-rail__resolved summary { cursor: pointer; color: var(--w-muted); font-size: 1.3rem; padding: .4rem 0; }
+.doc-rail__resolved .comment-card { margin-top: 1rem; opacity: .8; }
+.doc-rail__resolved .comment-card__quote { display: -webkit-box; }
+
+/* The passages comments are about. A highlight paints a range without adding a node,
+   which is the only paint Lexical's content element will leave alone. */
+::highlight(doc-comment) { background-color: rgba(245, 180, 60, .28); }
+::highlight(doc-comment-warm) { background-color: rgba(245, 150, 30, .55); }
+::highlight(doc-comment-pending) { background-color: rgba(245, 150, 30, .4); }
+
+/* Wide: a real margin. Cards are parked beside their passages by the comments controller,
+   which is why they are absolute and why a quote is only shown once its passage is gone
+   — beside the words themselves, repeating them is noise. */
+@media (min-width: 1140px) {
+  .editor-shell--doc .editor-canvas { margin-left: var(--pair-start); margin-right: 0; }
+  .doc-rail { position: absolute; top: 0; bottom: 0; left: calc(var(--pair-start) + 76rem + var(--rail-gap)); width: var(--rail); }
+  .doc-rail__threads { display: block; }
+  .doc-rail :is(.comment-card[data-comments-target], .doc-rail__add) { position: absolute; left: 0; right: 0; }
+  .doc-rail .doc-rail__add { right: auto; z-index: 2; }
+  .doc-rail .comment-card--composer { z-index: 3; border-color: var(--w-accent); box-shadow: var(--w-shadow); }
+  .doc-rail .comment-card.is-warm { margin-left: -1.2rem; }
+  .doc-rail .comment-card[data-comments-target="thread"]:not([data-orphaned]) > .comment-card__quote { display: none; }
+  .doc-rail :is(.doc-rail__resolved, .doc-rail__blank) { position: absolute; left: 0; right: 0; top: var(--threads-end, 0px); }
+  .doc-rail .doc-rail__blank { top: 15rem; }
+}
+
+/* Narrow: no margin to sit in, so the threads are a list under the prose, each wearing
+   its quote, and the button a selection raises waits at the foot of the screen. */
+@media (max-width: 1139.98px) {
+  .doc-rail { max-width: 76rem; margin: -6rem auto 0; padding: 0 clamp(20px, 4vw, 40px) 10rem; }
+  .doc-rail .comment-card--composer { margin-bottom: 1rem; }
+  .doc-rail__add { position: fixed; top: auto !important; right: 1.6rem; bottom: 1.6rem; z-index: 30; padding: 1rem 1.6rem; font-size: 1.5rem; }
+  /* The threads are a long scroll away from a passage near the top, so the way down to
+     them rides the corner of the screen. Tapping a thread is the way back to its words. */
+  .doc-rail__jump {
+    position: fixed; left: 1.6rem; bottom: 1.6rem; z-index: 30; display: inline-flex; align-items: center; gap: .6rem;
+    appearance: none; cursor: pointer; font-family: inherit; font-size: 1.4rem; font-weight: 600; color: var(--w-ink);
+    background: var(--w-panel); border: 1px solid var(--w-line-strong); border-radius: 999px;
+    padding: .9rem 1.4rem; box-shadow: var(--w-shadow);
+  }
+  .doc-rail .comment-card[data-comments-target="thread"] { cursor: pointer; }
+  /* The open threads are ordered by where their passages come; the folded ones follow. */
+  .doc-rail__resolved { order: 9999; }
+}
+@media (min-width: 1140px) { .doc-rail__jump { display: none; } }
