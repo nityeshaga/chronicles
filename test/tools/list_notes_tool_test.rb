@@ -24,6 +24,14 @@ class ListNotesToolTest < ActiveSupport::TestCase
     assert_nil note[:resolution]
   end
 
+  test "a note taken on a slide says which slide, and its url opens there" do
+    note = ListNotesTool.new.call(path: "/the-blink/")[:notes].sole
+    assert_equal "#/tcp/4", note[:fragment]
+    assert_equal "https://#{Setting.current.production_host}/the-blink/#/tcp/4", note[:url]
+
+    assert_not ListNotesTool.new.call(path: "/about/")[:notes].first.key?(:fragment)
+  end
+
   test "resolved, all, and a path filter" do
     resolved = ListNotesTool.new.call(status: "resolved")[:notes]
     assert_equal [ redpen_notes(:image).id ], resolved.map { |n| n[:id] }
