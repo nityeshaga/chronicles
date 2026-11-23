@@ -57,6 +57,18 @@ class OauthFlowTest < ActionDispatch::IntegrationTest
     assert_response :bad_request
   end
 
+  test "the token exchange fails with a verifier that does not match the challenge" do
+    sign_in
+    post oauth_authorization_url, params: authorize_params
+    code = Rack::Utils.parse_query(URI(response.location).query)["code"]
+
+    post oauth_token_url, params: {
+      grant_type: "authorization_code", code: code, redirect_uri: REDIRECT_URI,
+      client_id: @application.uid, code_verifier: SecureRandom.urlsafe_base64(64)
+    }
+    assert_response :bad_request
+  end
+
   private
     def authorize_params
       {
