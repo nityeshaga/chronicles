@@ -6,8 +6,8 @@ on:
     branches: [ main ]
 
 # Pinned to ubuntu-24.04: ubuntu-latest moved to 26.04, where ruby/setup-ruby only builds
-# the newest patch of each series and .ruby-version (3.4.7) is not one. Every job died in
-# "Set up Ruby" before running anything. Go back to ubuntu-latest when Ruby is bumped.
+# the newest patch of each series and .ruby-version (then 3.4.7) was not one. Every job died
+# in "Set up Ruby" before running anything. Ruby is on 3.4.13 now; ubuntu-latest is untried.
 jobs:
   scan_ruby:
     runs-on: ubuntu-24.04
