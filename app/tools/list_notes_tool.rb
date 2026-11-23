@@ -2,7 +2,7 @@
 
 class ListNotesTool < ActionTool::Base
   tool_name "list_notes"
-  description "The author's red-pen notes: feedback pinned to elements of live pages ('cut this excerpt', 'swap this image'). Open notes are work to do — each carries the page path, a CSS selector for the element and a snippet of its text. Do the work (update_post, update_html_page, or a code change), then resolve_note with one line on what changed."
+  description "The author's red-pen notes: feedback pinned to elements of live pages ('cut this excerpt', 'swap this image'). Open notes are work to do — each carries the page path, a CSS selector for the element and a snippet of its text. A note taken on an explorable also carries its fragment, which is the slide: '#/tcp/4' is deck 'tcp', slide 4. Do the work (update_post, update_html_page, or a code change), then resolve_note with one line on what changed."
   annotations(
     title: "List Notes",
     read_only_hint: true,
@@ -36,7 +36,8 @@ class ListNotesTool < ActionTool::Base
       {
         id: note.id,
         path: note.path,
-        url: "https://#{Setting.current.production_host}#{note.path}",
+        fragment: note.fragment,
+        url: "https://#{Setting.current.production_host}#{note.location}",
         selector: note.selector,
         snippet: note.snippet,
         body: note.body,
